@@ -1,17 +1,20 @@
-## TODO an algorithm for assigning a task to a fleet
-## Should run on-line (that is, without knowledge of
-## upcoming tasks)
+# TODO an algorithm for assigning a task to a fleet
+# Should run on-line (that is, without knowledge of
+# upcoming tasks)
 import fleet
 from sets import Set
 import sim_util
-import routes
+# import routes
+
 
 def linearSpeedEst(a, b):
-    ## distance estimate based on 3 m/s movement of straight-line distance
+    # distance estimate based on 3 m/s movement of straight-line distance
     return int(sim_util.ll_dist_m(a, b) / 3)
+
 
 def nilHeuristic(a, b):
     return 0
+
 
 def perfectHeuristic(a, b):
     rte = routes.RouteFinder().get_dirs(a, b)
@@ -31,8 +34,8 @@ def assign(time, task, fleet):
                 if assignee is None:
                     assignee = pev
                 elif pev.soonestArrivalAfter(time, task.getPickupLoc(),
-                                             heuristic = hst) < assignee.soonestArrivalAfter(
-                                                 time, task.getPickupLoc(), heuristic = hst):
+                                             heuristic=hst) < assignee.soonestArrivalAfter(
+                                                 time, task.getPickupLoc(), heuristic=hst):
                     assignee = pev
         try:
             wait_time = assignee.assign(task, time)

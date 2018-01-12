@@ -135,8 +135,8 @@ var slider_publicTransit = 20;
       ran_nums['num'] = rng
       var sim_params = {
         size: fleet_size,
-        maxDist: maxDist,
-        parcels: parcelFreq,
+        maxDist: 10,
+        parcels: 10,
         code: rng
       };
       $.post( '/fleetsim', JSON.stringify(sim_params), function( data ) {
@@ -146,7 +146,7 @@ var slider_publicTransit = 20;
       }, 'json');
     }
 
-
+    //
     function test_fleet_sim() {
       // var fleet_size = slider_fleetSize
       // var maxDist = $('#maxTripDist').val();
@@ -154,10 +154,11 @@ var slider_publicTransit = 20;
       var fleet_size = slider_fleetSize;
       var publicTransit_size = slider_publicTransit;
       var rebalanceSize = slider_rebalanceSize;
-      // MEGAUPDATE pt2
+      // MEGAUPATE pt2
       // make a random number and store in the dictionary in update pt1
       var rng = Math.floor(Math.random()*10000);
-      ran_nums['num'] = rng;
+      //NUMBER OF RESULTS
+      ran_nums['num'] = 1300;
       console.log("Input Test01: " + fleet_size);
       console.log("Input Test02: " + publicTransit_size);
       console.log("Input Test03: " + rebalanceSize);
@@ -186,7 +187,7 @@ var slider_publicTransit = 20;
           for(var j=0; j < stops.length; j++) {
             bluePath.push([stops[j]['stop_lat'], stops[j]['stop_lon']]);
             var blueIcon = L.icon({iconUrl: './images/blues.png',iconSize: [10, 10]});
-            var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: blueIcon}).bindPopup("[Blue Line]<br/>"+stops[j]['parent_station_name']).addTo(map);
+            var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: blueIcon}).bindPopup("Blue Line<br/>"+stops[j]['parent_station_name']).addTo(map);
             bluelineStopLine.push(stops[j]['parent_station_name']);
             station.on('mouseover', function (e) {
               this.openPopup();
@@ -207,7 +208,7 @@ var slider_publicTransit = 20;
           for(var j=0; j < stops.length; j++) {
             orangePath.push([stops[j]['stop_lat'], stops[j]['stop_lon']]);
             var orangeIcon = L.icon({iconUrl: './images/oranges.png',iconSize: [10, 10]});
-            var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: orangeIcon}).bindPopup("[Orange Line]<br/>"+stops[j]['parent_station_name']).addTo(map);
+            var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: orangeIcon}).bindPopup("Orange Line<br/>"+stops[j]['parent_station_name']).addTo(map);
             orangelineStopLine.push(stops[j]['parent_station_name']);
             station.on('mouseover', function (e) {
               this.openPopup();
@@ -231,12 +232,10 @@ var slider_publicTransit = 20;
           var stops = route[k]['stop'];
           for(var j=0; j < stops.length; j++) {
             var redIcon = L.icon({iconUrl: './images/reds.png',iconSize: [10, 10]});
-
             if (stops[j]['stop_order'] <=170 && stops[j]['stop_order'] != 130) {
               animatedRedLeftPath.push([stops[j]['stop_lat'], stops[j]['stop_lon']]);
             }
 
-            //130부터 170필요 X
             if (stops[j]['stop_order'] <=220) {
               if(stops[j]['stop_order']>=130 && stops[j]['stop_order']<=170) {
                 // No
@@ -247,7 +246,7 @@ var slider_publicTransit = 20;
 
             if(stops[j]['stop_order'] < 130) {
               redPath.push([stops[j]['stop_lat'], stops[j]['stop_lon']]);
-              var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: redIcon}).bindPopup("[Red Line]<br/>" + stops[j]['parent_station_name']).addTo(map);
+              var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: redIcon}).bindPopup("Red Line<br/>" + stops[j]['parent_station_name']).addTo(map);
               station.on('mouseover', function (e) {
                 this.openPopup();
               });
@@ -276,7 +275,7 @@ var slider_publicTransit = 20;
             }
           }
         }
-        //배열 0번째로 들어감
+
         redPathLeft.unshift(redPath[redPath.length-1]);
         redPathRight.unshift(redPath[redPath.length-1]);
         var redPathPoly = L.polyline(redPath, {color: "#FF4500"});
@@ -299,25 +298,21 @@ var slider_publicTransit = 20;
         for(var i=0; i<animatedRedRightPoly.getLatLngs().length; i++){
           time.push(2000);
         }
-        console.log(time);
-        console.log(animatedRedRightPoly.length);
+        // console.log(time);
+        // console.log(animatedRedRightPoly.length);
         var redline = L.Marker.movingMarker(animatedRedRightPoly.getLatLngs(), time);
         redline.options.icon = redIcon;
         redline.addTo(map);
         redline.start();
         redlineAnimation("", redPathLeft, redPathRight);
       }, 'json');
-      
+
       // MEGAUPDATE pt4
       // Change the path for post so that sim_params is sent to the right 'Variables' file
       // Timeout for a bit to give the simulation time to run
       var filename = '/Results/trial_sim_hubway_data' + ran_nums['num'] + '.JSON';
       $.post(filename, JSON.stringify(sim_params), function(data) {
-        sim_data = data;
-        setTimeout(function () {
-          console.log('Hello')
-        }, 10000);
-        objectCreation(sim_data);
+        objectCreation(data);
       }, 'json');
     }
 
@@ -441,7 +436,8 @@ var slider_publicTransit = 20;
     // }
 
     function objectCreation(data) {
-      for(var fleet=0; fleet < Object.keys(data['fleet']).length; fleet++) {
+      console.log(data);
+      for(let fleet=0; fleet < Object.keys(data['fleet']).length; fleet++) {
         startTimeSet.push([]);
         endTimeSet.push([]);
         for(var history=0; history < data['fleet'][fleet]['history'].length; history+=3) {
@@ -491,15 +487,16 @@ var slider_publicTransit = 20;
         return values[half];
       else
         return (values[half-1] + values[half]) / 2.0;
-}
+    }
 
     function jsonDataAnimationAction(data, start, end, i, j) {
+      // console.log("===", data, start, end, i, j)
       setTimeout(function() {
         var marker;
         var car = data['fleet'][i];
         var ctask = data['fleet'][i]['history'][3*j];
-        var carMakerIcon = L.icon({iconUrl: './images/circle.png',iconSize: [20, 20]});
-        var idleMarker = L.marker([ ctask.start_point[1],  ctask.start_point[0]], {icon: carMakerIcon}).addTo(map);
+        var carMarkerIcon = L.icon({iconUrl: './images/circle.png',iconSize: [20, 20]});
+        var idleMarker = L.marker([ ctask.start_point[1],  ctask.start_point[0]], {icon: carMarkerIcon}).addTo(map);
         var count =0;
         var numarr = [];
         map.addLayer(idleMarker);
@@ -514,8 +511,8 @@ var slider_publicTransit = 20;
           var med = median(numarr);
           ////////////////////////////////////////////////////////
           console.log("Waiting Time: " + time);
-          document.getElementById("wtavg").innerHTML= ""+avg;
-          document.getElementById("wtmd").innerHTML = ""+med;
+          $("#wtavg").html(""+avg);
+          $("#wtmd").html(""+med);
           ////////////////////////////////////////////////////////
           var navMarker = L.Marker.movingMarker(navPolyline.getLatLngs(), time).addTo(map);
           navMarker.on('end', function(){
@@ -524,7 +521,7 @@ var slider_publicTransit = 20;
             if(marker != null)
             map.removeLayer(marker);
           });
-          // // [NOTIFICATION]
+          // NOTIFICATION
           if (data['fleet'][i]['history'][3*j+2]['kind'] == 'Passenger') {
             var origin = {lat: data['fleet'][i]['history'][3*j+1].end_point[1], lng: data['fleet'][i]['history'][3*j+1].end_point[0]};
             var childIcon = L.icon({iconUrl: './images/child.png',iconSize: [20, 20]});
@@ -537,6 +534,7 @@ var slider_publicTransit = 20;
             heatMap = L.heatLayer([[dest['end_point'][1], dest['end_point'][0]]]);
           }
           navMarker.start();
+          //PASSENGER
           if(end['PASSENGER'] == 0) {
             setTimeout(function(){
               // map.removeLayer(marker);
@@ -559,6 +557,7 @@ var slider_publicTransit = 20;
                 //  console.log("Animation PASS END: " + i);
               }, end['PARCEL']);
             }, end['NAV'] - start['NAV']);
+          //PARCEL
           } else {
             setTimeout(function(){
               // map.removeLayer(marker);
@@ -606,15 +605,16 @@ var slider_publicTransit = 20;
 
     window.onload = function() {
       map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
-      L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-        maxZoom: 100,
-        zoomControl: false,
-        id: 'mapbox.dark',
-        accessToken: 'pk.eyJ1IjoicGhsZWUwNjA4IiwiYSI6ImNqNXEyemV1YzBnazQyd3BxbnljNXcwZWgifQ.bDNLVHhQaQZou-OM0c9NKw'}).
-        addTo(map);
-        document.getElementById("trip-file").value = "";
-        document.getElementById("bothBtn").disabled = true;
-        document.getElementById("bikeBtn").disabled = true;
-        document.getElementById("driveBtn").disabled = true;
+      L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}',
+        {
+          attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+          maxZoom: 100,
+          zoomControl: false,
+          id: 'mapbox.dark',
+          accessToken: 'pk.eyJ1IjoicGhsZWUwNjA4IiwiYSI6ImNqNXEyemV1YzBnazQyd3BxbnljNXcwZWgifQ.bDNLVHhQaQZou-OM0c9NKw'
+        }).addTo(map);
+        // document.getElementById("trip-file").value = "";
+        // document.getElementById("bothBtn").disabled = true;
+        // document.getElementById("bikeBtn").disabled = true;
+        // document.getElementById("driveBtn").disabled = true;
       };

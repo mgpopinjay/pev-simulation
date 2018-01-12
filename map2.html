@@ -12,7 +12,7 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 <!-- <link href="bower_components/d4/d4.css" rel="stylesheet" /> -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"> -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 <link href='https://fonts.googleapis.com/css?family=Open+Sans:300, 300italic,400,600,800,800italic,600italic' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
@@ -43,34 +43,34 @@
 
 
 <!--   File Loading Menu   -->
-  <!-- TODO: upload file to server for sim -->
-  <div id="form" class="style-upper-right" hidden="True">
-    <div id="input">
-      <form id="taxi-data">
-         <div>
-          <label for="trip-file" class="center"> Trip File: </label>
-          <input id="trip-file" name="trip-file" type="file" />
-          <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
-          <button id="bikeBtn" onclick="bike()">Bike</button>
-          <button id="driveBtn" onclick="car()">Taxi</button>
-        </div>
-      </form>
-    </div>
+<!-- TODO: upload file to server for sim -->
+<!-- <div id="form" class="style-upper-right">
+  <div id="input">
+    <form id="taxi-data">
+       <div>
+        <label for="trip-file" class="center"> Trip File: </label>
+        <input id="trip-file" name="trip-file" type="file" />
+        <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
+        <button id="bikeBtn" onclick="bike()">Bike</button>
+        <button id="driveBtn" onclick="car()">Taxi</button>
+      </div>
+    </form>
   </div>
+</div> -->
 
 <div class="row">
-  <div class="col-lg-2"  style="color: white;  margin-top: 0px; margin-left: 20px">
+  <div style="color: white;  margin-top: 0px; margin-left: 20px">
     <h3 style="margin-top:10px; font-style:italic">PEV-SIMULATOR V4</h3>
     <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p>
     <div style="margin-top: 20px; font-size: .9em" id="btn-group">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Boston" onclick="setMapBoston()">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Paris">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Taipei">
+          <input type="button" class="button mode" style="background-color:#ff66cc; color: white" value="Boston" onclick="setMapBoston()">
+          <input type="button" class="button mode" style="background-color:#ff66cc; color: white" value="Paris">
+          <input type="button" class="button mode" style="background-color:#ff66cc; color: white" value="Taipei">
     </div>
   </div>
 
 
- <div class="col-lg-3"  style="color: white; margin-top: 10px">
+  <div style="color: white; margin-top: 10px">
    <table>
      <tr>
        <th>Waiting Time Average</th>
@@ -78,14 +78,14 @@
        <th>Item3</th>
      </tr>
      <tr>
-       <th id="wtavg"> 0 </th>
-       <th id = "wtmd"> 0 </th>
+       <th id="wtavg">0</th>
+       <th id="wtmd">0</th>
        <th>3</th>
      </tr>
    </table>
-</div>
+  </div>
 
-  <!-- <div class="col-lg-3"  style="color: white; margin-top: 10px">
+  <!-- <div style="color: white; margin-top: 10px">
     <div style="font-weight:600">
       <i class="fa fa-percent"></i> UTILIZATION
     </div>
@@ -104,12 +104,12 @@
      <div id="utilization_chart"> </div>
   </div> -->
 
-  <!-- <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
+  <!-- <div style="color: white; margin-top: 10px; font-weight:600">
     <i class="fa fa-sellsy"></i> EMISSIONS
     <div id="emission_chart" style="margin-top: 18px"> </div>
   </div> -->
 
-  <!-- <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
+  <!-- <div style="color: white; margin-top: 10px; font-weight:600">
     <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
 
     <div>
@@ -124,11 +124,10 @@
         <div id="waitTimeParcel"> </div>
     </div>
      </div> -->
-  </div>
 </div>
 
 <div class="row">
-  <div class="col-lg-3" style="margin-top: 15px; margin-left: 20px; ">
+  <div tyle="margin-top: 15px; margin-left: 20px; ">
 
     <!-- <p style="color: white; margin-top: 15px">
       <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label>
@@ -155,16 +154,14 @@
     <div id="sliderpublicTransit"  style="margin-top: -10px"></div>
 
 
-    <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 100px; background-color:white; color: #ff66cc" value="Traffic On" onclick="">      <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 100px; background-color:white; color: #ff66cc" value="Traffic Off" onclick="">
+    <input type="button" class="button" style="margin-top: 25px; width: 100px; background-color:white; color: #ff66cc" value="Traffic On" onclick="">
+    <input type="button" class="button" style="margin-top: 25px; width: 100px; background-color:white; color: #ff66cc" value="Traffic Off" onclick="">
+    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Upload O/D Data" onclick="">
+    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Street Modification" onclick="">
 
-    <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Upload O/D Data" onclick="">
-
-    <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Street Modification" onclick="">
-
-
-    <!-- <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Re-Start"> -->
-    <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Run Sim" onclick="fleet_sim()">
-      <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Test Sim" onclick="test_fleet_sim()">
+    <!-- <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Re-Start"> -->
+    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Run Sim" onclick="fleet_sim()">
+    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Test Sim" onclick="test_fleet_sim()">
   </div>
 </div>
 
@@ -173,12 +170,7 @@
 
 <!-- center -->
 
-  <script>
-  // emission_chart
-
-  // console.log(localStorage.getItem("c_taxi_time"));
-  // jQuery(function($) {
-
+<script>
 function drawEmissionChart(emissions) {
     var names = ['PEV', 'Taxi','Uber'],
 
@@ -282,7 +274,7 @@ function drawEmissionChart(emissions) {
 
     /* step 5 */
     var gap = 2;
-  // redefine y for adjusting the gap
+    // redefine y for adjusting the gap
     y = d3.scale.ordinal()
     .domain(emissions)
     .rangeBands([0, (bar_height + 2 * gap) * names.length]);
@@ -756,7 +748,7 @@ function bumpLayer(n, o) {
 
 }
 </script>
-</script> -->
+</script>
 <div id="txt"></div>
 </body>
 </html>

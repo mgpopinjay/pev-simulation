@@ -1,12 +1,13 @@
-## TODO a model for a fleet of PEVs in a city
+# TODO a model for a fleet of PEVs in a city
 
 import sim_util as util
 import trip
 import fsched
-import routes
+# import routes
 
 
 class Fleet:
+
     def __init__(self, fleet_size, bounds, starting_locs):
         self.vehicles = []
         self.starting_locs = starting_locs
@@ -15,20 +16,18 @@ class Fleet:
             self.vehicles.append(
                 Vehicle(i, True, starting_locs[i % len(starting_locs)]))
 
-
     def assign_task(self, trip):
-        ## TODO args, return?
+        # TODO args, return?
         t = trip.getTimeOrdered()
         for i in xrange(self.fleet_size):
             self.vehicles[i].update(t)
         try:
             (vid, wait) = fsched.assign(t, trip, self)
-            #print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+            # print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
         except:
             print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
 
-
-    ## TODO deprecate
+    # TODO deprecate
     def finishUp(self):
         end = 0
         for i in xrange(self.fleet_size):
@@ -37,10 +36,10 @@ class Fleet:
             self.vehicles[i].finish(end)
 
     def getSegment(self, start, end):
-        ## TODO implement
+        # TODO implement
         return self
 
-    ## returns the utilization (Passengers/packages) at time t
+    # returns the utilization (Passengers/packages) at time t
     def getUtilization(self):
         denom = float(len(self.vehicles))
         utils = []
@@ -49,7 +48,7 @@ class Fleet:
             u = self.vehicles[i].getUtilization(3600)
             lenLongest = max(len(u), lenLongest)
             utils.append(u)
-        ## flatten
+        # flatten
         out = []
         for i in xrange(lenLongest):
             human = 0
@@ -72,9 +71,9 @@ class Fleet:
             lenLongest = max(len(ebv), lenLongest)
             emissionsByVehicle.append(ebv)
         out = []
-        ## assume distance is in meter
-        ## give emissions in kilogram of cot
-        ## based on .07 kg/km
+        # assume distance is in meter
+        # give emissions in kilogram of cot
+        # based on .07 kg/km
         coeff = .07 / 1000
         for i in xrange(lenLongest):
             emissions = 0
@@ -87,15 +86,15 @@ class Fleet:
 
     def setFleetSize(self, size):
         if size > self.fleet_size:
-            ## add vehicles
+            # add vehicles
             for i in xrange(self.fleet_size, size):
-                ## enable any disabled vehicles or add new ones
+                # enable any disabled vehicles or add new ones
                 if i >= len(self.vehicles):
                     self.vehicles.append(Vehicle(i, True, self.starting_locs[i % len(self.starting_locs)]))
                 else:
                     self.vehicles[i].enable()
         elif size < self.fleet_size:
-            ## disable vehicles
+            # disable vehicles
             for i in xrange(size, self.fleet_size):
                 self.vehicles[i].disable()
         self.fleet_size = size
@@ -103,7 +102,9 @@ class Fleet:
     def __getitem__(self, key):
         return self.vehicles[key]
 
+
 class Dispatch:
+
     def __init__(self, start, end, kind, route, dest, wait_time):
         self.start = start
         self.end = end
@@ -131,6 +132,7 @@ class Dispatch:
     def getEndLoc(self):
         return self.dest
 
+
 def create_dispatch(time, start, dest):
     rte = routes.RouteFinder().get_dirs(start, dest)
     # rte is a Route obj
@@ -139,14 +141,18 @@ def create_dispatch(time, start, dest):
     dur = rte.getDuration()
     return Dispatch(time, time+dur, "NAV", rte, dest, None)
 
+
 def dispatch_from_task(task, start_time):
     return Dispatch(start_time, start_time + task.getDuration(),
-        task.getType(), task.getRoute(), task.getDest(), start_time - task.getTimeOrdered())
+                    task.getType(), task.getRoute(), task.getDest(), start_time - task.getTimeOrdered())
+
 
 def idle_dispatch(time, loc):
     return Dispatch(time, -1, "IDLE", None, loc, None)
 
+
 class Vehicle:
+
     def __init__(self, uid, is_pev, loc):
         self.uid = uid
         self.is_pev = is_pev
@@ -157,7 +163,7 @@ class Vehicle:
         self.current = 0
         self.enabled = True
 
-        ## TODO representation here
+        # TODO representation here
     def enable(self):
         self.enabled = True
 
@@ -165,16 +171,16 @@ class Vehicle:
         self.enabled = False
 
     def update(self, time):
-        ## The purpose of this method is to set the current loc (in case we use it in the future)
-        ## and to ensure that IDLE is appended if we finish everything.
+        # The purpose of this method is to set the current loc (in case we use it in the future)
+        # and to ensure that IDLE is appended if we finish everything.
         while len(self.history) > self.current and self.history[self.current].end <= time:
             if self.history[self.current].end == -1:
                 break
-            self.loc = self.history[self.current].dest ## TODO care about partial completion
+            self.loc = self.history[self.current].dest  # TODO care about partial completion
             self.current += 1
         if self.current == len(self.history):
             self.history.append(idle_dispatch(self.history[-1].end, self.loc))
-        ## self.check_valid()
+        # self.check_valid()
 
     def assign(self, task, time):
         if self.history[-1].kind == "IDLE":
@@ -204,8 +210,8 @@ class Vehicle:
             self.history[-1].end = time
 
     def soonestFreeAfter(self, t):
-        ## return the soonest time that the PEV will
-        ## be free after time t
+        # return the soonest time that the PEV will
+        # be free after time t
         if self.history[-1].end <= t:
             return t
         else:
@@ -215,12 +221,12 @@ class Vehicle:
         if self.history[-1].end <= t:
             return self.history[-1].getEndLoc()
         else:
-            ## It's only called in one situation in which
-            ## the passed in value is received from soonestFreeAfter
-            ## It's possible that this may be used if in the future,
-            ## PEVs can be redirected after being assigned or if PEVs
-            ## carrying a package can pick up a passenger or additional
-            ## package
+            # It's only called in one situation in which
+            # the passed in value is received from soonestFreeAfter
+            # It's possible that this may be used if in the future,
+            # PEVs can be redirected after being assigned or if PEVs
+            # carrying a package can pick up a passenger or additional
+            # package
             raise(NotImplementedError)
 
     def soonestArrivalAfter(self, t, dst, heuristic=lambda x, y: 0):
@@ -231,11 +237,11 @@ class Vehicle:
         return self.uid
 
     def getActionAt(self, time_window):
-        ## TODO return PASSENGER, PARCEL, BOTH, or NONE depending
-        ## on what the vehicle is being used for in that window
+        # TODO return PASSENGER, PARCEL, BOTH, or NONE depending
+        # on what the vehicle is being used for in that window
         passenger = False
         parcel = False
-        ## TODO binary search for efficiency (?)
+        # TODO binary search for efficiency (?)
         for d in self.history:
             if d.start > time_window[1]:
                 break

@@ -1,5 +1,5 @@
-## TODO utility functions for the simulation
-from geopy.distance import great_circle
+# TODO utility functions for the simulation
+# from geopy.distance import great_circle
 from time import strptime
 from collections import deque
 import datetime
@@ -50,8 +50,6 @@ def generate_circle(longitude, latitude, max_radius, no_trips=3):
         endlocs.append((end_long, end_lat))
 
     return endlocs
-
-
 
 
 # generate circle. then random generated number of locations within circle
