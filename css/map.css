@@ -2,14 +2,6 @@ body {
     margin: 0;
 }
 
-.button {
-    background-color: #ff66cc;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-    padding: 5px 10px;
-}
-
 #map-canvas {
     top: 0;
     height: 100%;
@@ -18,13 +10,109 @@ body {
     z-index: -1;
 }
 
-#input {
-    font-size: 14px;
-    font-weight: bold;
-    bottom: 2%;
-    left: 5%;
-    background-color: transparent;
+/* CONTROL PANEL */
+
+.button {
+    background-color: #ff66cc;
+    color: white;
+    border: 2px solid #ff66cc;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+    display: inline-block;
+    width: calc(100% - 24px);
+    float: left;
+    text-align: center;
+    margin-top: 10px;
 }
+
+#controls {
+    width: 250px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin-left: 20px;
+}
+
+#title-outer {
+    color: white;
+}
+
+#title-outer h1 {
+    font-size: 26px;
+    margin-bottom: 0px;
+}
+
+#title-outer p {
+    margin-top: 5px;
+}
+
+#city-select {
+    margin-top: 10px;
+    height: 35px;
+}
+
+#sliders {
+    margin-bottom: 30px;
+}
+
+.slider-label {
+    color: white;
+}
+
+.slider-label input {
+    border: 0;
+    width: 35px;
+    font-size: 12px;
+    background-color: transparent;
+    color: #ff66cc;
+    font-weight: bold;
+}
+
+.ui-slider   {
+    height: 4px;
+    width: 100%;
+}
+
+.ui-slider  .ui-slider-handle   {
+    height: 12px;
+    width: 12px;
+    padding-left: 0px; //add this
+}
+
+.button.traffic {
+    color: #ff66cc;
+    background: transparent;
+    margin: 0px 3px;
+    width: calc(50% - 30px);
+    float: left;
+}
+
+
+.button.city {
+    color: #ff66cc;
+    background: transparent;
+    margin: 0px 3px;
+    width: calc(33% - 30px);
+    float: left;
+}
+
+/* END CONTROL PANEL */
+
+
+/* RESULTS */
+
+#results {
+    position: absolute;
+    top: 10px;
+    left: 300px;
+    color: white;
+}
+
+/* END RESULTS */
+/*
+UNUSED
+ */
 
 #trip-box {
     /*width: 300px;*/
@@ -34,9 +122,8 @@ body {
     top: 5%;
     right:1%;
     background-color: white;
-
-
 }
+
 #data-box {
     /*width:425px;*/
     /*height:40%;*/
@@ -85,9 +172,9 @@ body {
     padding: 12px;
     border: 0px solid #999;
     border: inset 1px solid #333;
-   /* -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);*/
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
     /*top:-400px;*/
     /*height:20px;*/
     bottom: 3%;
@@ -111,13 +198,8 @@ body {
 
 }
 
-.button:hover
-{
-    background-image:none;
-    background-color:#ff00ff;
-}
 
-th{
+th {
    border: 1px solid black;
 }
 
@@ -204,9 +286,6 @@ stroke: none;
 fill: #64707D;
 }
 
-
-
-
 text {
 font: 10px sans-serif;
 }
@@ -234,30 +313,4 @@ shape-rendering: crispEdges;
 .axis text {
 font-family: sans-serif;
 font-size: 8px;
-}
-
-
-/*Control Panel*/
-
-.ui-slider   {
-    height: 6px;
-    width: 200px;
-    padding-left: 0px; //add this
-}
-
-.ui-slider  .ui-slider-handle   {
-    height: 15px;
-    width: 15px;
-    padding-left: 0px; //add this
-}
-
-
-rect {
--moz-transition: all 0.3s;
--webkit-transition: all 0.3s;
--o-transition: all 0.3s;
-transition: all 0.3s;
-}
-rect:hover{
-fill: orange;
 }

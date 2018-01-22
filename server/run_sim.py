@@ -1,8 +1,8 @@
 from pev_sim import Sim_env
 import sim_util
 import json
-# from dynamic_trips import TripRandomizer
-from tee.public_transport import Tee
+from dynamic_trips import TripRandomizer
+# from tee.public_transport import Tee
 # import hubway
 
 
@@ -10,17 +10,17 @@ def Run(sim_uid, fleet_size, maxDist, freq, dur):
     """ generates trips and returns simulation environment obj"""
 
     bounds = []
-    starting_locs = []
-    boston_tee = Tee()
-    boston_tee.loadStopLocations()
-    stations = boston_tee.stations
-    for station in stations:
-        starting_locs.append(stations[station])
+    # starting_locs = []
+    # boston_tee = Tee()
+    # boston_tee.loadStopLocations()
+    # stations = boston_tee.stations
+    # for station in stations:
+    #     starting_locs.append(stations[station])
 
-    print starting_locs
+    # print starting_locs
     # pevs start locations @ hubway stations
     # global hubway_stations
-    # starting_locs = hubway_stations
+    starting_locs = hubway_stations
     env = Sim_env(fleet_size, bounds, starting_locs)
     # singleton class
 

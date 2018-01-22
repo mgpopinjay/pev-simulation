@@ -6,6 +6,8 @@
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyCCsXoS0spl3q-Uysn_g3jFRj6s4w9JLo8&libraries=geometry,visualization"></script>
 <script type="text/javascript" src="lib/jquery.js"></script>
 <script type="text/javascript" src="lib/papaparse.min.js"></script>
+<script type="text/javascript" src="js/BostonTee.js"></script>
+
 <script type="text/javascript" src="js/map3.js"></script>
 <script type="text/javascript" src="js/fontawesome-markers.min.js"></script>
 <!-- <script src="bower_components/d4/d4.js"></script> -->
@@ -41,7 +43,6 @@
 <div id="map-canvas">
 </div>
 
-
 <!--   File Loading Menu   -->
 <!-- TODO: upload file to server for sim -->
 <!-- <div id="form" class="style-upper-right">
@@ -57,20 +58,7 @@
     </form>
   </div>
 </div> -->
-
-<div class="row">
-  <div style="color: white;  margin-top: 0px; margin-left: 20px">
-    <h3 style="margin-top:10px; font-style:italic">PEV-SIMULATOR V4</h3>
-    <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p>
-    <div style="margin-top: 20px; font-size: .9em" id="btn-group">
-          <input type="button" class="button mode" style="background-color:#ff66cc; color: white" value="Boston" onclick="setMapBoston()">
-          <input type="button" class="button mode" style="background-color:#ff66cc; color: white" value="Paris">
-          <input type="button" class="button mode" style="background-color:#ff66cc; color: white" value="Taipei">
-    </div>
-  </div>
-
-
-  <div style="color: white; margin-top: 10px">
+<div id="results">
    <table>
      <tr>
        <th>Waiting Time Average</th>
@@ -83,89 +71,94 @@
        <th>3</th>
      </tr>
    </table>
+</div>
+
+<div id="controls">
+  <div id="title-outer">
+    <h1 style="margin-top:10px; font-style:italic">PEV-SIMULATOR V4</h1>
+    <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p>
+  </div>
+  <div id="city-select">
+    <input class="button city" value="Boston" onclick="setMapBoston()">
+    <input class="button city" value="Paris">
+    <input class="button city" value="Taipei">
   </div>
 
-  <!-- <div style="color: white; margin-top: 10px">
-    <div style="font-weight:600">
-      <i class="fa fa-percent"></i> UTILIZATION
-    </div>
-    <div>
-      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
-      <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
-      <div style="display: inline-block">
-        <div class="chartControl">
-              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="grouped"> Combined</div>
-              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="stacked" checked> Split</div>
+
+    <!-- <div style="color: white; margin-top: 10px">
+      <div style="font-weight:600">
+        <i class="fa fa-percent"></i> UTILIZATION
+      </div>
+      <div>
+        <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+        <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
+        <div style="display: inline-block">
+          <div class="chartControl">
+                <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="grouped"> Combined</div>
+                <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="stacked" checked> Split</div>
+          </div>
         </div>
+
+
+      </div>
+       <div id="utilization_chart"> </div>
+    </div> -->
+
+    <!-- <div style="color: white; margin-top: 10px; font-weight:600">
+      <i class="fa fa-sellsy"></i> EMISSIONS
+      <div id="emission_chart" style="margin-top: 18px"> </div>
+    </div> -->
+
+    <!-- <div style="color: white; margin-top: 10px; font-weight:600">
+      <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
+
+      <div>
+        <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+        <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
+      </div>
+      <div style="display: inline-block">
+          <div id="waitTimePassenger"> </div>
       </div>
 
+      <div style="display: inline-block">
+          <div id="waitTimeParcel"> </div>
+      </div>
+       </div> -->
 
-    </div>
-     <div id="utilization_chart"> </div>
-  </div> -->
+  <div id="sliders">
+      <!-- <p style="color: white; margin-top: 15px">
+        <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label>
+        <input type="text" id="fleetSize">
+      </p>
+      <div id="sliderFleetSize"  style="margin-top: -10px"></div> -->
+      <p class="slider-label">
+        <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Fleet Size:</label>
+        <input type="text" id="fleet">
+      </p>
+      <div id="sliderfleet" style="margin-top: -10px"></div>
 
-  <!-- <div style="color: white; margin-top: 10px; font-weight:600">
-    <i class="fa fa-sellsy"></i> EMISSIONS
-    <div id="emission_chart" style="margin-top: 18px"> </div>
-  </div> -->
+      <p class="slider-label">
+        <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Rebalancing Vehicles:</label>
+        <input type="text" id="rebalance">
+      </p>
+      <div id="sliderRebalance" style="margin-top: -10px"></div>
 
-  <!-- <div style="color: white; margin-top: 10px; font-weight:600">
-    <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
+      <p class="slider-label">
+        <label style="font-weight:600"> <i class="fa fa-arrows-h"></i>  Modal Transfer from Public Transit:</label>
+        <input type="text" id="publicTransit">
+      </p>
+      <div id="sliderpublicTransit" style="margin-top: -10px"></div>
+  </div>
 
-    <div>
-      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
-      <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
-    </div>
-    <div style="display: inline-block">
-        <div id="waitTimePassenger"> </div>
-    </div>
-
-    <div style="display: inline-block">
-        <div id="waitTimeParcel"> </div>
-    </div>
-     </div> -->
-</div>
-
-<div class="row">
-  <div tyle="margin-top: 15px; margin-left: 20px; ">
-
-    <!-- <p style="color: white; margin-top: 15px">
-      <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label>
-      <input type="text" id="fleetSize" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold">
-    </p>
-    <div id="sliderFleetSize"  style="margin-top: -10px"></div> -->
-
-    <p style="color: white; margin-top: 15px">
-      <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Rebalancing Vehicles:</label>
-      <input type="text" id="rebalance" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold">
-    </p>
-    <div id="sliderRebalance"  style="margin-top: -10px"></div>
-
-    <p style="color: white; margin-top: 15px">
-      <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Fleet Size:</label>
-      <input type="text" id="fleet" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold">
-    </p>
-    <div id="sliderfleet"  style="margin-top: -10px"></div>
-
-    <p style="color: white; margin-top: 15px">
-      <label style="font-weight:600"> <i class="fa fa-arrows-h"></i>  Modal Transfer from Public Transit:</label>
-      <input type="text" id="publicTransit" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">
-    </p>
-    <div id="sliderpublicTransit"  style="margin-top: -10px"></div>
-
-
-    <input type="button" class="button" style="margin-top: 25px; width: 100px; background-color:white; color: #ff66cc" value="Traffic On" onclick="">
-    <input type="button" class="button" style="margin-top: 25px; width: 100px; background-color:white; color: #ff66cc" value="Traffic Off" onclick="">
-    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Upload O/D Data" onclick="">
-    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Street Modification" onclick="">
-
-    <!-- <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Re-Start"> -->
-    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Run Sim" onclick="fleet_sim()">
-    <input type="button" class="button" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Test Sim" onclick="test_fleet_sim()">
+  <input class="button traffic" value="Train On" onclick="T_on()">
+  <input class="button traffic" value="Train Off" onclick="T_off()">
+  <input class="button func" value="Upload O/D Data" onclick="">
+  <input class="button func" value="Street Modification" onclick="">
+  <!-- <input class="button func" value="Re-Start"> -->
+  <input class="button func" value="Run Sim" onclick="fleet_sim()">
+  <input class="button func" value="Test Sim" onclick="test_fleet_sim()">
   </div>
 </div>
-
-
 
 
 <!-- center -->
