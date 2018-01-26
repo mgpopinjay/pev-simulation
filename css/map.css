@@ -99,6 +99,20 @@ body {
 
 /* END CONTROL PANEL */
 
+#graphs {
+    position: absolute;
+    left: 250px;
+    top: 10px;
+    padding: 0px 50px;
+    width: calc(100vw - 350px);
+}
+
+#graphs .graph {
+    float: right;
+    color: white;
+    margin-top: 10px;
+    font-weight:600
+}
 
 /* RESULTS */
 

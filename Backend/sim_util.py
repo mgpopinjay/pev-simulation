@@ -71,7 +71,6 @@ def get_osrm_output(start, end):
     samp2 = str(end[0]) + ',' + str(end[1]) + samp2
     sample = API_BASE + samp1+samp2
     x = requests.get(sample)
-    # print x.text
     return x.text
 
 
@@ -102,7 +101,8 @@ def find_total_duration(s):
     '''
     data = json.loads(s)
     time = (float(str(data["routes"][0]["duration"])))
-    return (time/60.0)
+    # print(time, time/60.0)
+    return time
 
 
 def find_total_distance(s):
@@ -248,7 +248,7 @@ class PEV(object):
         self.request = request
         self.create_nav()
         traveltime1 = self.nav.traveltime  # drive to pickup
-        traveltime2 = request.traveltime  # drive to dropoff
+        traveltime2 = self.request.traveltime  # drive to dropoff
         self.time = request.time + traveltime1 + traveltime2  # update time
         # update traveltime and utilization time for analytics
         self.movingtime += traveltime1+traveltime2
@@ -483,7 +483,22 @@ def gaussian_randomizer_two_mile(location):
     pointo = [str(point[0]), str(point[1])]
     return pointo
 
-stations = {}  # global variable for Hubway stations dictionary
+hubstations = {}  # global variable for Hubway stations dictionary
+#[0]tripduration
+#[1]starttime
+#[2]stoptime
+#[3]start station id
+#[4]start station name
+#[5]start station latitude
+#[6]start station longitude
+#[7]end station id
+#[8]end station name
+#[9]end station latitude
+#[10]end station longitude
+#[11]bikeid
+#[12]usertype
+#[13]birth year
+#[14]gender
 
 
 def generate_hubway_trips(max_trips, max_dist, ratio):
@@ -497,30 +512,24 @@ def generate_hubway_trips(max_trips, max_dist, ratio):
     with open(curpath+'/201707-hubway-tripdata.csv', 'rb') as file:
         spamreader = csv.reader(file, delimiter=',', quotechar='|')
         for row in spamreader:
-            # print row
             data.append(row)
     for row in data[1:]:
         # print row
-        # make stations dict
-        if len(stations.keys()) != 194:
-            if row[3] not in stations.keys():
+        if len(hubstations.keys()) != 194:
+            if row[3] not in hubstations.keys():
                 loc2 = row[5].strip('\"')
                 loc1 = row[6].strip('\"')
-                stations[row[3]] = [loc1, loc2]
-            if row[7] not in stations.keys():
+                hubstations[row[3]] = [loc1, loc2]
+            if row[7] not in hubstations.keys():
                 loc2 = row[9].strip('\"')
                 loc1 = row[10].strip('\"')
-                stations[row[7]] = [loc1, loc2]
-        # get time
+                hubstations[row[7]] = [loc1, loc2]
         pretime = row[1]
-        time = int(pretime[-6:-4])+int(pretime[-3:-1])
-        # print time
+        time = int(pretime[-8:-6])*60*60+int(pretime[-5:-3])*60+int(pretime[-2:])
+        # TIME IN SECONDS
         start = row[3]
         end = row[7]
-        # print start
-        # print end
-        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(stations[start])))
-        # print start_point
+        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[start])))
         rng = random.randint(1, 100)
         kind = "Passenger"
         req = None
@@ -528,20 +537,20 @@ def generate_hubway_trips(max_trips, max_dist, ratio):
             kind = "Parcel"
         if start == end:
             # 'errand' trip
-            fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(stations[start])))
+            fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(hubstations[start])))
             # print fake_dest
             req = Request(time, start_point, fake_dest, kind)
         else:
             # real trip
-            dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(stations[end])))
-            if dist(stations[start], dest) < max_dist:
+            dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[end])))
+            if dist(hubstations[start], dest) < max_dist:
                 # print "REAL: "+str(dest)
                 req = Request(time, start_point, dest, kind)
         if req is not None:
             trips.append(req)
         if len(trips) >= max_trips:
             break
-    return trips, stations
+    return trips, hubstations
 
 
 def find_closest_station(loc):
@@ -550,24 +559,24 @@ def find_closest_station(loc):
     '''
     min_dist = float('inf')
     min_stat = None
-    for station in stations.keys():
-        pos = stations[station]
+    for station in hubstations.keys():
+        pos = hubstations[station]
         dis = dist(loc, pos)
         if des < min_dist:
             min_dist = dis
             min_stat = station
-    return stations[station]
+    return hubstations[station]
 
 
 def max_stat_dist():
     '''
-    Find max distance between any two stations
+    Find max distance between any two hubstations
     '''
     max_dist = 0
-    for station in stations:
-        loc = stations[station]
-        for station_ in stations:
-            pos = stations[station_]
+    for station in hubstations:
+        loc = hubstations[station]
+        for station_ in hubstations:
+            pos = hubstations[station_]
             dis = dist(loc, pos)
             if dis > max_dist:
                 max_dist = dis

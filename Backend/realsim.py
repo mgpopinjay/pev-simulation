@@ -35,8 +35,8 @@ def run_sim():
 
     sim_id = json.load(open(os.path.dirname(curpath) + "/Backend/id_counter.txt"))
     filename = "Variable_"+str(sim_id)+".json"
-    with open("./id_counter.txt", 'w') as infile:
-        infile.write(str(sim_id + 1))
+    # with open("./id_counter.txt", 'w') as infile:
+    # infile.write(str(sim_id + 1))
 
     variables = json.load(open(os.path.dirname(curpath)+"/Backend/Inputs/"+filename))
 
@@ -53,8 +53,8 @@ def run_sim():
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
     HUBWAY_DATA = True  # whether to generate requests using hubway data
-    RANDOM_START = True  # whether to randomly start cars around initial cluster points 9not using hubway data)
-    STARTING_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
+    RANDOM_START = True  # whether to randomly start cars around initial cluster points not using hubway data)
+    SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
     CHARGING = False  # whether or not to use recharging model
     CHARGE_DISTANCE = MAX_DIST+util.max_stat_dist()
     CHARGE_RANGE = 15000.0
@@ -76,23 +76,22 @@ def run_sim():
     requests = []
     stations = []
     if HUBWAY_DATA:
-        uhh = util.generate_hubway_trips(NUMDATA*100, MAX_DIST, KIND_RATIO)
-        requests = uhh[0]
-        stations = uhh[1]
+        res = util.generate_hubway_trips(NUMDATA*100, MAX_DIST, KIND_RATIO)
+        requests = res[0]
+        stations = res[1]
     else:
         requests = util.populate_requests(NUMDATA, MAX_DIST, KIND_RATIO)
     heapq.heapify(requests)
-    # print requests
     finished_requests = []
     rebalance_trips = []
     idle_trips = []
     finished_trips = {}  # all trips keyed by which car took that trip
 
-    def assign_finished_trip(car, req):
+    def assign_finished_trip(car, trip):
         if car.id in finished_trips.keys():
-            finished_trips[car.id].append(req)
+            finished_trips[car.id].append(trip)
         else:
-            finished_trips[car.id] = [req]
+            finished_trips[car.id] = [trip]
 
     ''' rebalancing data '''
     if REBALANCE_ON:
@@ -107,10 +106,9 @@ def run_sim():
     for i in range(NUMCARS):  # 'i' is car ID
         if RANDOM_START:
             node = random.sample(stations.keys(), 1)  # make cars spawn randomly at clusters
-            print node
             p = util.find_snap_coordinates(util.get_snap_output(util.gaussian_randomizer_half_mile(stations[node[0]])))
         else:
-            p = STARTING_POINT
+            p = SPAWN_POINT
         car = util.PEV(i, p)
         free_cars.append(car)
         total_cars[i] = car
@@ -345,6 +343,9 @@ def run_sim():
             trip_json["start_time"] = trip.original_time
             trip_json["end_time"] = trip.time+trip.traveltime
             trip_json["duration"] = trip.traveltime
+            trip_json["id"] = i
+            trip_json["waittime"] = 0
+            trip_json["pushtime"] = 0
             if type(trip) == util.Idle:
                 trip_json["type"] = "Idle"
                 trip_json["start_point"] = trip.osrm  # location listed under this name for visualizer
@@ -358,8 +359,8 @@ def run_sim():
                 elif type(trip) == util.Navigation:
                     trip_json["type"] = "Navigation"
                 else:
-                    trip_json["type"] = "Request"
-                    trip_json["kind"] = trip.kind
+                    trip_json["type"] = trip.kind
+                    trip_json["pushtime"] = trip.pushtime
                     trip_json["waittime"] = trip.waittime
             formatted_trips.append(trip_json)
         car_data[car] = {"history": formatted_trips, "spawn": total_cars[car].spawn}
@@ -373,7 +374,7 @@ def run_sim():
         "MAX_DIST": MAX_DIST,
         "KIND_RATIO": KIND_RATIO,
         "RANDOM_START": RANDOM_START,
-        "STARTING_POINT": STARTING_POINT,
+        "SPAWN_POINT": SPAWN_POINT,
         "REBALANCE_ON": REBALANCE_ON,
         "K": K,
         "ALPHA": ALPHA

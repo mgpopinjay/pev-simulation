@@ -1,42 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>PEV Deployment Simulator V4</title>
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyCCsXoS0spl3q-Uysn_g3jFRj6s4w9JLo8&libraries=geometry,visualization"></script>
-<script type="text/javascript" src="lib/jquery.js"></script>
-<script type="text/javascript" src="lib/papaparse.min.js"></script>
-<script type="text/javascript" src="js/BostonTee.js"></script>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>PEV Deployment Simulator V4</title>
 
-<script type="text/javascript" src="js/map3.js"></script>
-<script type="text/javascript" src="js/fontawesome-markers.min.js"></script>
-<!-- <script src="bower_components/d4/d4.js"></script> -->
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-<!-- <link href="bower_components/d4/d4.css" rel="stylesheet" /> -->
-<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"> -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-<link href='https://fonts.googleapis.com/css?family=Open+Sans:300, 300italic,400,600,800,800italic,600italic' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<link rel="stylesheet" type="text/css" href="css/map.css"></link>
-<!-- learlet setting -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css"
-  integrity="sha512-wcw6ts8Anuw10Mzh9Ytw4pylW8+NAD4ch3lqm9lzAsTxg0GFeJgoAtxuCLREZSC5lUXdVyo/7yfsqFjQ4S+aKw=="
-  crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"
-  integrity="sha512-mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
-  crossorigin=""></script>
-  <script type="text/javascript" src="js/AnimatedMaker.js"></script>
-  <script type="text/javascript" src="js/MovingMarker.js"></script>
-  <script type="text/javascript" src="js/Leaflet.Marker.SlideTo.js"></script>
-  <script type="text/javascript" src="js/leafletheat.js"></script>
-  <script src="https://unpkg.com/leaflet.marker.slideto@0.2.0/Leaflet.Marker.SlideTo.js"></script>
+  <!-- jquery  -->
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <!-- leaflet setting -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css"
+    integrity="sha512-wcw6ts8Anuw10Mzh9Ytw4pylW8+NAD4ch3lqm9lzAsTxg0GFeJgoAtxuCLREZSC5lUXdVyo/7yfsqFjQ4S+aKw=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"
+    integrity="sha512-mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
+    crossorigin=""></script>
+
+  <!-- js -->
+  <script type="text/javascript" src="js/BostonTee.js"></script>
+  <script type="text/javascript" src="js/Graphs.js"></script>
+  <script type="text/javascript" src="js/map3.js"></script>
+  <script type="text/javascript" src="js/fontawesome-markers.min.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/map.css"></link>
+
+  <!-- libraries -->
+  <script type="text/javascript" src="js/lib/AnimatedMaker.js"></script>
+  <script type="text/javascript" src="js/lib/MovingMarker.js"></script>
+  <script type="text/javascript" src="js/lib/Leaflet.Marker.SlideTo.js"></script>
+  <script type="text/javascript" src="js/lib/leafletheat.js"></script>
+  <script type="text/javascript" src="js/lib/Polyline.encoded.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:300, 300italic,400,600,800,800italic,600italic' rel='stylesheet' type='text/css'>
+
   <!-- Access Token -->
   <script src='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
-  <script type="text/javascript" src="js/Polyline.encoded.js"></script>
 </head>
 
 <body style="font-family: 'Open Sans', sans-serif" >
@@ -58,7 +58,7 @@
     </form>
   </div>
 </div> -->
-<div id="results">
+<!-- <div id="results">
    <table>
      <tr>
        <th>Waiting Time Average</th>
@@ -71,7 +71,7 @@
        <th>3</th>
      </tr>
    </table>
-</div>
+</div> -->
 
 <div id="controls">
   <div id="title-outer">
@@ -108,8 +108,8 @@
       <i class="fa fa-sellsy"></i> EMISSIONS
       <div id="emission_chart" style="margin-top: 18px"> </div>
     </div> -->
-
-    <!-- <div style="color: white; margin-top: 10px; font-weight:600">
+  <div id="graphs">
+    <div class="graph">
       <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
 
       <div>
@@ -123,14 +123,10 @@
       <div style="display: inline-block">
           <div id="waitTimeParcel"> </div>
       </div>
-       </div> -->
+    </div>
+  </div>
 
   <div id="sliders">
-      <!-- <p style="color: white; margin-top: 15px">
-        <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label>
-        <input type="text" id="fleetSize">
-      </p>
-      <div id="sliderFleetSize"  style="margin-top: -10px"></div> -->
       <p class="slider-label">
         <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Fleet Size:</label>
         <input type="text" id="fleet">
@@ -479,268 +475,6 @@ function bumpLayer(n, o) {
 
 
 
-<!-- WAITING TIME -->
-
-<!-- right 1-->
-
-  <script type="text/javascript">
-
-  var w = 120;
-  var h = 80;
-
-  var parcel_color = "#FF9900";
-  var passenger_color = "#FFCC00";
-
-  var dataset = [
-    { key: 0, value: 0 },
-    { key: 5, value: 0 },
-    { key: 10, value: 0 },
-    { key: 15, value: 0 },
-    { key: 20,value: 0 },
-    { key: 25, value: 0 },
-    { key: 30, value: 0 },
-    { key: 35, value: 0 }];
-
-  var key = function(d) {
-    return d.key;
-  };
-
-    var xScale = d3.scale.ordinal()
-    .domain(d3.range(0, 40, 5))
-    .rangeRoundBands([0, w], 0.05);
-
-    var yScale = d3.scale.linear()
-    .domain([0, d3.max(dataset, function(d) {return d.value;})])
-    .range([0, h]);
-
-  var svg = d3.select($("#waitTimePassenger")[0])
-    .append("svg")
-    .attr("width", w)
-    .attr("height", h+40);
-
-  svg.selectAll("rect")
-    .data(dataset, key)
-    .enter()
-    .append("rect")
-    .attr("x", function(d, i) {
-      return xScale(i);
-    })
-    .attr("y", function(d) {
-      return h - yScale(d.value);
-    })
-    .attr("width", xScale.rangeBand())
-    .attr("height", function(d) {
-      return yScale(d.value);
-    })
-    .attr("fill", "#FFFF00")
-
-          //Create labels
-      svg.selectAll("text")
-      .data(dataset, key)
-      .enter()
-      .append("text")
-      .text(function(d) {
-        if (d.value == 0) return "";
-        return d.value;
-      })
-      .attr("text-anchor", "middle")
-      .attr("x", function(d, i) {
-        return xScale(5*i) + xScale.rangeBand() / 2;
-      })
-      .attr("y", function(d) {
-        return h - yScale(d.value) + 14;
-      })
-      .attr("font-family", "sans-serif")
-      .attr("font-size", "11px")
-      .attr("fill", "white")
-      .attr("transform", "translate(0,-15)");
-
-    var xAxis = d3.svg.axis()
-    .scale(xScale)
-    .tickSize(0)
-    .tickPadding(6)
-    .orient("bottom");
-
-    svg.append("g")
-    .call(xAxis)
-    .attr("transform", "translate(0, 100)")
-    .attr("class", "x axis")
-    .attr("fill", "white");
-
-  function drawPersonWaitTime(dataset) {
-
-    yScale = d3.scale.linear()
-    .domain([0, d3.max(dataset, function(d) {return d.value;})])
-    .range([0, h]);
-
-    //Create bars
-    svg.selectAll("rect")
-    .data(dataset, key)
-    .attr("x", function(d, i) {
-      return xScale(5*i);
-    })
-    .attr("y", function(d) {
-      return h+20 - yScale(d.value);
-    })
-    .attr("width", xScale.rangeBand())
-    .attr("height", function(d) {
-      return yScale(d.value);
-    })
-    .attr("fill", "#FFFF00")
-
-      //Create labels
-      svg.selectAll("text")
-      .data(dataset, key)
-      .text(function(d) {
-        if (d.value == 0) return "";
-        return d.value;
-      })
-      .attr("text-anchor", "middle")
-      .attr("x", function(d, i) {
-        return xScale(5*i) + xScale.rangeBand() / 2;
-      })
-      .attr("y", function(d) {
-        return h+20 - yScale(d.value) + 14;
-      })
-      .attr("font-family", "sans-serif")
-      .attr("font-size", "11px")
-      .attr("fill", "white")
-      .attr("transform", "translate(0,-15)");
-}
-
-
-
-
-</script>
-
-<!-- right 2-->
-
- <script type="text/javascript">
-
-  var w = 120;
-  var h = 80;
-
-  //Create SVG element
-    var svg2 = d3.select($("#waitTimeParcel")[0])
-    .append("svg")
-    .attr("width", w)
-    .attr("height", h+40);
-
-    var dataset = [
-    { key: 0, value: 0 },
-    { key: 5, value: 0 },
-    { key: 10, value: 0 },
-    { key: 15, value: 0 },
-    { key: 20,value: 0 },
-    { key: 25, value: 0 },
-    { key: 30, value: 0 },
-    { key: 35, value: 0 }];
-
-  var key = function(d) {
-    return d.key;
-  };
-
-    var xScale2 = d3.scale.ordinal()
-    .domain(d3.range(0, 40, 5))
-    .rangeRoundBands([0, w], 0.05);
-
-    // using same yScale as person chart
-    // TODO: remove assumption that person chart always has higher frequencies
-
-  svg2.selectAll("rect")
-    .data(dataset, key)
-    .enter()
-    .append("rect")
-    .attr("x", function(d, i) {
-      return xScale2(i);
-    })
-    .attr("y", function(d) {
-      return h - yScale(d.value);
-    })
-    .attr("width", xScale2.rangeBand())
-    .attr("height", function(d) {
-      return yScale(d.value);
-    })
-    .attr("fill", "#FFCC00")
-
-        //Create labels
-  svg2.selectAll("text")
-    .data(dataset, key)
-    .enter()
-    .append("text")
-    .text(function(d) {
-      if (d.value == 0) return "";
-      return d.value;
-    })
-    .attr("text-anchor", "middle")
-    .attr("x", function(d, i) {
-      return xScale2(5*i) + xScale2.rangeBand() / 2;
-    })
-    .attr("y", function(d) {
-      return h - yScale(d.value) + 14;
-    })
-    .attr("font-family", "sans-serif")
-    .attr("font-size", "11px")
-    .attr("fill", "white")
-    .attr("transform", "translate(0,-15)");
-
-  var xAxis2 = d3.svg.axis()
-    .scale(xScale2)
-    .tickSize(0)
-    .tickPadding(6)
-    .orient("bottom");
-
-  svg2.append("g")
-    .call(xAxis2)
-    .attr("transform", "translate(0, 100)")
-    .attr("class", "x axis")
-    .attr("fill", "white");
-
-  function drawPackageWaitTime(dataset) {
-
-    xScale2 = d3.scale.ordinal()
-    .domain(d3.range(dataset.length))
-    .rangeRoundBands([0, w], 0.05);
-
-    xAxis2 = d3.svg.axis()
-    .scale(xScale2)
-
-    //Create bars
-    svg2.selectAll("rect")
-    .data(dataset, key)
-    .attr("x", function(d, i) {
-      return xScale2(i);
-    })
-    .attr("y", function(d) {
-      return h + 20 - yScale(d.value);
-    })
-    .attr("width", xScale2.rangeBand())
-    .attr("height", function(d) {
-      return yScale(d.value);
-    })
-    .attr("fill", "#FFCC00")
-
-      //Create labels
-      svg2.selectAll("text")
-      .data(dataset, key)
-      .text(function(d) {
-        if (d.value == 0) return "";
-        return d.value;
-      })
-      .attr("text-anchor", "middle")
-      .attr("x", function(d, i) {
-        return xScale2(i) + xScale2.rangeBand() / 2;
-      })
-      .attr("y", function(d) {
-        return h + 20 - yScale(d.value) + 14;
-      })
-      .attr("font-family", "sans-serif")
-      .attr("font-size", "11px")
-      .attr("fill", "white")
-      .attr("transform", "translate(0,-15)");
-
-}
-</script>
 </script>
 <div id="txt"></div>
 </body>
