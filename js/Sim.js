@@ -192,7 +192,7 @@ function createTrips(data) {
  */
 function idleCar(start_loc, duration) {
   let icon = L.icon({
-    iconUrl: './images/gray_circle.png',
+    iconUrl: './img/gray_circle.png',
     iconSize: [15, 15],
   });
   let idleMarker = L.marker([start_loc[1], start_loc[0]], {icon: icon}).addTo(map);
@@ -224,27 +224,27 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
     case 'Navigation':
       color = "#B2B2B2"
       icon = L.icon({
-        iconUrl: './images/gray_circle.png',
+        iconUrl: './img/gray_circle.png',
         iconSize: [15, 15],
       });
       break;
     case 'Passenger':
       color = "#F0F000"
       icon = L.icon({
-        iconUrl: './images/yellow_circle.png',
+        iconUrl: './img/yellow_circle.png',
         iconSize: [15, 15],
       });
-      reqIcon = L.icon({iconUrl: './images/child.png',iconSize: [20, 20]});
+      reqIcon = L.icon({iconUrl: './img/child.png',iconSize: [20, 20]});
       heatLayer = L.heatLayer([[start_loc[1], start_loc[0]]], {gradient: {0.65: 'blue', 1: 'lime', 1: 'red'}, blur: 0.4});
       reqMark = L.marker([start_loc[1], start_loc[0]], {icon: reqIcon}).addTo(map);
       break;
     case 'Parcel':
       color = "#FF8000"
       icon = L.icon({
-        iconUrl: './images/orange_circle.png',
+        iconUrl: './img/orange_circle.png',
         iconSize: [15, 15],
       });
-      reqIcon = L.icon({iconUrl: './images/parcel.png', iconSize: [20, 20]});
+      reqIcon = L.icon({iconUrl: './img/parcel.png', iconSize: [20, 20]});
       heatLayer = L.heatLayer([[start_loc[1], start_loc[0]]], {gradient: {0.65: 'blue', 1: 'lime', 1: 'red'}, blur: 0.4});
       reqMark = L.marker([start_loc[1], start_loc[0]], {icon: reqIcon}).addTo(map);
       break;

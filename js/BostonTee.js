@@ -17,30 +17,30 @@ class BostonTee {
 
     this.stationIcons = {
       "Blue": L.icon({
-        iconUrl: './images/blues.png',
+        iconUrl: './img/blues.png',
         iconSize: [10, 10],
       }),
       "Orange": L.icon({
-        iconUrl: './images/oranges.png',
+        iconUrl: './img/oranges.png',
         iconSize: [10, 10],
       }),
       "Red": L.icon({
-        iconUrl: './images/reds.png',
+        iconUrl: './img/reds.png',
         iconSize: [10, 10],
       }),
     }
 
     this.markerIcons = {
       "Blue": L.icon({
-        iconUrl: './images/blueline.png',
+        iconUrl: './img/blueline.png',
         iconSize: [25, 25],
       }),
       "Orange": L.icon({
-        iconUrl: './images/orangeline.png',
+        iconUrl: './img/orangeline.png',
         iconSize: [25, 25],
       }),
       "Red": L.icon({
-        iconUrl: './images/redline.png',
+        iconUrl: './img/redline.png',
         iconSize: [25, 25],
       }),
     }
@@ -246,7 +246,7 @@ function getTrips(API_KEY, line) {
 //         var stops = route[k]['stop'];
 //         for(var j=0; j < stops.length; j++) {
 //           orangePath.push([stops[j]['stop_lat'], stops[j]['stop_lon']]);
-//           var orangeIcon = L.icon({iconUrl: './images/oranges.png',iconSize: [10, 10]});
+//           var orangeIcon = L.icon({iconUrl: './img/oranges.png',iconSize: [10, 10]});
 //           var station = new L.marker([stops[j]['stop_lat'], stops[j]['stop_lon']], {icon: orangeIcon}).bindPopup("Orange Line<br/>"+stops[j]['parent_station_name']).addTo(map);
 //           orangelineStopLine.push(stops[j]['parent_station_name']);
 //           station.on('mouseover', function (e) {
@@ -271,7 +271,7 @@ function getTrips(API_KEY, line) {
 //     }
 //     orangeLinePoly = L.polyline(orangePath, {color: "#FF8C00", opacity: 0.6}).addTo(map);
 //     this.orangeIcon = L.icon({
-//       iconUrl: './images/orangeline.png',
+//       iconUrl: './img/orangeline.png',
 //       iconSize: [25, 25],
 //       opacity: 0.6,
 //     });
@@ -298,7 +298,7 @@ function getTrips(API_KEY, line) {
 //       for(var k=0; k<1; k++) {
 //         var stops = route[k]['stop'];
 //         for(var j=0; j < stops.length; j++) {
-//           var redIcon = L.icon({iconUrl: './images/reds.png',iconSize: [10, 10]});
+//           var redIcon = L.icon({iconUrl: './img/reds.png',iconSize: [10, 10]});
 //           if (stops[j]['stop_order'] <=170 && stops[j]['stop_order'] != 130) {
 //             animatedRedLeftPath.push([stops[j]['stop_lat'], stops[j]['stop_lon']]);
 //           }
@@ -357,7 +357,7 @@ function getTrips(API_KEY, line) {
 //       var animatedRedLeftPoly = L.polyline(animatedRedLeftPath, {color: "#FF4500"}).addTo(map);
 //       var animatedRedRightPoly = L.polyline(animatedRedRightPath, {color: "#FF4500"}).addTo(map);
 //       var redIcon = L.icon({
-//         iconUrl: './images/redline.png',
+//         iconUrl: './img/redline.png',
 //         iconSize: [25, 25]
 //       });
 //       var time = [];
@@ -393,7 +393,7 @@ function getTrips(API_KEY, line) {
 
 //     var redLinePoly = L.polyline(redPath, {color: "#FF8C00", opacity: T_opacity}).addTo(map);
 //     var redIcon = L.icon({
-//         iconUrl: './images/orangeline.png',
+//         iconUrl: './img/orangeline.png',
 //         iconSize: [25, 25]
 //       });
 //     var redline = L.Marker.movingMarker(redLinePoly.getLatLngs(), timeLeft);
