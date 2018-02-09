@@ -16,9 +16,13 @@
     integrity="sha512-mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
     crossorigin=""></script>
 
+  <script type='text/javascript' >
+      TIME = 0;
+  </script>
   <!-- js -->
   <script type="text/javascript" src="js/BostonTee.js"></script>
   <script type="text/javascript" src="js/Graphs.js"></script>
+  <script type="text/javascript" src="js/Progress.js"></script>
   <script type="text/javascript" src="js/Sim.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
@@ -30,7 +34,8 @@
   <script type="text/javascript" src="js/lib/Leaflet.Marker.SlideTo.js"></script>
   <script type="text/javascript" src="js/lib/leafletheat.js"></script>
   <script type="text/javascript" src="js/lib/Polyline.encoded.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:300, 300italic,400,600,800,800italic,600italic' rel='stylesheet' type='text/css'>
 
   <!-- Access Token -->
@@ -108,21 +113,46 @@
       <div id="emission_chart" style="margin-top: 18px"> </div>
     </div> -->
   <div id="graphs">
-    <div class="graph">
-      <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
-
+    <div id="graph2" class="graph">
+      <div> <i class="far fa-clock"> </i> WAITING TIME: Trial 3 </div>
       <div>
-        <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
-        <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
+        <div style="display: inline-block; color: #FFFF00"> <i class="fas fa-hourglass"></i> </div>
+        <div style="display: inline-block; color: #FF9900 "> <i class="fas fa-clock"></i> </div>
       </div>
       <div style="display: inline-block">
-          <div id="waitTimePassenger"> </div>
+          <div id="pushTime2"> </div>
       </div>
-
       <div style="display: inline-block">
-          <div id="waitTimeParcel"> </div>
+          <div id="waitTime2"> </div>
       </div>
     </div>
+    <div id="graph1" class="graph">
+      <div> <i class="far fa-clock"> </i> WAITING TIME: Trial 2 </div>
+      <div>
+        <div style="display: inline-block; color: #FFFF00"> <i class="fas fa-hourglass"></i> </div>
+        <div style="display: inline-block; color: #FF9900 "> <i class="fas fa-clock"></i> </div>
+      </div>
+      <div style="display: inline-block">
+          <div id="pushTime1"> </div>
+      </div>
+      <div style="display: inline-block">
+          <div id="waitTime1"> </div>
+      </div>
+    </div>
+    <div id="graph0" class="graph">
+      <div> <i class="far fa-clock"> </i> WAITING TIME: Trial 1</div>
+      <div>
+        <div style="display: inline-block; color: #FFFF00"> <i class="fas fa-hourglass"></i> </div>
+        <div style="display: inline-block; color: #FF9900 "> <i class="fas fa-clock"></i> </div>
+      </div>
+      <div style="display: inline-block">
+          <div id="pushTime0"> </div>
+      </div>
+      <div style="display: inline-block">
+          <div id="waitTime0"> </div>
+      </div>
+    </div>
+
   </div>
 
   <div id="sliders">
@@ -139,7 +169,7 @@
       <div id="sliderRebalance" style="margin-top: -10px"></div>
 
       <p class="slider-label">
-        <label style="font-weight:600"> <i class="fa fa-arrows-h"></i>  Modal Transfer from Public Transit:</label>
+        <label style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>  Modal Transfer from Public Transit:</label>
         <input type="text" id="publicTransit">
       </p>
       <div id="sliderpublicTransit" style="margin-top: -10px"></div>
@@ -154,6 +184,8 @@
   <input class="button func" value="Test Sim" onclick="test_fleet_sim()">
   </div>
 </div>
+
+<div id="progress"></div>
 
 
 <!-- center -->

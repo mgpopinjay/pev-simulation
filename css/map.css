@@ -108,11 +108,14 @@ body {
 }
 
 #graphs .graph {
+    display: none;
     float: right;
     color: white;
     margin-top: 10px;
+    margin-left: 30px;
     font-weight:600
 }
+
 
 /* RESULTS */
 
@@ -124,6 +127,13 @@ body {
 }
 
 /* END RESULTS */
+
+#progress {
+    position: fixed;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
 /*
 UNUSED
  */

@@ -122,6 +122,7 @@ def run_sim():
         temp_free_cars = []
         # update rebalancing cars to add temp cars them to temp_free_cars
         if rebalancing_cars:
+            print 'REBALANCING'
             for car in rebalancing_cars:
                 if car.time <= req_time:
                     # end rebalancing trip
@@ -155,7 +156,7 @@ def run_sim():
                         rebal.points.append([float(finished.pickup[0]), float(finished.pickup[1])])  # add pickup point to rebalancing data structure
                     car.become_idle(finished.time+finished.waittime+finished.traveltime)
                     free_cars.append(car)
-                else:
+                elif type(car.request) == util.Recharge:
                     doub = car.end_recharge
                     finished = doub[0]
                     finished_idle = doub[1]
@@ -175,53 +176,30 @@ def run_sim():
                         station = util.find_closest_station(car.loc)
                         car.fulfill_recharge(util.Recharge(req_time, car.loc, station, CHARGE_TIME))
                         heapq.heappush(busy_cars, car)
-        # move onto car assignment
+
+        ########################
+        ##### ASSIGNMENT #######
+        ########################
         temp_free_cars = rebalancing_cars + free_cars
         req = heapq.heappop(requests)
-        if req.traveltime == 0:
-            continue
-        if len(temp_free_cars) > 1:  # was getting error for the 1 car case so I split up the cases, logic is the same
-            min_car_ = temp_free_cars[0]
-            min_dist = util.dist(min_car_.pos, req.pickup)
-            for car in temp_free_cars[1:]:
-                d = util.dist(car.pos, req.pickup)
-                if d < min_dist:
-                    min_dist = d
-                    min_car_ = car
-            i = temp_free_cars.index(min_car_)
-            min_car = temp_free_cars.pop(i)  # find the car closest to the request pickup and remove from list
-            if min_car in free_cars:  # also remove from true free cars or rebalancing cars
-                j = free_cars.index(min_car)
-                free_cars.pop(j)
-                idl = min_car.end_idle(req)
-                idle_trips.append(idl)
-                assign_finished_trip(min_car, idl)
-                heapq.heappush(busy_cars, min_car)
-            elif min_car in rebalancing_cars:
-                j = rebalancing_cars.index(min_car)
-                rebalancing_cars.pop(j)
-                temp_rebalance = util.Rebalance(min_car.request.time, min_car.request.pickup, min_car.pos, True)  # keep track of the rebalancing the car did before it took this request
-                min_car.movingtime += temp_rebalance.traveltime
-                assign_finished_trip(min_car, temp_rebalance)
-                min_car.update_rebalance(req)
-                heapq.heappush(busy_cars, min_car)
-        elif len(temp_free_cars) == 1:  # logic is the same as above
-            car = temp_free_cars.pop()
-            if car in free_cars:
-                j = free_cars.index(car)
-                free_cars.pop(j)
-                idl = car.end_idle(req)
-                idle_trips.append(idl)
-                assign_finished_trip(car, idl)
-                heapq.heappush(busy_cars, car)
-            elif car in rebalancing_cars:
-                j = rebalancing_cars.index(car)
-                rebalancing_cars.pop(j)
-                temp_rebalance = util.Rebalance(car.request.time, car.request.pickup, car.pos, True)
-                car.movingtime += temp_rebalance.traveltime
-                assign_finished_trip(car, temp_rebalance)
-                car.update_rebalance(req)
-                heapq.heappush(busy_cars, car)
+        if len(temp_free_cars) > 0:
+            min_pair = min(enumerate(free_cars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
+            min_car_index = min_pair[0]
+            min_car = min_pair[1]
+            del free_cars[min_car_index]
+            idl = min_car.end_idle(req)
+            idle_trips.append(idl)
+            assign_finished_trip(min_car, idl)
+            heapq.heappush(busy_cars, min_car)
+
+            # elif min_car in rebalancing_cars:
+            #     j = rebalancing_cars.index(min_car)
+            #     del rebalancing_cars[j]
+            #     temp_rebalance = util.Rebalance(min_car.request.time, min_car.request.pickup, min_car.pos, True)  # keep track of the rebalancing the car did before it took this request
+            #     min_car.movingtime += temp_rebalance.traveltime
+            #     assign_finished_trip(min_car, temp_rebalance)
+            #     min_car.update_rebalance(req)
+            #     heapq.heappush(busy_cars, min_car)
         else:  # there are no free cars
             req.pushtime += 1.0
             req.time += 1.0  # move the request time forward until a car is free to claim it
@@ -252,16 +230,19 @@ def run_sim():
     last_time = 0
     while busy_cars:
         car = heapq.heappop(busy_cars)
-        doub = car.end_trip()
-        finished = doub[0]
-        finished_nav = doub[1]
-        assign_finished_trip(car, finished_nav)
-        assign_finished_trip(car, finished)
-        finished_requests.append(finished)
-        if len(busy_cars) == 0:
-            last_time = car.time
-        car.become_idle(finished.time+finished.waittime+finished.traveltime)
-        free_cars.append(car)
+        if type(car.request) == util.Request:
+            doub = car.end_trip()
+            finished = doub[0]
+            finished_nav = doub[1]
+            assign_finished_trip(car, finished_nav)
+            assign_finished_trip(car, finished)
+            finished_requests.append(finished)
+            if len(busy_cars) == 0:
+                last_time = car.time
+            car.become_idle(finished.time+finished.waittime+finished.traveltime)
+            free_cars.append(car)
+        else:
+            free_cars.append(car)
 
     print "Sim Done"
     sim_end_time = time.time()

@@ -1,12 +1,13 @@
 "use strict";
 var map;
-var SPEED = 200;
-var SUBWAYSPEED = 60 * 6;
+var SPEED = 500;
+var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
 var waitTimes = [];
 var T_API = "mTBUGDZNyU6IS_nJpCzNSw";
 var Tee;
 var T_opacity = 0.8;
+var TRIAL = -1
 
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
@@ -130,8 +131,8 @@ function fleet_sim() {
 
 
 function test_fleet_sim() {
-  Tee = new BostonTee(SUBWAYSPEED, T_API, map, 0.6)
-  Tee.start();
+  // Tee = new BostonTee(SUBWAYSPEED, T_API, map, 0.6)
+  // Tee.start();
   $.post('/', function(data) {
     createTrips(data);
   }, 'json');
@@ -144,9 +145,13 @@ function test_fleet_sim() {
  * @param  {data object} data [a large object containing all cars and their completed trips]
  */
 function createTrips(data) {
+  TIME = 0;
+  TRIAL++;
+  pushTimes = [];
+  waitTimes = [];
+  $('#graph' + TRIAL).css('display', 'block');
   console.log(data);
   let trip = data['fleet'][0]['history'][1];
-  let elapsed_time = 0;
   let pendingTrips = [];
   for(let i=0; i < Object.keys(data['fleet']).length; i++) {
     for(let j=0; j < data['fleet'][i]['history'].length; j++) {
@@ -155,13 +160,16 @@ function createTrips(data) {
       pendingTrips.push(trip)
     }
   }
+  pendingTrips.sort((a, b) => {
+    return a['start_time'] - b['start_time']
+  })
   let loop = setInterval(() => {
-    for (var i = pendingTrips.length - 1; i >= 0; i--) {
-      let trip = pendingTrips[i];
-      if ((elapsed_time * SPEED) / 10 <= trip['start_time']) {
-        continue;
-      }
-      pendingTrips.splice(i, 1);
+    if (pendingTrips.length == 0){
+      clearInterval(loop);
+    }
+    while (pendingTrips[0]['start_time'] <= (TIME * SPEED / 10)) {
+      let trip = pendingTrips[0];
+      pendingTrips.splice(0, 1);
       if (trip['type'] == "Idle") {
         idleCar(
             trip['start_point'],
@@ -181,7 +189,8 @@ function createTrips(data) {
         );
       }
     }
-    elapsed_time++;
+    TIME++;
+    UpdateTime(TIME*SPEED/10);
   }, 100)
 }
 
@@ -257,7 +266,7 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
     navMarker.start();
     if (reqMark) {
       map.removeLayer(reqMark);
-      map.addLayer(heatLayer);
+      // map.addLayer(heatLayer);
       waitTimes.push(waittime / 60);
       pushTimes.push(pushtime / 60);
       updateWaitTimes();
@@ -314,14 +323,11 @@ function prepareDataSets(times) {
   let dataset = [];
   let data = {};
   times.forEach(time => {
-    let val = data[round5(time)];
-    if (val > 35) {
-      val = 35
-    }
-    if (val) {
-      val += 1;
+    let t = round5(time) > 35 ? 35 : round5(time);
+    if (data[t]) {
+      data[t] += 1;
     } else {
-      val = 1;
+      data[t] = 1;
     }
   })
   Object.keys(data).forEach(key => {
@@ -338,15 +344,14 @@ function prepareDataSets(times) {
  * Redraws graphs using barGraph() function defined in Graphs.js
  */
 function updateWaitTimes() {
-  let waitTimeDataSet = prepareDataSets(pushTimes);
-  let pushTimeDataSet = prepareDataSets(waitTimes);
-  barGraph(waitTimeDataSet, "#waitTimePassenger", "#FFCC00");
-  barGraph(pushTimeDataSet, "#waitTimeParcel", "#FF9900");
+  let waitTimeDataSet = prepareDataSets(waitTimes);
+  let pushTimeDataSet = prepareDataSets(pushTimes);
+  barGraph(waitTimeDataSet, "#waitTime" + TRIAL, "#FFCC00");
+  barGraph(pushTimeDataSet, "#pushTime" + TRIAL, "#FF9900");
 }
 
-window.onload = function() {
+$(document).ready(function() {
   map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
   L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-  barGraph([], "#waitTimePassenger", "#FFCC00");
-  barGraph([], "#waitTimeParcel", "#FF9900");
-};
+  Progress(0, 800);
+});
