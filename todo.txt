@@ -1,0 +1,10 @@
+median and avg waiting times
+lines graphs of waiting times by trial
+
+More demand generation from different sources
+- GTFS
+
+
+Tapai
+
+Draw system diagram and architechture

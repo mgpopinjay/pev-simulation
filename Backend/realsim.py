@@ -75,12 +75,14 @@ def run_sim():
     ''' populate requests '''
     requests = []
     stations = []
+    requests = util.random_requests(["-71.05888", "42.360082"], 0, 40)
+
     if HUBWAY_DATA:
-        res = util.generate_hubway_trips(NUMDATA*100, MAX_DIST, KIND_RATIO)
-        requests = res[0]
+        res = util.generate_hubway_trips(NUMDATA*200, MAX_DIST, KIND_RATIO)
+        # requests = res[0]
         stations = res[1]
-    else:
-        requests = util.populate_requests(NUMDATA, MAX_DIST, KIND_RATIO)
+    # else:
+    #     requests = util.populate_requests(NUMDATA, MAX_DIST, KIND_RATIO)
     heapq.heapify(requests)
     finished_requests = []
     rebalance_trips = []
@@ -160,8 +162,8 @@ def run_sim():
                     doub = car.end_recharge
                     finished = doub[0]
                     finished_idle = doub[1]
-                    assign_finished_trip(car, finished)
                     assign_finished_trip(car, finished_idle)
+                    assign_finished_trip(car, finished)
                     # in ending rechage we become idle
                     free_cars.append(car)
                 if len(busy_cars) == 0:
@@ -234,15 +236,14 @@ def run_sim():
             doub = car.end_trip()
             finished = doub[0]
             finished_nav = doub[1]
-            assign_finished_trip(car, finished_nav)
-            assign_finished_trip(car, finished)
-            finished_requests.append(finished)
-            if len(busy_cars) == 0:
-                last_time = car.time
-            car.become_idle(finished.time+finished.waittime+finished.traveltime)
-            free_cars.append(car)
-        else:
-            free_cars.append(car)
+            if (json.loads(finished_nav.osrm)["code"] == "Ok"):
+                assign_finished_trip(car, finished_nav)
+                assign_finished_trip(car, finished)
+                finished_requests.append(finished)
+                if len(busy_cars) == 0:
+                    last_time = car.time
+                car.become_idle(finished.time+finished.waittime+finished.traveltime)
+        free_cars.append(car)
 
     print "Sim Done"
     sim_end_time = time.time()
@@ -315,6 +316,8 @@ def run_sim():
     """
     ''' retrieve fleet data '''
     car_data = {}
+    for car in total_cars:
+        car_data[car] = {"history": [], "spawn": total_cars[car].spawn}
     for car in finished_trips.keys():
         trips = finished_trips[car]
         formatted_trips = []
@@ -340,6 +343,7 @@ def run_sim():
                 elif type(trip) == util.Navigation:
                     trip_json["type"] = "Navigation"
                 else:
+                    trip_json["end_time"] = trip.time+trip.traveltime+trip.waittime+trip.pushtime
                     trip_json["type"] = trip.kind
                     trip_json["pushtime"] = trip.pushtime
                     trip_json["waittime"] = trip.waittime

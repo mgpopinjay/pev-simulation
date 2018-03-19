@@ -100,8 +100,9 @@ def find_total_duration(s):
     Find the total travel time from an OSRM route output
     '''
     data = json.loads(s)
-    time = (float(str(data["routes"][0]["duration"])))
-    # print(time, time/60.0)
+    time = 1000000
+    if data["code"] == "Ok":
+        time = (float(str(data["routes"][0]["duration"])))
     return time
 
 
@@ -110,7 +111,9 @@ def find_total_distance(s):
     Find total distance traveled from an OSRM route output
     '''
     data = json.loads(s)
-    dis = (float(str(data["routes"][0]["distance"])))
+    dis = 0
+    if data["code"] == "Ok":
+        dis = (float(str(data["routes"][0]["distance"])))
     return dis
 
 
@@ -389,6 +392,29 @@ def dist(start, end):
     return d
 
 
+def random_requests(location, ratio, pct):
+    '''
+    '''
+    hours = 3
+    requests = []
+    # percent random request every minute
+    for time in range(0, hours*60):
+        if random.randint(1, 100) > pct:
+            continue
+        kind = "Passenger"
+        if random.randint(1, 100) > ratio:
+            kind = "Parcel"
+        start = gaussian_randomizer(location, 2)
+        end = gaussian_randomizer(start, 2)
+        start_point = find_snap_coordinates(get_snap_output(start))
+        end_point = find_snap_coordinates(get_snap_output(end))
+        req = Request(time*60, start_point, end_point, kind)
+        if req is not None and json.loads(req.osrm)["code"] == "Ok":
+            requests.append(req)
+    print(requests)
+    return requests
+
+
 def populate_requests(num_spreadsheets, max_dist, ratio):
     '''
     Populate the requests list with Request objects from data sheets
@@ -457,7 +483,21 @@ def send_to_visualizer(data, filename):
         json.dump(data, outfile)
 
 
+def gaussian_randomizer(location, distance):
+    '''
+    Pick a random point within X mile radius of location using gaussian distribution
+    '''
+    cov = [[.0001, 0], [0, .0001]]
+    loc1 = location[0].strip('\"')
+    loc2 = location[1].strip('\"')
+    loc = [float(loc1), float(loc2)]
+    point = np.random.multivariate_normal(loc, cov)
+    pointo = [str(point[0]), str(point[1])]
+    return pointo
+
 # TODO: make this .16 mile radius
+
+
 def gaussian_randomizer_half_mile(location):
     '''
     Pick a random point within ~.5 mile radius of location using gaussian distribution
@@ -540,13 +580,15 @@ def generate_hubway_trips(max_trips, max_dist, ratio):
             fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(hubstations[start])))
             # print fake_dest
             req = Request(time, start_point, fake_dest, kind)
+
         else:
             # real trip
             dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[end])))
             if dist(hubstations[start], dest) < max_dist:
                 # print "REAL: "+str(dest)
                 req = Request(time, start_point, dest, kind)
-        if req is not None:
+
+        if req is not None and json.loads(req.osrm)["code"] == "Ok":
             trips.append(req)
         if len(trips) >= max_trips:
             break

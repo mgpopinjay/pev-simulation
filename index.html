@@ -15,11 +15,14 @@
   <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"
     integrity="sha512-mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
     crossorigin=""></script>
+  <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
+  <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
 
   <script type='text/javascript' >
       TIME = 0;
   </script>
   <!-- js -->
+  <script type="text/javascript" src="js/mapdata2.js"></script>
   <script type="text/javascript" src="js/BostonTee.js"></script>
   <script type="text/javascript" src="js/Graphs.js"></script>
   <script type="text/javascript" src="js/Progress.js"></script>
@@ -88,7 +91,6 @@
     <input class="button city" value="Taipei">
   </div>
 
-
     <!-- <div style="color: white; margin-top: 10px">
       <div style="font-weight:600">
         <i class="fa fa-percent"></i> UTILIZATION
@@ -112,48 +114,6 @@
       <i class="fa fa-sellsy"></i> EMISSIONS
       <div id="emission_chart" style="margin-top: 18px"> </div>
     </div> -->
-  <div id="graphs">
-    <div id="graph2" class="graph">
-      <div> <i class="far fa-clock"> </i> WAITING TIME: Trial 3 </div>
-      <div>
-        <div style="display: inline-block; color: #FFFF00"> <i class="fas fa-hourglass"></i> </div>
-        <div style="display: inline-block; color: #FF9900 "> <i class="fas fa-clock"></i> </div>
-      </div>
-      <div style="display: inline-block">
-          <div id="pushTime2"> </div>
-      </div>
-      <div style="display: inline-block">
-          <div id="waitTime2"> </div>
-      </div>
-    </div>
-    <div id="graph1" class="graph">
-      <div> <i class="far fa-clock"> </i> WAITING TIME: Trial 2 </div>
-      <div>
-        <div style="display: inline-block; color: #FFFF00"> <i class="fas fa-hourglass"></i> </div>
-        <div style="display: inline-block; color: #FF9900 "> <i class="fas fa-clock"></i> </div>
-      </div>
-      <div style="display: inline-block">
-          <div id="pushTime1"> </div>
-      </div>
-      <div style="display: inline-block">
-          <div id="waitTime1"> </div>
-      </div>
-    </div>
-    <div id="graph0" class="graph">
-      <div> <i class="far fa-clock"> </i> WAITING TIME: Trial 1</div>
-      <div>
-        <div style="display: inline-block; color: #FFFF00"> <i class="fas fa-hourglass"></i> </div>
-        <div style="display: inline-block; color: #FF9900 "> <i class="fas fa-clock"></i> </div>
-      </div>
-      <div style="display: inline-block">
-          <div id="pushTime0"> </div>
-      </div>
-      <div style="display: inline-block">
-          <div id="waitTime0"> </div>
-      </div>
-    </div>
-
-  </div>
 
   <div id="sliders">
       <p class="slider-label">
@@ -184,6 +144,30 @@
   <input class="button func" value="Test Sim" onclick="test_fleet_sim()">
   </div>
 </div>
+<div id="graphs">
+</div>
+<table id="summary">
+  <th>
+    <td>Trial Num</td>
+    <td>PEVs Used</td>
+    <td>Avergae Wait Time</td>
+    <td>Average Assignment Time</td>
+  </th>
+</table>
+<div id="loader" class="disabled">
+  <svg version="1.1" id="loader-1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 50 50" xml:space="preserve">
+  <path fill="#ff66cc" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z">
+    <animateTransform attributeType="xml"
+      attributeName="transform"
+      type="rotate"
+      from="0 25 25"
+      to="360 25 25"
+      dur="0.6s"
+      repeatCount="indefinite"/>
+    </path>
+  </svg>
+</div>
+
 
 <div id="progress"></div>
 

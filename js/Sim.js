@@ -1,6 +1,6 @@
 "use strict";
 var map;
-var SPEED = 500;
+var SPEED =200;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
 var waitTimes = [];
@@ -124,7 +124,9 @@ function fleet_sim() {
     parcels: rebalanceSize,
     code: rng
   };
+  $('#loader').removeClass('disabled');
   $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
+    $('#loader').addClass('disabled');
     createTrips(data);
   }, 'json');
 }
@@ -149,9 +151,8 @@ function createTrips(data) {
   TRIAL++;
   pushTimes = [];
   waitTimes = [];
-  $('#graph' + TRIAL).css('display', 'block');
   console.log(data);
-  let trip = data['fleet'][0]['history'][1];
+  // let trip = data['fleet'][0]['history'][1];
   let pendingTrips = [];
   for(let i=0; i < Object.keys(data['fleet']).length; i++) {
     for(let j=0; j < data['fleet'][i]['history'].length; j++) {
@@ -269,7 +270,7 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
       // map.addLayer(heatLayer);
       waitTimes.push(waittime / 60);
       pushTimes.push(pushtime / 60);
-      updateWaitTimes();
+      updateLines();
     };
   }, ((waittime + pushtime) * 1000) / SPEED);
   navMarker.on('end', function(){
@@ -310,20 +311,18 @@ function polylineFromTask(steps, color, opacity, weight) {
 /////////////////////////          ////////////////////////
 ///////////////////////////////////////////////////////////
 
+
 /**
  * Prepares the data sets for the graph by rounding off and
  * counting the number of occurances of each waittime
  * @param  {[int]} times    [list of waittimes]
  * @return {obj}   dataset  [object with waittimed (by 5) mapped to number of occurances]
  */
-function prepareDataSets(times) {
-  function round5(x) {
-    return (x % 5) >= 2.5 ? parseInt(x / 5) * 5 + 5 : parseInt(x / 5) * 5;
-  }
-  let dataset = [];
+function prepareLines(times) {
+  let dataset = Array.apply(null, Array(35)).map(Number.prototype.valueOf,0);
   let data = {};
   times.forEach(time => {
-    let t = round5(time) > 35 ? 35 : round5(time);
+    let t = Math.round(time) > 20 ? 20 : Math.round(time);
     if (data[t]) {
       data[t] += 1;
     } else {
@@ -331,27 +330,48 @@ function prepareDataSets(times) {
     }
   })
   Object.keys(data).forEach(key => {
-    dataset.push({
-      key: key,
-      value: data[key],
-    })
+    dataset[key] = data[key];
   })
   return dataset
 }
-
 /**
  * Update wait times with the current push and waittimes
  * Redraws graphs using barGraph() function defined in Graphs.js
  */
-function updateWaitTimes() {
-  let waitTimeDataSet = prepareDataSets(waitTimes);
-  let pushTimeDataSet = prepareDataSets(pushTimes);
-  barGraph(waitTimeDataSet, "#waitTime" + TRIAL, "#FFCC00");
-  barGraph(pushTimeDataSet, "#pushTime" + TRIAL, "#FF9900");
+function updateLines() {
+  let waitTimeDataSet = prepareLines(waitTimes);
+  let pushTimeDataSet = prepareLines(pushTimes);
+  addLine(waitTimeDataSet, "wait-graph", TRIAL);
+  addLine(pushTimeDataSet, "push-graph", TRIAL);
+  if ($('#summary').contains($('#summart-' + TRIAL))) {
+
+  } else {
+    $('#summary').append(refikerwfp)
+  }
 }
 
 $(document).ready(function() {
+  // map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
+  L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
   map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
+  L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
+  L.geoJson(mapdata, {
+    style: function(feature) {
+        console.log(feature)
+        return {
+            color: "#B1260A",
+            fill: true,
+            opacity: 1,
+            clickable: false
+        };
+    },
+    onEachFeature: function(feature, layer) {
+        return
+    }
+  }).addTo(map);
   L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
   Progress(0, 800);
+  lineGraph("push-graph", 20, 50, 270, 150);
+  lineGraph("wait-graph", 20, 50, 270, 150);
+  $('#line-graph').css('display', 'block');
 });
