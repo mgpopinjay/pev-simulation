@@ -1,4 +1,4 @@
-function lineGraph(id, maxx, maxy, width, height) {
+function lineGraph(id, maxx, maxy, width, height, label) {
     // define dimensions of graph
     var m = [20, 20, 20, 20]; // margins
     var w = width - m[1] - m[3]; // width
@@ -14,7 +14,7 @@ function lineGraph(id, maxx, maxy, width, height) {
     // create a line function that can convert data[] into x and y points
 
     // Add an SVG element with the desired dimensions and margin.
-    var graph = d3.select("#graphs").append("svg:svg")
+    var graph = d3.select("#graphs").insert("svg:svg",":first-child")
           .attr("width", w + m[1] + m[3])
           .attr("height", h + m[0] + m[2])
           .attr("id", id)
@@ -25,6 +25,8 @@ function lineGraph(id, maxx, maxy, width, height) {
         .append("svg:g")
           .attr("id", id + "-container")
           .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+
     // create yAxis
     var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
     // Add the x-axis.
@@ -43,6 +45,14 @@ function lineGraph(id, maxx, maxy, width, height) {
           .attr("class", "y axis")
           .attr("transform", "translate(-25,0)")
           .call(yAxisLeft);
+
+
+    graph.append("text")
+          .attr("x",10)
+          .attr("y",-10)
+          .text(label)
+          .attr("font-size", "12px")
+          .attr("fill", "white");
 }
 
 function addLine(data, id, trial, coloroverride) {

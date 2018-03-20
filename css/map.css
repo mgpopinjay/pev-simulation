@@ -124,6 +124,23 @@ body {
 
 /* END CONTROL PANEL */
 
+#summary {
+    position: absolute;
+    right: 20px;
+    bottom: 80px;
+    color: white;
+    border-color: white;
+    border-collapse: collapse;
+}
+
+#summary thead {
+    border-bottom: 2px solid white;
+}
+
+#summary td {
+    padding: 5px 20px;
+}
+
 #graphs {
     position: absolute;
     left: 250px;

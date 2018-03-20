@@ -1,13 +1,14 @@
 "use strict";
 var map;
-var SPEED =200;
+var SPEED =600;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
 var waitTimes = [];
 var T_API = "mTBUGDZNyU6IS_nJpCzNSw";
 var Tee;
 var T_opacity = 0.8;
-var TRIAL = -1
+var TRIAL = 0;
+var FLEET_SIZE = 0;
 
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
@@ -149,6 +150,7 @@ function test_fleet_sim() {
 function createTrips(data) {
   TIME = 0;
   TRIAL++;
+  FLEET_SIZE = Object.keys(data['fleet']).length;
   pushTimes = [];
   waitTimes = [];
   console.log(data);
@@ -343,10 +345,21 @@ function updateLines() {
   let pushTimeDataSet = prepareLines(pushTimes);
   addLine(waitTimeDataSet, "wait-graph", TRIAL);
   addLine(pushTimeDataSet, "push-graph", TRIAL);
-  if ($('#summary').contains($('#summart-' + TRIAL))) {
-
+  var waitSum = waitTimes.reduce(function(a, b) { return a + b; });
+  var waitAvg = Math.round(100*waitSum / waitTimes.length)/100;
+  var pushSum = pushTimes.reduce(function(a, b) { return a + b; });
+  var pushAvg = Math.round(100*pushSum / pushTimes.length)/100;
+  $(`#summary-${TRIAL}`).remove()
+  if ($('#summary-' + TRIAL).length) {
+    //just removed the old row and readding it next
   } else {
-    $('#summary').append(refikerwfp)
+    $('#summary').append(`
+      <tr id="summary-${TRIAL}">
+        <td>${TRIAL}</td>
+        <td>${FLEET_SIZE}</td>
+        <td>${waitAvg}</td>
+        <td>${pushAvg}</td>
+      </tr>`)
   }
 }
 
@@ -371,7 +384,7 @@ $(document).ready(function() {
   }).addTo(map);
   L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
   Progress(0, 800);
-  lineGraph("push-graph", 20, 50, 270, 150);
-  lineGraph("wait-graph", 20, 50, 270, 150);
+  lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
+  lineGraph("wait-graph", 20, 50, 270, 150, "Wait Times");
   $('#line-graph').css('display', 'block');
 });
