@@ -21,7 +21,7 @@ PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
     cd osrm-backend
     mkdir build
     cd build
-    cmake ..
+    cmake .. -DENABLE_MASON=1
     make
 
 #### OS X RUNNING OSRM
