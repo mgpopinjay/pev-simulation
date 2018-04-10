@@ -392,10 +392,10 @@ def dist(start, end):
     return d
 
 
-def random_requests(location, ratio, pct):
+def random_requests(location, ratio, pct, hrs):
     '''
     '''
-    hours = 3
+    hours = hrs
     requests = []
     # percent random request every minute
     for time in range(0, hours*60):
@@ -403,7 +403,7 @@ def random_requests(location, ratio, pct):
             continue
         kind = "Passenger"
         if random.randint(1, 100) > ratio:
-            kind = "Parcel"
+            kind = "Passenger" #CHANGE BACK TO PARCEL
         start = gaussian_randomizer(location, 2)
         end = gaussian_randomizer(start, 2)
         start_point = find_snap_coordinates(get_snap_output(start))
@@ -411,7 +411,6 @@ def random_requests(location, ratio, pct):
         req = Request(time*60, start_point, end_point, kind)
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             requests.append(req)
-    print(requests)
     return requests
 
 
@@ -541,7 +540,7 @@ hubstations = {}  # global variable for Hubway stations dictionary
 #[14]gender
 
 
-def generate_hubway_trips(max_trips, max_dist, ratio):
+def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhrs):
     '''
     Use hubway data to generate trips
     '''
@@ -567,6 +566,13 @@ def generate_hubway_trips(max_trips, max_dist, ratio):
         pretime = row[1]
         time = int(pretime[-8:-6])*60*60+int(pretime[-5:-3])*60+int(pretime[-2:])
         # TIME IN SECONDS
+        if time <= starthrs * 60 * 60:
+            continue
+        if time >= endhrs * 60 * 60:
+            break
+        rand_freq = random.randint(1, 100)
+        if rand_freq > frequency:
+            continue
         start = row[3]
         end = row[7]
         start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[start])))
@@ -576,7 +582,6 @@ def generate_hubway_trips(max_trips, max_dist, ratio):
         if rng > ratio:
             kind = "Parcel"
         if start == end:
-            # 'errand' trip
             fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(hubstations[start])))
             # print fake_dest
             req = Request(time, start_point, fake_dest, kind)

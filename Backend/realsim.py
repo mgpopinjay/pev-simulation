@@ -43,8 +43,14 @@ def run_sim():
     """
     TUNING VARIABLES
     """
-    NUMCARS = variables["Fleet_Size"]  # number of vehicles
-    CODE = variables["Code"]  # RNG code
+    NUMCARS     = variables["Fleet_Size"]  # number of vehicles
+    CODE        = variables["Code"]  # RNG code
+    RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
+    HUBWAY_DATA = variables["Bike_Freq"]  # percentage of hubway data trips to be used
+    SPAWN       = variables["Spawn_Point"]
+    START_HR    = variables["Start_Hour"] # end hour of the simulation
+    END_HR      = variables["End_Hour"] # start hour of the simulation
+
     print "NUMCARS: " + str(NUMCARS)
     print "CODE: " + str(CODE)
 
@@ -52,8 +58,7 @@ def run_sim():
     MAX_DIST = 3000.0  # maximum trip distance in meters
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
-    HUBWAY_DATA = True  # whether to generate requests using hubway data
-    RANDOM_START = True  # whether to randomly start cars around initial cluster points not using hubway data)
+    RANDOM_START = SPAWN
     SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
     CHARGING = False  # whether or not to use recharging model
     CHARGE_DISTANCE = MAX_DIST+util.max_stat_dist()
@@ -75,14 +80,13 @@ def run_sim():
     ''' populate requests '''
     requests = []
     stations = []
-    requests = util.random_requests(["-71.05888", "42.360082"], 0, 40)
-
+    if RANDOM_DATA:
+        requests +=  util.random_requests(["-71.05888", "42.360082"], 0, RANDOM_DATA, END_HR)
     if HUBWAY_DATA:
-        res = util.generate_hubway_trips(NUMDATA*200, MAX_DIST, KIND_RATIO)
-        # requests = res[0]
+        res = util.generate_hubway_trips(NUMDATA*200, MAX_DIST, 0, HUBWAY_DATA, START_HR, END_HR)
+        requests += res[0]
         stations = res[1]
-    # else:
-    #     requests = util.populate_requests(NUMDATA, MAX_DIST, KIND_RATIO)
+
     heapq.heapify(requests)
     finished_requests = []
     rebalance_trips = []
@@ -95,7 +99,7 @@ def run_sim():
         else:
             finished_trips[car.id] = [trip]
 
-    ''' rebalancing data '''
+            ''' rebalancing data '''
     if REBALANCE_ON:
         rebal = util.RebalanceData(23, K)  # 23 is last hour of data
         mean_clust = rebal.find_centers()  # initial clustering
@@ -283,7 +287,7 @@ def run_sim():
     # print "REBALANCE ON?: "+str(REBALANCE_ON)
     # print "RANDOM START?: "+str(RANDOM_START)
     # print "NUM CARS: "+str(NUMCARS)
-    # print "NUM TRIPS: "+str(len(waittimes))
+    print "NUM TRIPS: "+str(len(waittimes))
     # print "WAITTIMES: \n"+str(waittimes)
     # print "REQUEST TRAVELTIMES \n"+str(traveltimes)
     avg = reduce(lambda x, y: x+y, waittimes)/len(waittimes)

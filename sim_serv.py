@@ -45,15 +45,22 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             logging.warning("Received: " + data)
             args = json.loads(data)
             fleet_size = int(args["size"])
-            dist = args["maxDist"]
+            #dist = args["maxDist"]
             code = args["code"]
-            maxDist = int(dist)
+            #maxDist = int(dist)
             parcFreq = int(args["parcels"])
+            randomFreq = int(args["random"])
+            bikeFreq = int(args["bike"])
 
             # create dictionary of data to dump as JSON to 'Variable_X.json file'
             data_to_send = {
                 "Rebalancing_Vehicles": parcFreq,
                 "Fleet_Size": fleet_size,
+                "Bike_Freq": bikeFreq,
+                "Random_Freq": randomFreq,
+                "Spawn_Point": 0,
+                "Start_Hour": 0,
+                "End_Hour": 3,
                 "Code": code
             }
             # read id_counter.txt to know which simulation we are on

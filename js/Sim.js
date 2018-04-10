@@ -1,6 +1,6 @@
 "use strict";
 var map;
-var SPEED =600;
+var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
 var waitTimes = [];
@@ -18,21 +18,8 @@ var FLEET_SIZE = 0;
 
 var slider_rebalanceSize = 20;
 var slider_fleetSize = 20;
-var slider_publicTransit = 20;
-
-$(function() {
-  $( "#sliderRebalance" ).slider({
-    value: 20,
-    min: 0,
-    max: 100,
-    step: 10,
-    slide: function( event, ui ) {
-      $( "#rebalance" ).val( ui.value + " %" );
-      slider_rebalanceSize = ui.value;
-    }
-  });
-  $( "#rebalance" ).val(  $( "#sliderRebalance" ).slider( "value" ) + " %");
-});
+var slider_hubway = 20;
+var slider_random = 20;
 
 $(function() {
   $("#sliderfleet").slider({
@@ -49,19 +36,46 @@ $(function() {
 });
 
 $(function() {
-  $( "#sliderpublicTransit" ).slider({
+  $( "#sliderRebalance" ).slider({
     value: 20,
     min: 0,
     max: 100,
     step: 10,
     slide: function( event, ui ) {
-      $( "#publicTransit" ).val( ui.value + " %" );
-      slider_publicTransit = ui.value;
+      $( "#rebalance" ).val( ui.value + " %" );
+      slider_rebalanceSize = ui.value;
     }
   });
-  $( "#publicTransit" ).val( $( "#sliderpublicTransit" ).slider( "value" ) + " %"  );
+  $( "#rebalance" ).val(  $( "#sliderRebalance" ).slider( "value" ) + " %");
 });
 
+$(function() {
+  $( "#sliderhubway" ).slider({
+    value: 20,
+    min: 0,
+    max: 100,
+    step: 10,
+    slide: function( event, ui ) {
+      $( "#hubwaydata" ).val( ui.value + " %" );
+      slider_hubway = ui.value;
+    }
+  });
+  $( "#hubwaydata" ).val( $( "#sliderhubway" ).slider( "value" ) + " %"  );
+});
+
+$(function() {
+  $( "#sliderrandom" ).slider({
+    value: 20,
+    min: 0,
+    max: 100,
+    step: 10,
+    slide: function( event, ui ) {
+      $( "#randomdata" ).val( ui.value + " %" );
+      slider_random = ui.value;
+    }
+  });
+  $( "#randomdata" ).val( $( "#sliderrandom" ).slider( "value" ) + " %"  );
+});
 
 $(function() {
   $( "#sliderParcelAmount" ).slider({
@@ -77,16 +91,17 @@ $(function() {
 });
 
 $(function() {
-  $( "#sliderSimSpeed" ).slider({
-    value: 10,
-    min: 5,
-    max: 20,
-    step: 1,
+  $( "#sliderspeed" ).slider({
+    value: 600,
+    min: 100,
+    max: 1000,
+    step: 100,
     slide: function( event, ui ) {
-      $( "#simSpeed" ).val( ui.value + "x" );
+      $( "#simspeed" ).val( ui.value + "x" );
+      SPEED = ui.value
     }
   });
-  $( "#simSpeed" ).val(  $( "#sliderSimSpeed" ).slider( "value" ) + "x"  );
+  $( "#simspeed" ).val(  $( "#sliderspeed" ).slider( "value" ) + "x"  );
 });
 
 
@@ -116,14 +131,17 @@ function T_on() {
  */
 function fleet_sim() {
   var fleet_size = slider_fleetSize;
-  var publicTransit_size = slider_publicTransit
+  var bike_freq = slider_hubway;
+  var random_freq = slider_random;
+  // var publicTransit_size = slider_publicTransit;
   var rebalanceSize = slider_rebalanceSize;
-  var rng = Math.floor(Math.random()*10000);
+  var code = Math.floor(Math.random()*10000);
   var sim_params = {
     size: fleet_size,
-    maxDist: publicTransit_size,
     parcels: rebalanceSize,
-    code: rng
+    bike: bike_freq,
+    random: random_freq,
+    code: code,
   };
   $('#loader').removeClass('disabled');
   $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
