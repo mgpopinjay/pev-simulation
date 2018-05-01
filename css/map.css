@@ -52,7 +52,7 @@ body {
 }
 
 #controls {
-    width: 250px;
+    width: 220px;
     position: absolute;
     left: 0;
     top: 0;
@@ -64,7 +64,7 @@ body {
 }
 
 #title-outer h1 {
-    font-size: 26px;
+    font-size: 23px;
     margin-bottom: 0px;
 }
 

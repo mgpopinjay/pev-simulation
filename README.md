@@ -7,7 +7,7 @@ PEV
 
 Please install the [homebrew](http://mxcl.github.com/homebrew/) package system. It will provide all necessary dependencies:
 
-`brew install boost git cmake libzip libstxxl libxml2 lua tbb ccache`
+`brew install boost wget git cmake libzip libstxxl libxml2 lua tbb ccache`
 
 To be able to compile tools:
 
@@ -27,8 +27,9 @@ PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
 #### OS X RUNNING OSRM
     cd osrm-backend
     mkdir map
+    cd build
     cd map
-    wget -0 map.xml https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039
+    wget -O map.xml https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039
 
     (or install from the link directly https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039 and move to osrm-backend/map and change filename to map.xml)
 

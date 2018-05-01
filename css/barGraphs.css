@@ -91,15 +91,12 @@ td {
     text-align: center;
 }
 /*body, a:hover {*/
-    /*    cursor: url(http://ani.cursors-4u.net/toons/too-12/too1137.cur), progress !important;*/
-}
-
+/*    cursor: url(http://ani.cursors-4u.net/toons/too-12/too1137.cur), progress !important;*/*
 body {
     margin:  0px;
     padding: 0px;
     font-family: 'Open Sans', sans-serif;
 }
-
 ol li {
     opacity: 0.5;
 }
@@ -110,64 +107,64 @@ ol li:hover {
 
 
 .topcol {
-  position: absolute;
-  color: none;
-  width: 100%;
+    position: absolute;
+    color: none;
+    width: 100%;
 }
 
 .topleft {
-  width            : 100%;
-  overflow         : hidden;
+    width            : 100%;
+    overflow         : hidden;
 }
 
 .Row
 {
-display: table;
-width: 100%;
-table-layout: fixed;
-border-spacing: 10px;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 10px;
 }
 
 .Column
 {
-display: table-cell;
-background-color: ;
+    display: table-cell;
+    background-color: ;
 }
 
 .chart {
-background: none;
-margin: 5px;
+    background: none;
+    margin: 5px;
 }
 
 .chart rect {
-stroke: none;
-fill: #cc99ff;
+    stroke: none;
+    fill: #cc99ff;
 }
 
 .chart text {
-fill: white;
+    fill: white;
 }
 
 .chart text .name {
-fill: white;
+    fill: white;
 }
 
 .chart line {
-stroke: #c1c1c1;
+    stroke: #c1c1c1;
 }
 
 .chart .rule {
-fill: white;
+    fill: white;
 }
 
 /* removed the while stroke as we don't need it anymore */
 #step-5 .chart rect {
-stroke: none;
+    stroke: none;
 }
 
 /* a bit of hovering effect for each bar */
 #step-5 .chart rect:hover {
-fill: #64707D;
+    fill: #64707D;
 }
 
 text {
@@ -176,22 +173,22 @@ text {
 
 .axis path,
 .axis line {
-fill: none;
-stroke: whi;
-shape-rendering: crispEdges;
+    fill: none;
+    stroke: whi;
+    shape-rendering: crispEdges;
 }
 
 .chartControl {
-position: relative;
-left: 140px;
-top: -3px;
+    position: relative;
+    left: 140px;
+    top: -3px;
 }
 
 .axis path,
 .axis line {
-fill: none;
-stroke: #09C;
-shape-rendering: crispEdges;
+    fill: none;
+    stroke: #09C;
+    shape-rendering: crispEdges;
 }
 
 .axis text {

@@ -9,6 +9,10 @@ var Tee;
 var T_opacity = 0.8;
 var TRIAL = 0;
 var FLEET_SIZE = 0;
+var PAUSED = false
+var RUNNING = {};
+var PENDING_TRIPS = [];
+var LOOP;
 
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
@@ -166,54 +170,71 @@ function test_fleet_sim() {
  * @param  {data object} data [a large object containing all cars and their completed trips]
  */
 function createTrips(data) {
+  console.log(data);
   TIME = 0;
+  Object.keys(RUNNING).forEach(i => {
+    RUNNING[i].marker.stop();
+  });
+  RUNNING = {};
+  PAUSED = false; 
   TRIAL++;
   FLEET_SIZE = Object.keys(data['fleet']).length;
   pushTimes = [];
   waitTimes = [];
   console.log(data);
-  // let trip = data['fleet'][0]['history'][1];
-  let pendingTrips = [];
+  //let pendingTrips = [];
   for(let i=0; i < Object.keys(data['fleet']).length; i++) {
     for(let j=0; j < data['fleet'][i]['history'].length; j++) {
       let trip = data['fleet'][i]['history'][j];
       trip['car'] = i;
-      pendingTrips.push(trip)
+      PENDING_TRIPS.push(trip)
     }
   }
-  pendingTrips.sort((a, b) => {
+  PENDING_TRIPS.sort((a, b) => {
     return a['start_time'] - b['start_time']
   })
-  let loop = setInterval(() => {
-    if (pendingTrips.length == 0){
-      clearInterval(loop);
-    }
-    while (pendingTrips[0]['start_time'] <= (TIME * SPEED / 10)) {
-      let trip = pendingTrips[0];
-      pendingTrips.splice(0, 1);
-      if (trip['type'] == "Idle") {
-        idleCar(
-            trip['start_point'],
-            trip['duration'],
-          )
-      } else {
-        startTrip(
-          trip['start_point'],
-          trip['end_point'],
-          trip['start_time'],
-          trip['end_time'],
-          trip['waittime'],
-          trip['pushtime'],
-          trip['duration'],
-          trip['type'],
-          trip['steps_polyline'],
-        );
-      }
-    }
-    TIME++;
-    UpdateTime(TIME*SPEED/10);
-  }, 100)
+  runTrips();
 }
+
+function runTrips() {
+  console.log("running");
+  LOOP = setInterval(() => timeStep(), 100);
+};
+
+
+function timeStep() {
+  if (PENDING_TRIPS.length == 0 || PAUSED){
+    clearInterval(LOOP);
+  }
+  
+  //know how to fix this (mutation of pending trips)
+  
+  while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10)) {
+    let trip = PENDING_TRIPS[0];
+    PENDING_TRIPS.splice(0, 1);
+    if (trip['type'] == "Idle") {
+      idleCar(
+        trip['start_point'],
+        trip['duration'],
+      )
+    } else {
+      startTrip(
+        trip['start_point'],
+        trip['end_point'],
+        trip['start_time'],
+        trip['end_time'],
+        trip['waittime'],
+        trip['pushtime'],
+        trip['duration'],
+        trip['type'],
+        trip['steps_polyline'],
+      );
+    }
+  }
+  TIME++;
+  UpdateTime(TIME*SPEED/10);
+}
+  
 
 /**
  * Make a car idle at a location for a given duration
@@ -244,60 +265,73 @@ function idleCar(start_loc, duration) {
  * @param  {path} path      [OSRM path]
  */
 function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime, duration, type, path) {
-  let marker;
   let icon;
   let color;
   let reqIcon;
   let heatLayer;
   let reqMark;
   switch (type) {
-    case 'Navigation':
-      color = "#B2B2B2"
-      icon = L.icon({
-        iconUrl: './img/gray_circle.png',
-        iconSize: [15, 15],
-      });
-      break;
-    case 'Passenger':
-      color = "#F0F000"
-      icon = L.icon({
-        iconUrl: './img/yellow_circle.png',
-        iconSize: [15, 15],
-      });
-      reqIcon = L.icon({iconUrl: './img/child.png',iconSize: [20, 20]});
-      heatLayer = L.heatLayer([[start_loc[1], start_loc[0]]], {gradient: {0.65: 'blue', 1: 'lime', 1: 'red'}, blur: 0.4});
-      reqMark = L.marker([start_loc[1], start_loc[0]], {icon: reqIcon}).addTo(map);
-      break;
-    case 'Parcel':
-      color = "#FF8000"
-      icon = L.icon({
-        iconUrl: './img/orange_circle.png',
-        iconSize: [15, 15],
-      });
-      reqIcon = L.icon({iconUrl: './img/parcel.png', iconSize: [20, 20]});
-      heatLayer = L.heatLayer([[start_loc[1], start_loc[0]]], {gradient: {0.65: 'blue', 1: 'lime', 1: 'red'}, blur: 0.4});
-      reqMark = L.marker([start_loc[1], start_loc[0]], {icon: reqIcon}).addTo(map);
-      break;
+  case 'Navigation':
+    color = "#B2B2B2"
+    icon = L.icon({
+      iconUrl: './img/gray_circle.png',
+      iconSize: [15, 15],
+    });
+    break;
+  case 'Passenger':
+    color = "#F0F000"
+    icon = L.icon({
+      iconUrl: './img/yellow_circle.png',
+      iconSize: [15, 15],
+    });
+    reqIcon = L.icon({iconUrl: './img/child.png',iconSize: [20, 20]});
+    heatLayer = L.heatLayer([[start_loc[1], start_loc[0]]], {gradient: {0.65: 'blue', 1: 'lime', 1: 'red'}, blur: 0.4});
+    reqMark = L.marker([start_loc[1], start_loc[0]], {icon: reqIcon}).addTo(map);
+    break;
+  case 'Parcel':
+    color = "#FF8000"
+    icon = L.icon({
+      iconUrl: './img/orange_circle.png',
+      iconSize: [15, 15],
+    });
+    reqIcon = L.icon({iconUrl: './img/parcel.png', iconSize: [20, 20]});
+    heatLayer = L.heatLayer([[start_loc[1], start_loc[0]]], {gradient: {0.65: 'blue', 1: 'lime', 1: 'red'}, blur: 0.4});
+    reqMark = L.marker([start_loc[1], start_loc[0]], {icon: reqIcon}).addTo(map);
+    break;
   };
   let polyline = polylineFromTask(path, color, 0.9, 4)
   var navMarker = L.Marker.movingMarker(polyline.getLatLngs(), (((duration) * 1000) / SPEED), {icon: icon});
-  setTimeout(() => {
+
+  let id = Math.random(0, 1000);
+  RUNNING[id] = navMarker;
+  
+  let timer = new Timer(() => {
     polyline.addTo(map);
     navMarker.addTo(map);
-    navMarker.start();
+    if (!PAUSED) {
+      navMarker.start();
+    };
     if (reqMark) {
       map.removeLayer(reqMark);
-      // map.addLayer(heatLayer);
+      // map.addLayer(heatLayer);  HEAT LAYER - Slows down simulation
       waitTimes.push(waittime / 60);
       pushTimes.push(pushtime / 60);
       updateLines();
     };
   }, ((waittime + pushtime) * 1000) / SPEED);
+  RUNNING[id].timer = timer;
+  RUNNING[id].marker = navMarker
+  
   navMarker.on('end', function(){
+    delete RUNNING[id]
     map.removeLayer(this);
     map.removeLayer(polyline);
-    if(marker != null)
-    map.removeLayer(marker);
+    if (reqMark) {
+      map.removeLayer(reqMark);
+    };
+    if (navMarker) {
+      map.removeLayer(navMarker);
+    };
   });
 }
 
@@ -369,7 +403,7 @@ function updateLines() {
   var pushAvg = Math.round(100*pushSum / pushTimes.length)/100;
   $(`#summary-${TRIAL}`).remove()
   if ($('#summary-' + TRIAL).length) {
-    //just removed the old row and readding it next
+    // just removed the old row and readding it next
   } else {
     $('#summary').append(`
       <tr id="summary-${TRIAL}">
@@ -388,16 +422,16 @@ $(document).ready(function() {
   L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
   L.geoJson(mapdata, {
     style: function(feature) {
-        console.log(feature)
-        return {
-            color: "#B1260A",
-            fill: true,
-            opacity: 1,
-            clickable: false
-        };
+      console.log(feature)
+      return {
+        color: "#B1260A",
+        fill: true,
+        opacity: 1,
+        clickable: false
+      };
     },
     onEachFeature: function(feature, layer) {
-        return
+      return
     }
   }).addTo(map);
   L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);

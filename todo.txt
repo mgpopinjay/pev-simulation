@@ -1,10 +1,16 @@
-median and avg waiting times
-lines graphs of waiting times by trial
+MBTA Train Data (multi modal)
+     - New slider in front end for train data
+     - Generate requests in back end based on arrival of trains
 
-More demand generation from different sources
-- GTFS
+Japan
+     - Test adding a new location with the japan data
 
+Trip Assignment
+     - "Active Assignment" - use active cars to assign trips if needed
 
-Tapai
-
-Draw system diagram and architechture
+Update Front end
+     - Show all relevent inputs and results in the table
+            - Trips / hour fulfilled
+            - Idle time, travel time, PEV usage time
+     - Tooltips for clarity
+     - Selection of hours to run the simulation

@@ -522,6 +522,32 @@ def gaussian_randomizer_two_mile(location):
     pointo = [str(point[0]), str(point[1])]
     return pointo
 
+
+def generate_japan_trips(month, day, year):
+    '''
+    data = []
+    trips = []
+    stations = {}
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    with open(curpath+'/japan-data/stations.csv') as file:
+        spamreader = csv.reader(file, dlimiter=',', quotechar='|')
+        for row in spamreader:
+            stations[3] = [row[4], row[5]]
+    with open(curpath+'/japan-data/trips.csv') as file:
+        spamreader = csv.reader(file, dlimiter=',', quotechar='|')
+        for row in spamreader:
+            data.append(row)
+    for row in data[1:]:
+        if row[1] == year and row[2] == month and row[3] == day:   
+            starttime = row[4]*60*60+row[5]*60
+            endtime = row[19]*60*60+row[20]*60
+            duration = row[33]
+            duration = endtime - starttime
+            stationdid = row[
+'''
+            
+
+
 hubstations = {}  # global variable for Hubway stations dictionary
 #[0]tripduration
 #[1]starttime
@@ -538,7 +564,6 @@ hubstations = {}  # global variable for Hubway stations dictionary
 #[12]usertype
 #[13]birth year
 #[14]gender
-
 
 def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhrs):
     '''
