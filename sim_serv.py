@@ -10,7 +10,7 @@ import json
 from Backend.realsim import run_sim
 #from server import routes, dynamic_trips
 import sys
-import simplejson
+# import simplejson
 import datetime
 import os
 import subprocess

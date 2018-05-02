@@ -4,7 +4,7 @@ import math
 import csv
 import random
 import json
-import requests
+# import requests
 import numpy as np
 import os
 
