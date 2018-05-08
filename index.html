@@ -129,10 +129,23 @@
       </p>
       <div id="sliderRebalance" style="margin-top: -10px"></div>
       <p class="slider-label">
+        <label style="font-weight:600"> <i class="fas fa-road"></i>Max Distance</label>
+        <input type="text" id="maxdist">
+      </p>
+      <div id="slidermax" style="margin-top: -10px"></div>
+
+      <p class="slider-label">
+        <label style="font-weight:600"> <i class="fas fa-taxi"></i>Taxi Data</label>
+        <input type="text" id="taxidata">
+      </p>
+      <div id="slidertaxi" style="margin-top: -10px"></div>
+
+      <p class="slider-label">
         <label style="font-weight:600"> <i class="fas fa-bicycle"></i>Hubway Data</label>
         <input type="text" id="hubwaydata">
       </p>
       <div id="sliderhubway" style="margin-top: -10px"></div>
+
       <p class="slider-label">
         <label style="font-weight:600"> <i class="fas fa-globe"></i>Random Data</label>
         <input type="text" id="randomdata">
@@ -159,10 +172,17 @@
 </div>
   <table id="summary">
     <thead>
-      <td>Trial Num</td>
+      <td>Trial</td>
       <td>PEVs</td>
+      <td>Bike Trips</td>
+      <td>Taxi Trips</td>
+      <td>Random Trips</td>
+      <td>Trips/Hour</td>
       <td>Wait Time</td>
       <td>Assignment Time</td>
+      <td>PEV Nav</td>
+      <td>PEV Dropoff</td>
+      <td>PEV Usage</td>
     </thead>
   </table>
 <div id="loader" class="disabled">

@@ -4,6 +4,7 @@ var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
 var waitTimes = [];
+var startTimes = [];
 var T_API = "mTBUGDZNyU6IS_nJpCzNSw";
 var Tee;
 var T_opacity = 0.8;
@@ -24,6 +25,8 @@ var slider_rebalanceSize = 20;
 var slider_fleetSize = 20;
 var slider_hubway = 20;
 var slider_random = 20;
+var slider_taxi = 20;
+var slider_max = 5;
 
 $(function() {
   $("#sliderfleet").slider({
@@ -51,34 +54,67 @@ $(function() {
     }
   });
   $( "#rebalance" ).val(  $( "#sliderRebalance" ).slider( "value" ) + " %");
+})
+$(function() {
+  $( "#slidermax" ).slider({
+    value: 5,
+    min: 0,
+    max: 5,
+    step: 1,
+    slide: function( event, ui ) {
+      $( "#maxdist" ).val( ui.value + " mi" );
+      slider_max = ui.value;
+    }
+  });
+  $( "#maxdist" ).val( $( "#slidermax" ).slider( "value" ) + " mi"  );
 });
 
 $(function() {
+  let totaldata = 11;
+  $( "#slidertaxi" ).slider({
+    value: 20,
+    min: 0,
+    max: 100,
+    step: 10,
+    slide: function( event, ui ) {
+      let trips = Math.round(ui.value/100*totaldata)
+      $( "#taxidata" ).val( ui.value + " %" + " ("+trips+" trips)");
+      slider_taxi = ui.value;
+    }
+  });
+  $( "#taxidata" ).val( $( "#slidertaxi" ).slider( "value" ) + " %"  + " (" + Math.round(.2*totaldata)+" trips)");
+});
+
+$(function() {
+  let totaldata = 148;
   $( "#sliderhubway" ).slider({
     value: 20,
     min: 0,
     max: 100,
     step: 10,
     slide: function( event, ui ) {
-      $( "#hubwaydata" ).val( ui.value + " %" );
+      let trips = Math.round(ui.value/100*totaldata)
+      $( "#hubwaydata" ).val( ui.value + " %"+ " ("+trips+" trips)");
       slider_hubway = ui.value;
     }
   });
-  $( "#hubwaydata" ).val( $( "#sliderhubway" ).slider( "value" ) + " %"  );
+  $( "#hubwaydata" ).val( $( "#sliderhubway" ).slider( "value" ) + " %"  + " ("+Math.round(.2*totaldata)+" trips)");
 });
 
 $(function() {
+  let totaldata = 180;
   $( "#sliderrandom" ).slider({
     value: 20,
     min: 0,
     max: 100,
     step: 10,
     slide: function( event, ui ) {
-      $( "#randomdata" ).val( ui.value + " %" );
+      let trips = Math.round(ui.value/100*totaldata);
+      $( "#randomdata" ).val( ui.value + " %" + " ("+trips+" trips)" );
       slider_random = ui.value;
     }
   });
-  $( "#randomdata" ).val( $( "#sliderrandom" ).slider( "value" ) + " %"  );
+  $( "#randomdata" ).val( $( "#sliderrandom" ).slider( "value" ) + " %" + " ("+Math.round(.2*totaldata)+" trips)");
 });
 
 $(function() {
@@ -137,6 +173,8 @@ function fleet_sim() {
   var fleet_size = slider_fleetSize;
   var bike_freq = slider_hubway;
   var random_freq = slider_random;
+  var taxi_freq = slider_taxi;
+  var max_dist = slider_max;
   // var publicTransit_size = slider_publicTransit;
   var rebalanceSize = slider_rebalanceSize;
   var code = Math.floor(Math.random()*10000);
@@ -145,8 +183,10 @@ function fleet_sim() {
     parcels: rebalanceSize,
     bike: bike_freq,
     random: random_freq,
+    taxi: taxi_freq,
+    max_dist: max_dist,
     code: code,
-  };
+  }; 
   $('#loader').removeClass('disabled');
   $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
     $('#loader').addClass('disabled');
@@ -179,9 +219,22 @@ function createTrips(data) {
   PAUSED = false; 
   TRIAL++;
   FLEET_SIZE = Object.keys(data['fleet']).length;
+  $('#summary').append(`
+      <tr id="summary-${TRIAL}">
+        <td>${TRIAL}</td>
+        <td>${FLEET_SIZE}</td>
+        <td>${data['outputs']['TRIPS'].bike}</td>
+        <td>${data['outputs']['TRIPS'].taxi}</td>
+        <td>${data['outputs']['TRIPS'].random}</td>
+        <td>${data['outputs']['TRIPS_HR']}</td>
+        <td id="trial-${TRIAL}-wait">0</td>
+        <td id="trial-${TRIAL}-push">0</td>
+        <td>${Math.ceil((data['outputs']['AVERAGE CAR NAVIGATION']/60)*100)/100} min</td>
+        <td>${Math.ceil((data['outputs']['AVERAGE CAR COMPLETION']/60)*100)/100} min</td>
+        <td>${data['outputs']['AVERAGE CAR UTILIZATION']}%</td>
+      </tr>`)
   pushTimes = [];
   waitTimes = [];
-  console.log(data);
   //let pendingTrips = [];
   for(let i=0; i < Object.keys(data['fleet']).length; i++) {
     for(let j=0; j < data['fleet'][i]['history'].length; j++) {
@@ -207,8 +260,7 @@ function timeStep() {
     clearInterval(LOOP);
   }
   
-  //know how to fix this (mutation of pending trips)
-  
+  //know how to fix this (mutation of pending trips) 
   while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10)) {
     let trip = PENDING_TRIPS[0];
     PENDING_TRIPS.splice(0, 1);
@@ -314,8 +366,9 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
     if (reqMark) {
       map.removeLayer(reqMark);
       // map.addLayer(heatLayer);  HEAT LAYER - Slows down simulation
-      waitTimes.push(waittime / 60);
+      waitTimes.push(waittime / 60); 
       pushTimes.push(pushtime / 60);
+      startTimes.push(start_time / 60 / 18);
       updateLines();
     };
   }, ((waittime + pushtime) * 1000) / SPEED);
@@ -388,55 +441,68 @@ function prepareLines(times) {
   })
   return dataset
 }
-/**
- * Update wait times with the current push and waittimes
- * Redraws graphs using barGraph() function defined in Graphs.js
- */
-function updateLines() {
-  let waitTimeDataSet = prepareLines(waitTimes);
-  let pushTimeDataSet = prepareLines(pushTimes);
-  addLine(waitTimeDataSet, "wait-graph", TRIAL);
-  addLine(pushTimeDataSet, "push-graph", TRIAL);
-  var waitSum = waitTimes.reduce(function(a, b) { return a + b; });
-  var waitAvg = Math.round(100*waitSum / waitTimes.length)/100;
-  var pushSum = pushTimes.reduce(function(a, b) { return a + b; });
-  var pushAvg = Math.round(100*pushSum / pushTimes.length)/100;
-  $(`#summary-${TRIAL}`).remove()
-  if ($('#summary-' + TRIAL).length) {
-    // just removed the old row and readding it next
-  } else {
-    $('#summary').append(`
-      <tr id="summary-${TRIAL}">
-        <td>${TRIAL}</td>
-        <td>${FLEET_SIZE}</td>
-        <td>${waitAvg}</td>
-        <td>${pushAvg}</td>
-      </tr>`)
-  }
+
+function round5(x) {
+  return Math.ceil(x/5)*5;
 }
 
-$(document).ready(function() {
-  // map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
-  L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
-  map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
-  L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
-  L.geoJson(mapdata, {
-    style: function(feature) {
-      console.log(feature)
-      return {
-        color: "#B1260A",
-        fill: true,
-        opacity: 1,
-        clickable: false
-      };
-    },
-    onEachFeature: function(feature, layer) {
-      return
+function prepareStartTimes(times) {
+  let dataset = Array.apply(null, Array(180)).map(Number.prototype.valueOf,0);
+  let data = {};
+  times.forEach(time => {
+    let t = Math.round(time);
+    if (data[t]) {
+      data[t] += 1;
+    } else {
+      data[t] = 1;
     }
-  }).addTo(map);
-  L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-  Progress(0, 800);
-  lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
-  lineGraph("wait-graph", 20, 50, 270, 150, "Wait Times");
-  $('#line-graph').css('display', 'block');
-});
+  })
+  Object.keys(data).forEach(key => {
+    dataset[key] = data[key];
+  })
+  return dataset
+}
+
+  /**
+   * Update wait times with the current push and waittimes
+   * Redraws graphs using barGraph() function defined in Graphs.js
+   */
+  function updateLines() {
+    let waitTimeDataSet = prepareLines(waitTimes);
+    let pushTimeDataSet = prepareLines(pushTimes);
+    let startTimesDataSet = prepareStartTimes(startTimes);
+    addLine(startTimesDataSet, "wait-graph", TRIAL);
+    //addLine(pushTimeDataSet, "push-graph", TRIAL);
+    var waitSum = waitTimes.reduce(function(a, b) { return a + b; });
+    var waitAvg = Math.round(100*waitSum / waitTimes.length)/100;
+    var pushSum = pushTimes.reduce(function(a, b) { return a + b; });
+    var pushAvg = Math.round(100*pushSum / pushTimes.length)/100;
+    $(`#trial-${TRIAL}-wait`).html(waitAvg);
+    $(`#trial-${TRIAL}-push`).html(pushAvg);
+  }
+
+  $(document).ready(function() {
+    // map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
+    L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
+    map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
+    L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
+    L.geoJson(mapdata, {
+      style: function(feature) {
+        console.log(feature)
+        return {
+          color: "#B1260A",
+          fill: true,
+          opacity: 1,
+          clickable: false
+        };
+      },
+      onEachFeature: function(feature, layer) {
+        return
+      }
+    }).addTo(map);
+    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
+    Progress(0, 800);
+    //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
+    lineGraph("wait-graph", 15, 20, 270, 150, "Demand Graph");
+    $('#line-graph').css('display', 'block');
+  });

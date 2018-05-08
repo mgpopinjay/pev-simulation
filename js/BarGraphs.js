@@ -40,34 +40,34 @@ function barGraph(dataset, id, color) {
   };
 
   var xScale = d3.scale.ordinal()
-  .domain(d3.range(0, 40, 5))
-  .rangeRoundBands([0, w], 0.05);
+      .domain(d3.range(0, 40, 5))
+      .rangeRoundBands([0, w], 0.05);
 
   var yScale = d3.scale.linear()
-  .domain([0, d3.max(dataset, function(d) {return d.value;})])
-  .range([0, h]);
+      .domain([0, d3.max(dataset, function(d) {return d.value;})])
+      .range([0, h]);
 
   d3.select(id).select("svg").remove();
   var svg = d3.select($(id)[0])
-  .append("svg")
-  .attr("width", w)
-  .attr("height", h+40);
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h+40);
 
   svg.selectAll("rect")
-  .data(dataset, key)
-  .enter()
-  .append("rect")
-  .attr("x", function(d, i) {
-    return xScale(d.key);
-  })
-  .attr("y", function(d) {
-    return h - yScale(d.value);
-  })
-  .attr("width", xScale.rangeBand())
-  .attr("height", function(d) {
-    return yScale(d.value);
-  })
-  .attr("fill", color)
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale(d.key);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", color)
 
   //Create labels
   svg.selectAll("text")
@@ -103,7 +103,6 @@ function barGraph(dataset, id, color) {
   .attr("fill", "white");
 
   function drawPersonWaitTime(dataset) {
-
     yScale = d3.scale.linear()
     .domain([0, d3.max(dataset, function(d) {return d.value;})])
     .range([0, h]);

@@ -45,12 +45,12 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             logging.warning("Received: " + data)
             args = json.loads(data)
             fleet_size = int(args["size"])
-            #dist = args["maxDist"]
             code = args["code"]
-            #maxDist = int(dist)
+            maxDist = int(args["max_dist"])
             parcFreq = int(args["parcels"])
             randomFreq = int(args["random"])
             bikeFreq = int(args["bike"])
+            taxiFreq = int(args["taxi"])
 
             # create dictionary of data to dump as JSON to 'Variable_X.json file'
             data_to_send = {
@@ -58,6 +58,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 "Fleet_Size": fleet_size,
                 "Bike_Freq": bikeFreq,
                 "Random_Freq": randomFreq,
+                "Taxi_Freq": taxiFreq,
+                "Max_Dist": maxDist,
                 "Spawn_Point": 0,
                 "Start_Hour": 0,
                 "End_Hour": 3,
@@ -65,7 +67,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             }
             # read id_counter.txt to know which simulation we are on
             sim_id = json.load(open("Backend/id_counter.txt"))
-            filename = "Variable_"+str(sim_id)+".json"
+            filename = "sim_inputs_"+str(sim_id)+".json"
 
             # find path to Variables folder to write to
             curpath = os.path.dirname(os.path.abspath(__file__))

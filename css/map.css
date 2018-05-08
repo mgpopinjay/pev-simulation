@@ -82,12 +82,12 @@ body {
 }
 
 .slider-label {
+    width: 150%;
     color: white;
 }
 
 .slider-label input {
     border: 0;
-    width: 35px;
     font-size: 12px;
     background-color: transparent;
     color: #ff66cc;
@@ -127,7 +127,7 @@ body {
 #summary {
     position: absolute;
     right: 20px;
-    bottom: 80px;
+    top: 30px;
     color: white;
     border-color: white;
     border-collapse: collapse;
@@ -144,7 +144,7 @@ body {
 #graphs {
     position: absolute;
     left: 250px;
-    top: 10px;
+    bottom: 70px;
     padding: 0px 50px;
     width: calc(100vw - 350px);
     text-align: right;

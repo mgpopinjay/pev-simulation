@@ -144,11 +144,12 @@ def find_leg_loc(x, elapsed):
 
 class Request(object):
 
-    def __init__(self, time, pickup, dropoff, kind=None):
+    def __init__(self, time, pickup, dropoff, origin="random", kind=None):
         '''
         time = time of request, pickup/dropoff in form of (lat, long)
         start/end = time of start/end of ride, complete = completion status
         '''
+        self.origin = origin
         self.original_time = time
         self.time = time
         self.pickup = pickup
@@ -408,7 +409,7 @@ def random_requests(location, ratio, pct, hrs):
         end = gaussian_randomizer(start, 2)
         start_point = find_snap_coordinates(get_snap_output(start))
         end_point = find_snap_coordinates(get_snap_output(end))
-        req = Request(time*60, start_point, end_point, kind)
+        req = Request(time*60, start_point, end_point, "random",  kind)
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             requests.append(req)
     return requests
@@ -545,7 +546,45 @@ def generate_japan_trips(month, day, year):
             duration = endtime - starttime
             stationdid = row[
 '''
-            
+
+def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs):
+    '''
+    '''
+    data = []
+    trips = []
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    with open(curpath+'/Data/taxi-data-97.csv','rU') as file:
+        spamreader = csv.reader(file, delimiter=',', quotechar='|')
+        for row in spamreader:
+            data.append(row)
+        
+    for row in data[1:]:
+        pretime = row[1]
+        time = int(pretime[-8:-6])*60*60+int(pretime[-5:-3])*60+int(pretime[-2:])
+        if time <= starthrs * 60 * 60:
+            continue
+        if time >= endhrs * 60 * 60:
+            break
+        rand_freq = random.randint(1, 100)
+        if rand_freq > frequency:
+            continue
+        start = [row[3], row[4]]
+        end = [row[7], row[8]]
+        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(start)))
+        rng = random.randint(1, 100)
+        kind = "Passenger"
+        req = None
+        if rng > ratio:
+            kind = "Parcel"
+        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(end)))
+        if dist(start_point, dest) < max_dist:
+            req = Request(time, start_point, dest, "taxi", kind)
+        else:
+            print("long trip")
+
+        if req is not None and json.loads(req.osrm)["code"] == "Ok":
+            trips.append(req)
+    return trips
 
 
 hubstations = {}  # global variable for Hubway stations dictionary
@@ -609,14 +648,14 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
         if start == end:
             fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(hubstations[start])))
             # print fake_dest
-            req = Request(time, start_point, fake_dest, kind)
+            req = Request(time, start_point, fake_dest, "bike", kind)
 
         else:
             # real trip
             dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[end])))
             if dist(hubstations[start], dest) < max_dist:
                 # print "REAL: "+str(dest)
-                req = Request(time, start_point, dest, kind)
+                req = Request(time, start_point, dest, "bike", kind)
 
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             trips.append(req)
