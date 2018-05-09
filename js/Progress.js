@@ -16,8 +16,7 @@ function Progress(time, width) {
 }
 
 function UpdateTime(seconds) {
-
-    $('#progress-bar').attr('width', (seconds*100)/(5*60*60) + '%');
+  $('#progress-bar').attr('width', (seconds*100)/(5*60*60) + '%');
 }
 
 $(document).ready(function() {

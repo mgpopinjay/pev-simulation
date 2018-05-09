@@ -612,12 +612,11 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
     trips = []
     curpath = os.path.dirname(os.path.abspath(__file__))
 
-    with open(curpath+'/201707-hubway-tripdata.csv', 'rb') as file:
+    with open(curpath+'/hubway-day.csv', 'rU') as file:
         spamreader = csv.reader(file, delimiter=',', quotechar='|')
         for row in spamreader:
             data.append(row)
     for row in data[1:]:
-        # print row
         if len(hubstations.keys()) != 194:
             if row[3] not in hubstations.keys():
                 loc2 = row[5].strip('\"')
@@ -654,7 +653,6 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
             # real trip
             dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[end])))
             if dist(hubstations[start], dest) < max_dist:
-                # print "REAL: "+str(dest)
                 req = Request(time, start_point, dest, "bike", kind)
 
         if req is not None and json.loads(req.osrm)["code"] == "Ok":

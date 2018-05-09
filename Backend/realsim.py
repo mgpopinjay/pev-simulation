@@ -86,7 +86,7 @@ def run_sim():
     if TAXI_DATA:
         requests += util.generate_taxi_trips(MAX_DIST, 0, TAXI_DATA, START_HR, END_HR)
     if HUBWAY_DATA:
-        res = util.generate_hubway_trips(NUMDATA*200, MAX_DIST, 0, HUBWAY_DATA, START_HR, END_HR)
+        res = util.generate_hubway_trips(1000, MAX_DIST, 0, HUBWAY_DATA, START_HR, END_HR)
         requests += res[0]
         stations = res[1]
 
@@ -95,7 +95,6 @@ def run_sim():
     rebalance_trips = []
     idle_trips = []
     finished_trips = {}  # all trips keyed by which car took that trip
-
     def assign_finished_trip(car, trip):
         if car.id in finished_trips.keys():
             finished_trips[car.id].append(trip)
@@ -392,6 +391,7 @@ def run_sim():
     sim_outputs = {
         "TRIPS": origins,
         "TRIPS_HR": len(finished_requests)/(END_HR-START_HR),
+        "TRIPS_DAY": len(finished_requests)/(END_HR-START_HR)*24,
         "SIM RUNTIME": str(delta),
         "AVERAGE REQUEST WAITTIME": str(avg),
         "AVERAGE REQUEST PUSHTIME": str(p_avg),

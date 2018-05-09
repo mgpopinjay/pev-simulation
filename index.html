@@ -82,15 +82,15 @@
 </div> -->
 
 <div id="controls">
-  <div id="title-outer">
-    <h1 style="margin-top:10px; font-style:italic">PEV-SIMULATOR V4</h1>
-    <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p>
-  </div>
-  <div id="city-select">
-    <input class="button city" value="Boston" onclick="setMapBoston()">
-    <input class="button city" value="Paris">
-    <input class="button city" value="Taipei">
-  </div>
+  <!-- <div id="title-outer"> -->
+  <!--   <h1 style="margin-top:10px; font-style:italic">PEV-SIMULATOR V4</h1> -->
+  <!--   <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p> -->
+  <!-- </div> -->
+  <!-- <div id="city-select"> -->
+  <!--   <input class="button city" value="Boston" onclick="setMapBoston()"> -->
+  <!--   <input class="button city" value="Paris"> -->
+  <!--   <input class="button city" value="Taipei"> -->
+  <!-- </div> -->
 
     <!-- <div style="color: white; margin-top: 10px">
       <div style="font-weight:600">
@@ -117,54 +117,65 @@
     </div> -->
 
   <div id="sliders">
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Fleet Size:</label>
-        <input type="text" id="fleet">
-      </p>
-      <div id="sliderfleet" style="margin-top: -10px"></div>
+      <div class="control-section">
+        <div class="control-label">Supply</div>
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fa fa-rocket"></i>Fleet Size:</label>
+          <input type="text" id="fleet">
+        </p>
+        <div id="sliderfleet" style="margin-top: -10px"></div>
 
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fa fa-rocket"></i>  Rebalancing PEVs:</label>
-        <input type="text" id="rebalance">
-      </p>
-      <div id="sliderRebalance" style="margin-top: -10px"></div>
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fas fa-road"></i>Max Distance</label>
-        <input type="text" id="maxdist">
-      </p>
-      <div id="slidermax" style="margin-top: -10px"></div>
+        <!-- <p class="slider-label"> -->
+        <!-- <label style="font-weight:600"> <i class="fa fa-rocket"></i>Rebal PEVs:</label> -->
+        <!-- <input type="text" id="rebalance"> -->
+        <!-- </p> -->
+        <!-- <div id="sliderRebalance" style="margin-top: -10px"></div> -->
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fas fa-road"></i>Max Distance</label>
+          <input type="text" id="maxdist">
+        </p>
+        <div id="slidermax" style="margin-top: -10px"></div>
+      </div>
+      <div class="control-section">
+        <div class="control-label">Demand</div>
 
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fas fa-taxi"></i>Taxi Data</label>
-        <input type="text" id="taxidata">
-      </p>
-      <div id="slidertaxi" style="margin-top: -10px"></div>
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fas fa-taxi"></i>Taxi Data</label>
+          <input type="text" id="taxidata">
+        </p>
+        <div id="slidertaxi" style="margin-top: -10px"></div>
 
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fas fa-bicycle"></i>Hubway Data</label>
-        <input type="text" id="hubwaydata">
-      </p>
-      <div id="sliderhubway" style="margin-top: -10px"></div>
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fas fa-bicycle"></i>Hubway Data</label>
+          <input type="text" id="hubwaydata">
+        </p>
+        <div id="sliderhubway" style="margin-top: -10px"></div>
 
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fas fa-globe"></i>Random Data</label>
-        <input type="text" id="randomdata">
-      </p>
-      <div id="sliderrandom" style="margin-top: -10px"></div>
-      <p class="slider-label">
-        <label style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>Sim Speed</label>
-        <input type="text" id="simspeed">
-      </p>
-      <div id="sliderspeed" style="margin-top: -10px"></div>
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fas fa-globe"></i>Random Data</label>
+          <input type="text" id="randomdata">
+        </p>
+        <div id="sliderrandom" style="margin-top: -10px"></div>
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
+          <input type="text" id="simhrs">
+        </p>
+        <div id="sliderhrs" style="margin-top: -10px"></div>
+        <p class="slider-label">
+          <label style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>Sim Speed</label>
+          <input type="text" id="simspeed">
+        </p>
+        <div id="sliderspeed" style="margin-top: -10px"></div>
+      </div>
   </div>
 
-  <input class="button traffic" value="Train On" onclick="T_on()">
-  <input class="button traffic" value="Train Off" onclick="T_off()">
-  <input class="button func" value="Upload O/D Data" onclick="">
-  <input class="button func" value="Street Modification" onclick="">
+  <!-- <input class="button traffic" value="Train On" onclick="T_on()"> -->
+  <!-- <input class="button traffic" value="Train Off" onclick="T_off()"> -->
+  <!-- <input class="button func" value="Upload O/D Data" onclick=""> -->
+  <!-- <input class="button func" value="Street Modification" onclick=""> -->
   <!-- <input class="button func" value="Re-Start"> -->
-  <input class="button func" value="Run Sim" onclick="fleet_sim()">
-  <input class="button func" value="Test Sim" onclick="test_fleet_sim()">
+  <input class="button func" value="Simulate" onclick="fleet_sim()">
+  <!-- <input class="button func" value="Test Sim" onclick="test_fleet_sim()"> -->
   </div>
 </div>
 <div id="graphs">
@@ -174,15 +185,14 @@
     <thead>
       <td>Trial</td>
       <td>PEVs</td>
-      <td>Bike Trips</td>
-      <td>Taxi Trips</td>
-      <td>Random Trips</td>
-      <td>Trips/Hour</td>
+      <td>Trips</td>
+      <td>Bike / Taxi / Random</td>
+      <td>Trips/Day</td>
       <td>Wait Time</td>
       <td>Assignment Time</td>
-      <td>PEV Nav</td>
-      <td>PEV Dropoff</td>
-      <td>PEV Usage</td>
+      <td>Avg Empty Trips</td>
+      <td>Avg Job Trips</td>
+      <td>Utilization</td>
     </thead>
   </table>
 <div id="loader" class="disabled">

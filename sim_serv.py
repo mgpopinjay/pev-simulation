@@ -51,6 +51,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             randomFreq = int(args["random"])
             bikeFreq = int(args["bike"])
             taxiFreq = int(args["taxi"])
+            startHrs = int(args["starthrs"])
+            endHrs = int(args["endhrs"])
 
             # create dictionary of data to dump as JSON to 'Variable_X.json file'
             data_to_send = {
@@ -61,8 +63,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 "Taxi_Freq": taxiFreq,
                 "Max_Dist": maxDist,
                 "Spawn_Point": 0,
-                "Start_Hour": 0,
-                "End_Hour": 3,
+                "Start_Hour": startHrs,
+                "End_Hour": endHrs,
                 "Code": code
             }
             # read id_counter.txt to know which simulation we are on

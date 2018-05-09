@@ -27,6 +27,7 @@ var slider_hubway = 20;
 var slider_random = 20;
 var slider_taxi = 20;
 var slider_max = 5;
+var slider_hrs = 3;
 
 $(function() {
   $("#sliderfleet").slider({
@@ -70,51 +71,51 @@ $(function() {
 });
 
 $(function() {
-  let totaldata = 11;
+  let triphr = 4;
   $( "#slidertaxi" ).slider({
     value: 20,
     min: 0,
     max: 100,
     step: 10,
     slide: function( event, ui ) {
-      let trips = Math.round(ui.value/100*totaldata)
+      let trips = Math.round(ui.value/100*triphr*slider_hrs)
       $( "#taxidata" ).val( ui.value + " %" + " ("+trips+" trips)");
       slider_taxi = ui.value;
     }
   });
-  $( "#taxidata" ).val( $( "#slidertaxi" ).slider( "value" ) + " %"  + " (" + Math.round(.2*totaldata)+" trips)");
+  $( "#taxidata" ).val( $( "#slidertaxi" ).slider( "value" ) + " %"  + " (" + Math.round(.2*triphr*slider_hrs)+" trips)");
 });
 
 $(function() {
-  let totaldata = 148;
+  let triphr = 50;
   $( "#sliderhubway" ).slider({
     value: 20,
     min: 0,
     max: 100,
     step: 10,
     slide: function( event, ui ) {
-      let trips = Math.round(ui.value/100*totaldata)
+      let trips = Math.round(ui.value/100*triphr*slider_hrs)
       $( "#hubwaydata" ).val( ui.value + " %"+ " ("+trips+" trips)");
       slider_hubway = ui.value;
     }
   });
-  $( "#hubwaydata" ).val( $( "#sliderhubway" ).slider( "value" ) + " %"  + " ("+Math.round(.2*totaldata)+" trips)");
+  $( "#hubwaydata" ).val( $( "#sliderhubway" ).slider( "value" ) + " %"  + " ("+Math.round(.2*triphr*slider_hrs)+" trips)");
 });
 
 $(function() {
-  let totaldata = 180;
+  let triphr = 60;
   $( "#sliderrandom" ).slider({
     value: 20,
     min: 0,
     max: 100,
     step: 10,
     slide: function( event, ui ) {
-      let trips = Math.round(ui.value/100*totaldata);
+      let trips = Math.round(ui.value/100*triphr*slider_hrs);
       $( "#randomdata" ).val( ui.value + " %" + " ("+trips+" trips)" );
       slider_random = ui.value;
     }
   });
-  $( "#randomdata" ).val( $( "#sliderrandom" ).slider( "value" ) + " %" + " ("+Math.round(.2*totaldata)+" trips)");
+  $( "#randomdata" ).val( $( "#sliderrandom" ).slider( "value" ) + " %" + " ("+Math.round(.2*triphr*slider_hrs)+" trips)");
 });
 
 $(function() {
@@ -128,6 +129,24 @@ $(function() {
     }
   });
   $( "#parcelAmount" ).val(  $( "#sliderParcelAmount" ).slider( "value" ) + " /hr"  );
+});
+
+$(function() {
+  $( "#sliderhrs" ).slider({
+    value: 3,
+    min: 0,
+    max: 24,
+    step: 1,
+    slide: function( event, ui ) {
+      $( "#simhrs" ).val( ui.value + " hrs");
+      slider_hrs = ui.value;
+      $( "#hubwaydata" ).val(slider_hubway + " %"  + " ("+Math.round(slider_hubway/100*50*slider_hrs)+" trips)");
+      $( "#randomdata" ).val(slider_random + " %"  + " ("+Math.round(slider_random/100*60*slider_hrs)+" trips)"); 
+      $( "#taxidata" ).val(slider_taxi + " %"  + " ("+Math.round(slider_taxi/100*4*slider_hrs)+" trips)");
+
+    }
+  });
+  $( "#simhrs" ).val(  $( "#sliderhrs" ).slider( "value" ) + " hrs"  );
 });
 
 $(function() {
@@ -174,11 +193,14 @@ function fleet_sim() {
   var bike_freq = slider_hubway;
   var random_freq = slider_random;
   var taxi_freq = slider_taxi;
-  var max_dist = slider_max;
+  var max_dist = slider_max; 
   // var publicTransit_size = slider_publicTransit;
   var rebalanceSize = slider_rebalanceSize;
+  var endhrs = slider_hrs;
   var code = Math.floor(Math.random()*10000);
   var sim_params = {
+    starthrs: 0,
+    endhrs: endhrs,
     size: fleet_size,
     parcels: rebalanceSize,
     bike: bike_freq,
@@ -223,18 +245,18 @@ function createTrips(data) {
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
-        <td>${data['outputs']['TRIPS'].bike}</td>
-        <td>${data['outputs']['TRIPS'].taxi}</td>
-        <td>${data['outputs']['TRIPS'].random}</td>
+        <td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random}</td>
+        <td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
         <td id="trial-${TRIAL}-wait">0</td>
         <td id="trial-${TRIAL}-push">0</td>
         <td>${Math.ceil((data['outputs']['AVERAGE CAR NAVIGATION']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['AVERAGE CAR COMPLETION']/60)*100)/100} min</td>
-        <td>${data['outputs']['AVERAGE CAR UTILIZATION']}%</td>
+        <td>${data['outputs']['AVERAGE CAR UTILIZATION']*100}%</td>
       </tr>`)
   pushTimes = [];
   waitTimes = [];
+  startTimes = [];
   //let pendingTrips = [];
   for(let i=0; i < Object.keys(data['fleet']).length; i++) {
     for(let j=0; j < data['fleet'][i]['history'].length; j++) {
@@ -368,7 +390,7 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
       // map.addLayer(heatLayer);  HEAT LAYER - Slows down simulation
       waitTimes.push(waittime / 60); 
       pushTimes.push(pushtime / 60);
-      startTimes.push(start_time / 60 / 18);
+      startTimes.push(start_time / 60 / 60);
       updateLines();
     };
   }, ((waittime + pushtime) * 1000) / SPEED);
@@ -503,6 +525,6 @@ function prepareStartTimes(times) {
     L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
     Progress(0, 800);
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
-    lineGraph("wait-graph", 15, 20, 270, 150, "Demand Graph");
+    lineGraph("wait-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
   });

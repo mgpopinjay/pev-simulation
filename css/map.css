@@ -37,7 +37,23 @@ body {
 
 /* CONTROL PANEL */
 
+.control-section {
+    font-size: 14px;
+    border: 2px solid white;
+    border-radius: 10px;
+    margin-top: 30px;
+    padding: 10px 20px 20px 20px;
+    background-color: rgba(100,100,100,0.7); 
+}
+.control-label {
+    font-size: 30px;
+    color: white;
+    padding: 5px 0px;
+    border-bottom: 2px solid white;
+    font-weight: 600;
+}
 .button {
+    font-size: 14px;
     background-color: #ff66cc;
     color: white;
     border: 2px solid #ff66cc;
@@ -45,17 +61,19 @@ body {
     cursor: pointer;
     padding: 5px 10px;
     display: inline-block;
-    width: calc(100% - 24px);
+    width: calc(100% - 44px);
+    margin-left: 10px;
     float: left;
     text-align: center;
-    margin-top: 10px;
+    margin-top: -10px;
 }
 
 #controls {
-    width: 220px;
+    width: 240px;
     position: absolute;
     left: 0;
     top: 0;
+    margin-top: 50px;
     margin-left: 20px;
 }
 
@@ -179,7 +197,7 @@ body {
 }
 /*
 UNUSED
- */
+*/
 
 #trip-box {
     /*width: 300px;*/
@@ -251,11 +269,11 @@ UNUSED
 }
 
 .table {
- border-collapse: collapse;
+    border-collapse: collapse;
 }
 
 .table td {
- padding: .2em;
+    padding: .2em;
 }
 
 .header {
@@ -267,14 +285,14 @@ UNUSED
 
 
 th {
-   border: 1px solid black;
+    border: 1px solid black;
 }
 
 td {
     text-align: center;
 }
 /*body, a:hover {*/
-    /*    cursor: url(http://ani.cursors-4u.net/toons/too-12/too1137.cur), progress !important;*/
+/*    cursor: url(http://ani.cursors-4u.net/toons/too-12/too1137.cur), progress !important;*/
 }
 
 body {
