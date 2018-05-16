@@ -1,1 +1,1 @@
-{"Taxi_Freq": 100, "Start_Hour": 0, "Code": 2547, "Max_Dist": 5, "Rebalancing_Vehicles": 20, "Bike_Freq": 100, "Fleet_Size": 40, "Spawn_Point": 0, "End_Hour": 3, "Random_Freq": 0}
+{"Taxi_Freq": 50, "Start_Hour": 0, "Code": 4793, "Max_Dist": 5, "Rebalancing_Vehicles": 20, "Bike_Freq": 30, "Fleet_Size": 20, "Spawn_Point": 0, "End_Hour": 5, "Random_Freq": 40}

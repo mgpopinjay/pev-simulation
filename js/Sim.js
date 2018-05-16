@@ -143,7 +143,6 @@ $(function() {
       $( "#hubwaydata" ).val(slider_hubway + " %"  + " ("+Math.round(slider_hubway/100*50*slider_hrs)+" trips)");
       $( "#randomdata" ).val(slider_random + " %"  + " ("+Math.round(slider_random/100*60*slider_hrs)+" trips)"); 
       $( "#taxidata" ).val(slider_taxi + " %"  + " ("+Math.round(slider_taxi/100*4*slider_hrs)+" trips)");
-
     }
   });
   $( "#simhrs" ).val(  $( "#sliderhrs" ).slider( "value" ) + " hrs"  );
