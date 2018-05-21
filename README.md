@@ -37,7 +37,9 @@ PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
     osrm-contract map.xml.osrm
     osrm-routed map.xlm.osrm
 
-# Setup frontend server
+# Setup frontend & backend server
+Check these Python packages installed: requests, simplejson
+
 #### RUN SERVER
     python sim_serv.py
     navigate to http://localhost:8235
