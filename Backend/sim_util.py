@@ -66,7 +66,7 @@ def get_osrm_output(start, end):
     get OSRM route finding output
     '''
     samp1 = 'route/v1/bicycle/'
-    samp2 = '?alternatives=false&steps=true&geometries=polyline&overview=simplified&annotations=false'
+    samp2 = '?alternatives=false&steps=true&geometries=polyline&overview=simplified'
     samp1 = samp1 + str(start[0]) + ',' + str(start[1]) + ';'
     samp2 = str(end[0]) + ',' + str(end[1]) + samp2
     sample = API_BASE + samp1+samp2
