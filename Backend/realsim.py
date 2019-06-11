@@ -1,11 +1,12 @@
 ''' Fernando Sanchez, August 2017 '''
-import sim_util as util
+from . import sim_util as util
 import heapq
 import time
 import random
 import datetime
 import os
 import json
+import statistics
 
 """
 NOTES FOR THE READER:
@@ -30,7 +31,7 @@ TODO LIST:
 
 
 def run_sim():
-    print "running simulation..."
+    print("running simulation...")
     curpath = os.path.dirname(os.path.abspath(__file__))
 
     sim_id = json.load(open(os.path.dirname(curpath) + "/Backend/id_counter.txt"))
@@ -53,8 +54,8 @@ def run_sim():
     START_HR    = variables["Start_Hour"] # end hour of the simulation
     END_HR      = variables["End_Hour"] # start hour of the simulation
 
-    print "NUMCARS: " + str(NUMCARS)
-    print "CODE: " + str(CODE)
+    print("NUMCARS: " + str(NUMCARS))
+    print("CODE: " + str(CODE))
 
     NUMDATA = 1  # number of spreadsheets of data used
     KIND_RATIO = 70  # percent of trips that are passengers
@@ -76,7 +77,7 @@ def run_sim():
     THE SIMULATOR
     """
     sim_start_time = time.time()
-    print "Sim Start"
+    print("Sim Start")
 
     ''' populate requests '''
     requests = []
@@ -90,7 +91,7 @@ def run_sim():
         requests += res[0]
         stations = res[1]
 
-    heapq.heapify(requests)
+#    heapq.heapify(requests)
     finished_requests = []
     rebalance_trips = []
     idle_trips = []
@@ -130,7 +131,7 @@ def run_sim():
         temp_free_cars = []
         # update rebalancing cars to add temp cars them to temp_free_cars
         if rebalancing_cars:
-            print 'REBALANCING'
+            print ('REBALANCING')
             for car in rebalancing_cars:
                 if car.time <= req_time:
                     # end rebalancing trip
@@ -152,7 +153,9 @@ def run_sim():
         if busy_cars:
             while req.time >= busy_cars[0].time:
                 # end request trip
-                car = heapq.heappop(busy_cars)
+#                car = heapq.heappop(busy_cars)
+                car = busy_cars[0]
+                busy_cars.pop(0)
                 if type(car.request) == util.Request:
                     doub = car.end_trip()  # doub is a tuple of (finished_trip, finished_nav)
                     finished = doub[0]
@@ -189,7 +192,9 @@ def run_sim():
         ##### ASSIGNMENT #######
         ########################
         temp_free_cars = rebalancing_cars + free_cars
-        req = heapq.heappop(requests)
+#        req = heapq.heappop(requests)
+        req = requests[0]
+        requests.pop(0)
         if len(temp_free_cars) > 0:
             min_pair = min(enumerate(free_cars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
             min_car_index = min_pair[0]
@@ -198,7 +203,8 @@ def run_sim():
             idl = min_car.end_idle(req)
             idle_trips.append(idl)
             assign_finished_trip(min_car, idl)
-            heapq.heappush(busy_cars, min_car)
+            busy_cars.append(min_car)
+#            heapq.heappush(busy_cars, min_car)
 
             # elif min_car in rebalancing_cars:
             #     j = rebalancing_cars.index(min_car)
@@ -212,7 +218,8 @@ def run_sim():
         else:  # there are no free cars
             req.pushtime += 1.0
             req.time += 1.0  # move the request time forward until a car is free to claim it
-            heapq.heappush(requests, req)
+            requests.append(req)
+#            heapq.heappush(requests, req)
 
         ''' rebalancing logic '''
         ''' TODO: fix this and comment the logic '''
@@ -238,7 +245,9 @@ def run_sim():
     ''' finish trips after all requests were fulfilled '''
     last_time = 0
     while busy_cars:
-        car = heapq.heappop(busy_cars)
+        car = busy_cars[0]
+        busy_cars.pop(0)
+#        car = heapq.heappop(busy_cars)
         if type(car.request) == util.Request:
             doub = car.end_trip()
             finished = doub[0]
@@ -252,7 +261,7 @@ def run_sim():
                 car.become_idle(finished.time+finished.waittime+finished.traveltime)
         free_cars.append(car)
 
-    print "Sim Done"
+    print("Sim Done")
     sim_end_time = time.time()
 
     """
@@ -260,7 +269,7 @@ def run_sim():
     """
     # runtime
     delta = sim_end_time - sim_start_time
-    print "SIM RUNTIME: "+str(delta)
+    print("SIM RUNTIME: "+str(delta))
     # trip analytics
     waittimes = []
     pushtimes = []
@@ -298,40 +307,47 @@ def run_sim():
             rebaltimes.append(time_as_hour)
             rebaltraveltimes.append(re.traveltime)
     '''
-    print "HUBWAY DATA: "+str(HUBWAY_DATA)
-    print "TAXI DATA: "+str(TAXI_DATA)
-    print "RANDOM DATA: "+str(RANDOM_DATA)
+    print("HUBWAY DATA: "+str(HUBWAY_DATA))
+    print("TAXI DATA: "+str(TAXI_DATA))
+    print("RANDOM DATA: "+str(RANDOM_DATA))
 
-    # print "REBALANCE ON?: "+str(REBALANCE_ON)
-    # print "RANDOM START?: "+str(RANDOM_START)
-    print "TOTAL TRIPS: "+str(len(finished_requests)) 
+    # print("REBALANCE ON?: "+str(REBALANCE_ON)
+    # print("RANDOM START?: "+str(RANDOM_START)
+    print("TOTAL TRIPS: "+str(len(finished_requests))) 
     for origin in origins.keys():
-        print origin.upper()+" TRIPS: "+str(origins[origin])
-    avg = round(reduce(lambda x, y: x+y, waittimes)/len(waittimes),1)
-    print "AVERAGE REQUEST WAITTIME: "+str(avg)
-    p_avg = round(reduce(lambda x, y: x+y, pushtimes)/len(pushtimes),1)
-    print "AVERAGE REQUEST PUSHTIME: "+str(p_avg)
-    t_avg = round(reduce(lambda x, y: x+y, traveltimes)/len(traveltimes),1)
-    print "AVERAGE REQUEST TRAVELTIME: "+str(t_avg)
-    u_avg = round(reduce(lambda x, y: x+y, utiltimes)/len(utiltimes),1)
-    print "AVERAGE CAR COMPLETION: "+str(u_avg)
-    n_avg = round(reduce(lambda x, y: x+y, navtimes)/len(navtimes),1)
-    print "AVERAGE CAR NAVIGATION TIME: "+str(n_avg)
-    m_avg = round(reduce(lambda x, y: x+y, movingtimes)/len(movingtimes),1)
-    print "AVERAGE CAR MOVINGTIME: "+str(m_avg)
+        print(origin.upper()+" TRIPS: "+str(origins[origin]))
+#    avg = round(reduce(lambda x, y: x+y, waittimes)/len(waittimes),1)
+    avg = round(statistics.mean(waittimes),1)
+    print("AVERAGE REQUEST WAITTIME: "+str(avg))
+#    p_avg = round(reduce(lambda x, y: x+y, pushtimes)/len(pushtimes),1)
+    p_avg = round(statistics.mean(pushtimes),1)
+    print("AVERAGE REQUEST PUSHTIME: "+str(p_avg))
+#    t_avg = round(reduce(lambda x, y: x+y, traveltimes)/len(traveltimes),1)
+    t_avg = round(statistics.mean(traveltimes),1)
+    print("AVERAGE REQUEST TRAVELTIME: "+str(t_avg))
+#    u_avg = round(reduce(lambda x, y: x+y, utiltimes)/len(utiltimes),1)
+    u_avg = round(statistics.mean(utiltimes),1)
+    print("AVERAGE CAR COMPLETION: "+str(u_avg))
+#    n_avg = round(reduce(lambda x, y: x+y, navtimes)/len(navtimes),1)
+    n_avg = round(statistics.mean(navtimes),1)
+    print("AVERAGE CAR NAVIGATION TIME: "+str(n_avg))
+#    m_avg = round(reduce(lambda x, y: x+y, movingtimes)/len(movingtimes),1)
+    m_avg = round(statistics.mean(movingtimes),1)
+    print("AVERAGE CAR MOVINGTIME: "+str(m_avg))
     prop = round(float(u_avg)/float(m_avg),1)
-    print "AVERAGE CAR UTILIZATION PERCENTAGE: "+str(prop)
-    i_avg = round(reduce(lambda x, y: x+y, idletimes)/len(idletimes),1)
-    print "AVERAGE CAR IDLETIME: "+str(i_avg)
+    print("AVERAGE CAR UTILIZATION PERCENTAGE: "+str(prop))
+#    i_avg = round(reduce(lambda x, y: x+y, idletimes)/len(idletimes),1)
+    i_avg = round(statistics.mean(idletimes),1)
+    print("AVERAGE CAR IDLETIME: "+str(i_avg))
     p_idle = round(i_avg/(i_avg + m_avg),1)
-    print "PERCENTAGE IDLE: " + str(p_idle)
+    print("PERCENTAGE IDLE: " + str(p_idle))
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
-    print "NUM REBALANCING TRIPS: "+str(len(rebalance_trips))
-    print "TIME OF REBALANCE TRIPS: \n"+str(rebaltimes)
-    print "LENGTH OF REBALANCE TRIPS: \n"+str(rebaltraveltimes)
+    print("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
+    print("TIME OF REBALANCE TRIPS: \n"+str(rebaltimes))
+    print("LENGTH OF REBALANCE TRIPS: \n"+str(rebaltraveltimes))
     r_avg = reduce(lambda x,y:x+y, rebaltraveltimes)/len(rebaltraveltimes)
-    print "AVERAGE LENGTH OF REBALANCE TRIP: "+str(r_avg)
+    print("AVERAGE LENGTH OF REBALANCE TRIP: "+str(r_avg))
     '''
 
     """    Create results JSON
@@ -390,7 +406,7 @@ def run_sim():
 
     sim_outputs = {
         "TRIPS": origins,
-        "TRIPS_HR": len(finished_requests)/(END_HR-START_HR),
+        "TRIPS_HR": round(len(finished_requests)/(END_HR-START_HR),1),
         "TRIPS_DAY": len(finished_requests)/(END_HR-START_HR)*24,
         "SIM RUNTIME": str(delta),
         "AVERAGE REQUEST WAITTIME": str(avg),
@@ -413,8 +429,8 @@ def run_sim():
     if MADE_FILE:
         filename = "sim_results_"+str(CODE)+".JSON"
         util.send_to_visualizer(final_data, filename)
-        print "Made file"
-    print "DONE"
+        print("Made file")
+    print("DONE")
     return final_data
 
 if __name__ == '__main__':

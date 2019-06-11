@@ -3,8 +3,10 @@
 # server code courtesy of https://snipt.net/raw/f8ef141069c3e7ac7e0134c6b58c25bf/?nice
 # @rochacbruno
 
-import SimpleHTTPServer
-import SocketServer
+#import SimpleHTTPServer
+import http.server
+#import SocketServer
+import socketserver
 import logging
 import json
 from Backend.realsim import run_sim
@@ -15,17 +17,17 @@ import datetime
 import os
 import subprocess
 
-PORT = 8235
+PORT = 9000
 
 
-class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class ServerHandler(http.server.SimpleHTTPRequestHandler):
 
     """ Local Python Server to run the simulation"""
 
     def do_GET(self):
         logging.warning("======= GET STARTED =======")
         logging.warning(self.headers)
-        SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+        http.server.SimpleHTTPRequestHandler.do_GET(self)
 
     def do_OPTIONS(self):
         self.send_response(200, "ok")
@@ -42,8 +44,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         if self.path == "/fleetsim":
             data = self.rfile.read(length)
-            logging.warning("Received: " + data)
-            args = json.loads(data)
+            logging.warning("Received: " + str(data))
+            args = json.loads(data.decode('utf-8'))
             fleet_size = int(args["size"])
             code = args["code"]
             maxDist = int(args["max_dist"])
@@ -87,7 +89,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header("Content-type", "json")
             self.end_headers()
-            self.wfile.write(json.dumps(resp))
+            self.wfile.write(json.dumps(resp).encode("utf-8"))
         else:
             testdata = json.load(open("test.JSON"))
             self.send_response(200, "OK")
@@ -95,7 +97,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header("Content-type", "json")
             self.end_headers()
-            self.wfile.write(json.dumps(testdata))
+            self.wfile.write(json.dumps(str(testdata)))
         return
         #f.writelines("Rebalancing Vehicles: " + str(parcFreq) + "\n")
         #f.writelines("Fleet Size: " + str(fleet_size) + "\n")
@@ -136,5 +138,6 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 # dynamic_trips.TripRandomizer().loadLocsFile(".loc_file")
 # dynamic_trips.TripRandomizer().loadRidesFile(".rides_def")
 Handler = ServerHandler
-httpd = SocketServer.TCPServer(("", PORT), Handler)
+httpd = socketserver.TCPServer(("", PORT), Handler)
 httpd.serve_forever()
+

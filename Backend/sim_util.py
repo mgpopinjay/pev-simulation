@@ -58,7 +58,7 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 
 LOCAL = True
-API_BASE = 'http://0.0.0.0:5000/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -66,7 +66,9 @@ def get_osrm_output(start, end):
     get OSRM route finding output
     '''
     samp1 = 'route/v1/bicycle/'
+#    samp1 = 'route/v1/driving/'
     samp2 = '?alternatives=false&steps=true&geometries=polyline&overview=simplified'
+#    samp2 = ''
     samp1 = samp1 + str(start[0]) + ',' + str(start[1]) + ';'
     samp2 = str(end[0]) + ',' + str(end[1]) + samp2
     sample = API_BASE + samp1+samp2
@@ -79,6 +81,7 @@ def get_snap_output(point):
     get OSRM nearest street position output
     '''
     samp1 = 'nearest/v1/bicycle/'
+#    samp1 = 'nearest/v1/driving/'
     samp2 = '?number=1'
     samp1 = samp1 + str(point[0]) + ',' + str(point[1])
     sample = API_BASE + samp1 + samp2

@@ -1,12 +1,6 @@
 # pev-simulation
 PEV
 
-# PEV SimApp V3 Architecture
-
-[Link to edit diagram on LucidChart](https://www.lucidchart.com/invitations/accept/e1dfca89-6a07-4b69-a5e7-98147b56fdfc)
-
-[Link to PowerPoint visualization of key features](https://docs.google.com/presentation/d/1eAi3rYy4O6R9oW1tQVdBr2pEis53ephnnRyHMtVPIlM/edit?usp=sharing)
-
 # Setup OSRM Backend Routing Server
 
 #### OS X install dependencies
