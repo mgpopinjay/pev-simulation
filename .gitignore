@@ -88,3 +88,7 @@ ENV/
 .ropeproject
 db/journal
 .DS_Store
+
+# Sim inputs + results
+Backend/Inputs/**
+Backend/Results/**
