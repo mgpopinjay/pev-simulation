@@ -1,7 +1,25 @@
 # pev-simulation
 PEV
 
+# PEV SimApp V3 Architecture
+
+[Link to edit diagram on LucidChart](https://www.lucidchart.com/invitations/accept/e1dfca89-6a07-4b69-a5e7-98147b56fdfc)
+
+[Link to PowerPoint visualization of key features](https://docs.google.com/presentation/d/1eAi3rYy4O6R9oW1tQVdBr2pEis53ephnnRyHMtVPIlM/edit?usp=sharing)
+
 # Setup OSRM Backend Routing Server
+
+#### Analytic Data Explanation
+* Trial: Trial #
+* PEVs: Fleet size
+* Trips: Total # of trips
+* Bike/Taxi/Random: # of each type of trip
+* Trips/Day: Avg trips/hr * 24
+* Wait Time: Avg time spent waiting for car to arrive
+* Assignment Time: Avg time spent waiting for a car to be assigned
+* Avg Empty Trips: Avg time navigating to pickup
+* Avg Job Trips: Avg time driving passenger
+* Utilization: % of driving time car spends delivering passengers
 
 #### OS X install dependencies
 
