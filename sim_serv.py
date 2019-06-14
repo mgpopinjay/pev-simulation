@@ -3,19 +3,19 @@
 # server code courtesy of https://snipt.net/raw/f8ef141069c3e7ac7e0134c6b58c25bf/?nice
 # @rochacbruno
 
-#import SimpleHTTPServer
+# import SimpleHTTPServer
 import http.server
-#import SocketServer
+# import SocketServer
 import socketserver
 import logging
 import json
 from Backend.realsim import run_sim
-#from server import routes, dynamic_trips
-import sys
-import simplejson
-import datetime
+# from server import routes, dynamic_trips
+# import sys
+# import simplejson
+# import datetime
 import os
-import subprocess
+# import subprocess
 
 PORT = 9000
 
