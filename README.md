@@ -45,15 +45,15 @@ PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
 #### OS X Running OSRM
     cd osrm-backend
     mkdir map
-    cd build
     cd map
     wget -O map.xml https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039
 
     (or install from the link directly https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039 and move to osrm-backend/map and change filename to map.xml)
 
-    ./osrm-extract map.xml -p ../profiles/bicycle.lua
-    osrm-contract map.xml.osrm
-    osrm-routed map.xlm.osrm
+    cd ..
+    ./build/osrm-extract map/map.xml -p profiles/bicycle.lua
+    ./build/osrm-contract map/map.xml.osrm
+    ./build/osrm-routed map/map.xml.osrm
 
 #### Windows Running OSRM
 Install [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/). 
