@@ -21,7 +21,7 @@ PEV
 * Avg Job Trips: Avg time driving passenger
 * Utilization: % of driving time car spends delivering passengers
 
-#### OS X install dependencies
+#### OS X Install Dependencies
 
 Please install the [homebrew](http://mxcl.github.com/homebrew/) package system. It will provide all necessary dependencies:
 
@@ -33,7 +33,7 @@ To be able to compile tools:
 
 PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
 
-#### OS X BUILD (ENABLE_MASON=ON)
+#### OS X Build (ENABLE_MASON=ON)
 
     git clone https://github.com/Project-OSRM/osrm-backend.git
     cd osrm-backend
@@ -42,7 +42,7 @@ PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
     cmake .. -DENABLE_MASON=1
     make
 
-#### OS X RUNNING OSRM
+#### OS X Running OSRM
     cd osrm-backend
     mkdir map
     cd build
@@ -54,6 +54,26 @@ PLEASE ENSURE THAT XCODE IS INSTALLED AND UPDATED
     osrm-extract map.xml -p ../profiles/bicycle.lua
     osrm-contract map.xml.osrm
     osrm-routed map.xlm.osrm
+
+#### Windows Running OSRM
+Install [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/). 
+
+Make sure you install "Desktop development with C++" and check the option for "MSVC v140 - VS 2015" as pictured [here](https://i.imgur.com/SB3nUBV.png).
+
+Download the latest release build from [build.project-osrm.org](http://build.project-osrm.org/).
+
+    cd osrm_Release
+    mkdir map
+    cd map
+    wget -O map.xml "https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039"
+
+    (or install from the link directly "https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039" and move to osrm-Release/map and change filename to map.xml)
+
+    cd ..
+    osrm-extract map/map.xml -p bicycle.lua
+    osrm-contract map/map.xml.osrm
+    osrm-routed -i [your IP here] -p 9002 map/map.xml.osrm
+
 
 # Setup frontend & backend server
 Check these Python packages installed: requests, simplejson
