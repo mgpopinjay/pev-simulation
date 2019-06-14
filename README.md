@@ -74,6 +74,7 @@ Download the latest release build from [build.project-osrm.org](http://build.pro
     osrm-contract map/map.xml.osrm
     osrm-routed -i [your IP here] -p 9002 map/map.xml.osrm
 
+After setting up the OSRM backend the first time, you only need to run the command `osrm-routed -i [your IP here] -p 9002 map/map.xml.osrm` to launch the server.
 
 # Setup frontend & backend server
 Check these Python packages installed: requests, simplejson
