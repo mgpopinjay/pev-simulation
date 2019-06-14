@@ -58,7 +58,8 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 
 LOCAL = True
-API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
+# API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -164,9 +165,24 @@ class Request(object):
         self.traveldist = find_total_distance(self.osrm)
         self.kind = kind
 
-    def __cmp__(self, other):
-        ''' compare method for heap '''
-        return cmp(self.time, other.time)
+    ''' compare methods for heap '''
+    def __eq__(self, other):
+        return self.time == other.time
+
+    def __ne__(self, other):
+        return self.time != other.time
+
+    def __lt__(self, other):
+        return self.time < other.time
+
+    def __le__(self, other):
+        return self.time <= other.time
+
+    def __gt__(self, other):
+        return self.time > other.time
+
+    def __ge__(self, other):
+        return self.time >= other.time
 
     def __repr__(self):
         ''' represent method for stuff '''
@@ -236,9 +252,24 @@ class PEV(object):
         self.idletime = 0
         self.nav = None
 
-    def __cmp__(self, other):
-        ''' compare method for heap '''
-        return cmp(self.time, other.time)
+    ''' compare methods for heap '''
+    def __eq__(self, other):
+        return self.time == other.time
+
+    def __ne__(self, other):
+        return self.time != other.time
+
+    def __lt__(self, other):
+        return self.time < other.time
+
+    def __le__(self, other):
+        return self.time <= other.time
+
+    def __gt__(self, other):
+        return self.time > other.time
+
+    def __ge__(self, other):
+        return self.time >= other.time
 
     def low_power(self, c_dist):
         if abs(self.c_movingspace-c_range) >= c_dist:
@@ -542,7 +573,7 @@ def generate_japan_trips(month, day, year):
         for row in spamreader:
             data.append(row)
     for row in data[1:]:
-        if row[1] == year and row[2] == month and row[3] == day:   
+        if row[1] == year and row[2] == month and row[3] == day:
             starttime = row[4]*60*60+row[5]*60
             endtime = row[19]*60*60+row[20]*60
             duration = row[33]
@@ -560,7 +591,7 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs):
         spamreader = csv.reader(file, delimiter=',', quotechar='|')
         for row in spamreader:
             data.append(row)
-        
+
     for row in data[1:]:
         pretime = row[1]
         time = int(pretime[-8:-6])*60*60+int(pretime[-5:-3])*60+int(pretime[-2:])
