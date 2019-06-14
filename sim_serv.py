@@ -99,9 +99,9 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(str(testdata)))
         return
-        #f.writelines("Rebalancing Vehicles: " + str(parcFreq) + "\n")
-        #f.writelines("Fleet Size: " + str(fleet_size) + "\n")
-        #f.writelines("Modal Transfer from Public Transit: " + str(maxDist))
+        # f.writelines("Rebalancing Vehicles: " + str(parcFreq) + "\n")
+        # f.writelines("Fleet Size: " + str(fleet_size) + "\n")
+        # f.writelines("Modal Transfer from Public Transit: " + str(maxDist))
         # File Save Function End!
         # logging.warning("\n")
         # if self.path == "/fleetsim":
@@ -134,10 +134,9 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
         # return ServerHandler
 
 # initialize simulation requirements
-#routes.RouteFinder("server/google_api_key", "routes_cache")
+# routes.RouteFinder("server/google_api_key", "routes_cache")
 # dynamic_trips.TripRandomizer().loadLocsFile(".loc_file")
 # dynamic_trips.TripRandomizer().loadRidesFile(".rides_def")
 Handler = ServerHandler
 httpd = socketserver.TCPServer(("", PORT), Handler)
 httpd.serve_forever()
-
