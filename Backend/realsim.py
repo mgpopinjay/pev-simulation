@@ -91,7 +91,7 @@ def run_sim():
         requests += res[0]
         stations = res[1]
 
-    heapq.heapify(requests)
+    heapq.heapify(requests)  # sort requests by start time
     finished_requests = []
     rebalance_trips = []
     idle_trips = []
@@ -159,8 +159,8 @@ def run_sim():
                 # busy_cars.pop(0)
                 if type(car.request) == util.Request:
                     doub = car.end_trip()  # doub is a tuple of (finished_trip, finished_nav)
-                    finished = doub[0]
-                    finished_nav = doub[1]
+                    finished = doub[0]  # finished_trip
+                    finished_nav = doub[1]  # finished_nav
                     assign_finished_trip(car, finished_nav)
                     assign_finished_trip(car, finished)
                     finished_requests.append(finished)
@@ -170,8 +170,8 @@ def run_sim():
                     free_cars.append(car)
                 elif type(car.request) == util.Recharge:
                     doub = car.end_recharge
-                    finished = doub[0]
-                    finished_idle = doub[1]
+                    finished = doub[0]  # finished_trip
+                    finished_idle = doub[1]  # finished_nav
                     assign_finished_trip(car, finished_idle)
                     assign_finished_trip(car, finished)
                     # in ending rechage we become idle
@@ -179,7 +179,7 @@ def run_sim():
                 if len(busy_cars) == 0:
                     break
         # check if cars need to recharge
-        if CHARGING == True:
+        if CHARGING is True:
             if free_cars:
                 for car in free_cars:
                     if car.low_power(CHARGE_DISTANCE):
@@ -187,7 +187,7 @@ def run_sim():
                         free_cars.pop(ind)
                         station = util.find_closest_station(car.loc)
                         car.fulfill_recharge(util.Recharge(req_time, car.loc, station, CHARGE_TIME))
-                        heapq.heappush(busy_cars, car)
+                        heapq.heappush(busy_cars, car)  # turn free car into busy car
 
         ########################
         ##### ASSIGNMENT #######
@@ -197,14 +197,16 @@ def run_sim():
         # req = requests[0]
         # requests.pop(0)
         if len(temp_free_cars) > 0:
+            # loop through free_cars to find the car with minimum linear distance to pickup
             min_pair = min(enumerate(free_cars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
+            # min_pair = (index, car)
             min_car_index = min_pair[0]
             min_car = min_pair[1]
             del free_cars[min_car_index]
             idl = min_car.end_idle(req)
             idle_trips.append(idl)
             assign_finished_trip(min_car, idl)
-            heapq.heappush(busy_cars, min_car)
+            heapq.heappush(busy_cars, min_car)  # move car to busy list
             # busy_cars.append(min_car)
 
             # elif min_car in rebalancing_cars:
@@ -217,7 +219,7 @@ def run_sim():
             #     heapq.heappush(busy_cars, min_car)
 
         else:  # there are no free cars
-            req.pushtime += 1.0
+            req.pushtime += 1.0  # increment time by 1 second
             req.time += 1.0  # move the request time forward until a car is free to claim it
             heapq.heappush(requests, req)
             # requests.append(req)
@@ -244,9 +246,9 @@ def run_sim():
                                 rebalancing_cars.append(car)
 
     ''' finish trips after all requests were fulfilled '''
-    last_time = 0
+    # last_time = 0
     while busy_cars:
-        car = heapq.heappop(busy_cars)
+        car = heapq.heappop(busy_cars)  # get first busy car
         # car = busy_cars[0]
         # busy_cars.pop(0)
         if type(car.request) == util.Request:
@@ -257,8 +259,8 @@ def run_sim():
                 assign_finished_trip(car, finished_nav)
                 assign_finished_trip(car, finished)
                 finished_requests.append(finished)
-                if len(busy_cars) == 0:
-                    last_time = car.time
+                # if len(busy_cars) == 0:
+                #      last_time = car.time
                 car.become_idle(finished.time+finished.waittime+finished.traveltime)
         free_cars.append(car)
 
@@ -299,7 +301,6 @@ def run_sim():
         utiltimes.append(car.utiltime)
         navtimes.append(car.movingtime-car.utiltime)
 
-
     ''' REBALANCING ANALYTICS
         rebaltimes = []
         rebaltraveltimes = []
@@ -317,30 +318,30 @@ def run_sim():
     print("TOTAL TRIPS: "+str(len(finished_requests)))
     for origin in origins.keys():
         print(origin.upper()+" TRIPS: "+str(origins[origin]))
-#    avg = round(reduce(lambda x, y: x+y, waittimes)/len(waittimes),1)
-    avg = round(statistics.mean(waittimes),1)
+    # avg = round(reduce(lambda x, y: x+y, waittimes)/len(waittimes),1)
+    avg = round(statistics.mean(waittimes), 1)
     print("AVERAGE REQUEST WAITTIME: "+str(avg))
-#    p_avg = round(reduce(lambda x, y: x+y, pushtimes)/len(pushtimes),1)
-    p_avg = round(statistics.mean(pushtimes),1)
+    # p_avg = round(reduce(lambda x, y: x+y, pushtimes)/len(pushtimes),1)
+    p_avg = round(statistics.mean(pushtimes), 1)
     print("AVERAGE REQUEST PUSHTIME: "+str(p_avg))
-#    t_avg = round(reduce(lambda x, y: x+y, traveltimes)/len(traveltimes),1)
-    t_avg = round(statistics.mean(traveltimes),1)
+    # t_avg = round(reduce(lambda x, y: x+y, traveltimes)/len(traveltimes),1)
+    t_avg = round(statistics.mean(traveltimes), 1)
     print("AVERAGE REQUEST TRAVELTIME: "+str(t_avg))
-#    u_avg = round(reduce(lambda x, y: x+y, utiltimes)/len(utiltimes),1)
-    u_avg = round(statistics.mean(utiltimes),1)
+    # u_avg = round(reduce(lambda x, y: x+y, utiltimes)/len(utiltimes),1)
+    u_avg = round(statistics.mean(utiltimes), 1)
     print("AVERAGE CAR COMPLETION: "+str(u_avg))
-#    n_avg = round(reduce(lambda x, y: x+y, navtimes)/len(navtimes),1)
-    n_avg = round(statistics.mean(navtimes),1)
+    # n_avg = round(reduce(lambda x, y: x+y, navtimes)/len(navtimes),1)
+    n_avg = round(statistics.mean(navtimes), 1)
     print("AVERAGE CAR NAVIGATION TIME: "+str(n_avg))
-#    m_avg = round(reduce(lambda x, y: x+y, movingtimes)/len(movingtimes),1)
-    m_avg = round(statistics.mean(movingtimes),1)
+    # m_avg = round(reduce(lambda x, y: x+y, movingtimes)/len(movingtimes),1)
+    m_avg = round(statistics.mean(movingtimes), 1)
     print("AVERAGE CAR MOVINGTIME: "+str(m_avg))
-    prop = round(float(u_avg)/float(m_avg),1)
+    prop = round(float(u_avg)/float(m_avg), 1)
     print("AVERAGE CAR UTILIZATION PERCENTAGE: "+str(prop))
-#    i_avg = round(reduce(lambda x, y: x+y, idletimes)/len(idletimes),1)
-    i_avg = round(statistics.mean(idletimes),1)
+    # _avg = round(reduce(lambda x, y: x+y, idletimes)/len(idletimes),1)
+    i_avg = round(statistics.mean(idletimes), 1)
     print("AVERAGE CAR IDLETIME: "+str(i_avg))
-    p_idle = round(i_avg/(i_avg + m_avg),1)
+    p_idle = round(i_avg/(i_avg + m_avg), 1)
     print("PERCENTAGE IDLE: " + str(p_idle))
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
