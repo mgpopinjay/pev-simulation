@@ -70,7 +70,7 @@ Download the latest release build from [build.project-osrm.org](http://build.pro
     (or install from the link directly "https://overpass-api.de/api/map?bbox=-71.1700,42.3175,-70.9829,42.4039" and move to osrm-Release/map and change filename to map.xml)
 
     cd ..
-    osrm-extract map/map.xml -p bicycle.lua
+    ./osrm-extract map/map.xml -p bicycle.lua
     osrm-contract map/map.xml.osrm
     osrm-routed -i [your IP here] -p 9002 map/map.xml.osrm
 
