@@ -3,7 +3,7 @@ var map;
 var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
-var waitTimes = [];
+var pickUpTimes = [];
 var startTimes = [];
 var T_API = "mTBUGDZNyU6IS_nJpCzNSw";
 var Tee;
@@ -33,7 +33,7 @@ $(function() {
   $("#sliderfleet").slider({
     value: 20,
     min: 0,
-    max: 100,
+    max: 200,
     step: 5,
     slide: function( event, ui ) {
       $("#fleet").val( ui.value + " " );
@@ -141,7 +141,7 @@ $(function() {
       $( "#simhrs" ).val( ui.value + " hrs");
       slider_hrs = ui.value;
       $( "#hubwaydata" ).val(slider_hubway + " %"  + " ("+Math.round(slider_hubway/100*50*slider_hrs)+" trips)");
-      $( "#randomdata" ).val(slider_random + " %"  + " ("+Math.round(slider_random/100*60*slider_hrs)+" trips)"); 
+      $( "#randomdata" ).val(slider_random + " %"  + " ("+Math.round(slider_random/100*60*slider_hrs)+" trips)");
       $( "#taxidata" ).val(slider_taxi + " %"  + " ("+Math.round(slider_taxi/100*4*slider_hrs)+" trips)");
     }
   });
@@ -192,7 +192,7 @@ function fleet_sim() {
   var bike_freq = slider_hubway;
   var random_freq = slider_random;
   var taxi_freq = slider_taxi;
-  var max_dist = slider_max; 
+  var max_dist = slider_max;
   // var publicTransit_size = slider_publicTransit;
   var rebalanceSize = slider_rebalanceSize;
   var endhrs = slider_hrs;
@@ -207,7 +207,7 @@ function fleet_sim() {
     taxi: taxi_freq,
     max_dist: max_dist,
     code: code,
-  }; 
+  };
   $('#loader').removeClass('disabled');
   $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
     $('#loader').addClass('disabled');
@@ -237,7 +237,7 @@ function createTrips(data) {
     RUNNING[i].marker.stop();
   });
   RUNNING = {};
-  PAUSED = false; 
+  PAUSED = false;
   TRIAL++;
   FLEET_SIZE = Object.keys(data['fleet']).length;
   $('#summary').append(`
@@ -247,14 +247,18 @@ function createTrips(data) {
         <td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random}</td>
         <td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
-        <td id="trial-${TRIAL}-wait">0</td>
-        <td id="trial-${TRIAL}-push">0</td>
+        <td id="trial-${TRIAL}-pickup">0 min</td>
+        <td id="trial-${TRIAL}-push">0 min</td>
+        <td>${Math.ceil((data['outputs']['WAITTIME AVERAGE']/60)*100)/100} min</td>
+        <td>${Math.ceil((data['outputs']['WAITTIME 50th PERCENTILE']/60)*100)/100} min</td>
+        <td>${Math.ceil((data['outputs']['WAITTIME 75th PERCENTILE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['AVERAGE CAR NAVIGATION']/60)*100)/100} min</td>
-        <td>${Math.ceil((data['outputs']['AVERAGE CAR COMPLETION']/60)*100)/100} min</td>
-        <td>${data['outputs']['AVERAGE CAR UTILIZATION']*100}%</td>
+        <td>${Math.ceil((data['outputs']['AVERAGE CAR UTILIZATION']/60)*100)/100} min</td>
+        <td>${data['outputs']['AVERAGE CAR UTILIZATION PERCENTAGE']}%</td>
+        <td>${data['outputs']['AVERAGE CAR MOVEMENT PERCENTAGE']}%</td>
       </tr>`)
   pushTimes = [];
-  waitTimes = [];
+  pickUpTimes = [];
   startTimes = [];
   //let pendingTrips = [];
   for(let i=0; i < Object.keys(data['fleet']).length; i++) {
@@ -280,8 +284,8 @@ function timeStep() {
   if (PENDING_TRIPS.length == 0 || PAUSED){
     clearInterval(LOOP);
   }
-  
-  //know how to fix this (mutation of pending trips) 
+
+  //know how to fix this (mutation of pending trips)
   while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10)) {
     let trip = PENDING_TRIPS[0];
     PENDING_TRIPS.splice(0, 1);
@@ -296,7 +300,7 @@ function timeStep() {
         trip['end_point'],
         trip['start_time'],
         trip['end_time'],
-        trip['waittime'],
+        trip['pickuptime'],
         trip['pushtime'],
         trip['duration'],
         trip['type'],
@@ -307,7 +311,7 @@ function timeStep() {
   TIME++;
   UpdateTime(TIME*SPEED/10);
 }
-  
+
 
 /**
  * Make a car idle at a location for a given duration
@@ -331,13 +335,13 @@ function idleCar(start_loc, duration) {
  * @param  {[[xlat, ylat],  [xlng, ylng]]} end_loc [starting lat,lng]
  * @param  {int} start_time [starting time in seconds **UNUSED**]
  * @param  {int} end_time   [ending time in seconds **UNUSED**]
- * @param  {int} waittime   [time spent waiting for a car in seconds]
+ * @param  {int} pickuptime   [time spent waiting for a car in seconds]
  * @param  {int} pushtime   [time spent waiting for trip assignment in seconds]
  * @param  {int} duration   [duration of trip in seconds]
  * @param  {string} type    [type of drip ('Navigation', 'Passenger', 'Parcel')]
  * @param  {path} path      [OSRM path]
  */
-function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime, duration, type, path) {
+function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, pushtime, duration, type, path) {
   let icon;
   let color;
   let reqIcon;
@@ -377,7 +381,7 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
 
   let id = Math.random(0, 1000);
   RUNNING[id] = navMarker;
-  
+
   let timer = new Timer(() => {
     polyline.addTo(map);
     navMarker.addTo(map);
@@ -387,15 +391,15 @@ function startTrip(start_loc, end_loc, start_time, end_time, waittime, pushtime,
     if (reqMark) {
       map.removeLayer(reqMark);
       // map.addLayer(heatLayer);  HEAT LAYER - Slows down simulation
-      waitTimes.push(waittime / 60); 
+      pickUpTimes.push(pickuptime / 60);
       pushTimes.push(pushtime / 60);
       startTimes.push(start_time / 60 / 60);
       updateLines();
     };
-  }, ((waittime + pushtime) * 1000) / SPEED);
+  }, ((pickuptime + pushtime) * 1000) / SPEED);
   RUNNING[id].timer = timer;
   RUNNING[id].marker = navMarker
-  
+
   navMarker.on('end', function(){
     delete RUNNING[id]
     map.removeLayer(this);
@@ -442,9 +446,9 @@ function polylineFromTask(steps, color, opacity, weight) {
 
 /**
  * Prepares the data sets for the graph by rounding off and
- * counting the number of occurances of each waittime
- * @param  {[int]} times    [list of waittimes]
- * @return {obj}   dataset  [object with waittimed (by 5) mapped to number of occurances]
+ * counting the number of occurances of each pickuptime
+ * @param  {[int]} times    [list of pickuptimes]
+ * @return {obj}   dataset  [object with pickuptime (by 5) mapped to number of occurances]
  */
 function prepareLines(times) {
   let dataset = Array.apply(null, Array(35)).map(Number.prototype.valueOf,0);
@@ -485,20 +489,20 @@ function prepareStartTimes(times) {
 }
 
   /**
-   * Update wait times with the current push and waittimes
+   * Update pickup times with the current push and pickuptimes
    * Redraws graphs using barGraph() function defined in Graphs.js
    */
   function updateLines() {
-    let waitTimeDataSet = prepareLines(waitTimes);
+    let pickUpTimeDataSet = prepareLines(pickUpTimes);
     let pushTimeDataSet = prepareLines(pushTimes);
     let startTimesDataSet = prepareStartTimes(startTimes);
-    addLine(startTimesDataSet, "wait-graph", TRIAL);
+    addLine(startTimesDataSet, "pickup-graph", TRIAL);
     //addLine(pushTimeDataSet, "push-graph", TRIAL);
-    var waitSum = waitTimes.reduce(function(a, b) { return a + b; });
-    var waitAvg = Math.round(100*waitSum / waitTimes.length)/100;
+    var pickUpSum = pickUpTimes.reduce(function(a, b) { return a + b; });
+    var pickUpAvg = Math.round(100*pickUpSum / pickUpTimes.length)/100;
     var pushSum = pushTimes.reduce(function(a, b) { return a + b; });
     var pushAvg = Math.round(100*pushSum / pushTimes.length)/100;
-    $(`#trial-${TRIAL}-wait`).html(waitAvg);
+    $(`#trial-${TRIAL}-pickup`).html(pickUpAvg);
     $(`#trial-${TRIAL}-push`).html(pushAvg);
   }
 
@@ -524,6 +528,6 @@ function prepareStartTimes(times) {
     L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
     Progress(0, 800);
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
-    lineGraph("wait-graph", 24, 100, 270, 150, "Demand Graph");
+    lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
   });
