@@ -158,7 +158,7 @@ class Request(object):
         self.time = time
         self.pickup = pickup
         self.dropoff = dropoff
-        self.waittime = 0
+        self.pickuptime = 0
         self.pushtime = 0  # jank fix to know how much of waittime comes from unavailability rather than travel times
         self.osrm = get_osrm_output(self.pickup, self.dropoff)
         self.traveltime = find_total_duration(self.osrm)
@@ -293,8 +293,8 @@ class PEV(object):
         self.movingspace += self.request.traveldist+self.nav.traveldist
         self.c_movingspace += self.request.traveldist+self.nav.traveldist
         self.utiltime += traveltime2
-        # hold waittime for trip delivery
-        self.request.waittime = traveltime1
+        # hold pickuptime for trip delivery
+        self.request.pickuptime = traveltime1
 
     def fulfill_rebalance(self, rebalance):
         ''' begin route for a rebalance '''
@@ -427,18 +427,18 @@ def dist(start, end):
     return d
 
 
-def random_requests(location, ratio, pct, hrs):
+def random_requests(location, ratio, frequency, hrs):
     '''
     '''
     hours = hrs
     requests = []
     # percent random request every minute
     for time in range(0, hours*60):
-        if random.randint(1, 100) > pct:
+        if random.randint(1, 100) > frequency:
             continue
         kind = "Passenger"
-        if random.randint(1, 100) > ratio:
-            kind = "Passenger" #CHANGE BACK TO PARCEL
+        if random.randint(1, 100) <= ratio:
+            kind = "Parcel" #CHANGE BACK TO PARCEL
         start = gaussian_randomizer(location, 2)
         end = gaussian_randomizer(start, 2)
         start_point = find_snap_coordinates(get_snap_output(start))
@@ -608,7 +608,7 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs):
         rng = random.randint(1, 100)
         kind = "Passenger"
         req = None
-        if rng > ratio:
+        if rng <= ratio:
             kind = "Parcel"
         dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(end)))
         if dist(start_point, dest) < max_dist:
@@ -676,7 +676,7 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
         rng = random.randint(1, 100)
         kind = "Passenger"
         req = None
-        if rng > ratio:
+        if rng <= ratio:
             kind = "Parcel"
         if start == end:
             fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(hubstations[start])))

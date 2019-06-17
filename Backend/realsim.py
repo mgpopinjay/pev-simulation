@@ -7,6 +7,7 @@ import random
 import os
 import json
 import statistics
+import math
 
 """
 NOTES FOR THE READER:
@@ -83,7 +84,7 @@ def run_sim():
     requests = []
     stations = []
     if RANDOM_DATA:
-        requests += util.random_requests(["-71.05888", "42.360082"], 0, RANDOM_DATA, END_HR)
+        requests += util.random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, END_HR)
     if TAXI_DATA:
         requests += util.generate_taxi_trips(MAX_DIST, 0, TAXI_DATA, START_HR, END_HR)
     if HUBWAY_DATA:
@@ -141,7 +142,7 @@ def run_sim():
                     reb = car.end_rebalance()  # then update the car (very important it is done in this order)
                     assign_finished_trip(car, reb)
                     rebalance_trips.append(reb)
-                    car.become_idle(finished.time+finished.waittime+finished.traveltime)  # update car
+                    car.become_idle(finished.time+finished.pickuptime+finished.traveltime)  # update car
                     free_cars.append(car)  # then add to list (very important it is done in this order)
                 else:
                     # update for rebalance assignment
@@ -166,7 +167,7 @@ def run_sim():
                     finished_requests.append(finished)
                     if REBALANCE_ON:
                         rebal.points.append([float(finished.pickup[0]), float(finished.pickup[1])])  # add pickup point to rebalancing data structure
-                    car.become_idle(finished.time+finished.waittime+finished.traveltime)
+                    car.become_idle(finished.time+finished.pickuptime+finished.traveltime)
                     free_cars.append(car)
                 elif type(car.request) == util.Recharge:
                     doub = car.end_recharge
@@ -261,7 +262,7 @@ def run_sim():
                 finished_requests.append(finished)
                 # if len(busy_cars) == 0:
                 #      last_time = car.time
-                car.become_idle(finished.time+finished.waittime+finished.traveltime)
+                car.become_idle(finished.time+finished.pickuptime+finished.traveltime)
         free_cars.append(car)
 
     print("Sim Done")
@@ -274,8 +275,9 @@ def run_sim():
     delta = sim_end_time - sim_start_time
     print("SIM RUNTIME: "+str(delta))
     # trip analytics
-    waittimes = []
+    pickuptimes = []
     pushtimes = []
+    waittimes = []
     traveltimes = []
     origins = {
         "taxi": 0,
@@ -283,13 +285,16 @@ def run_sim():
         "random": 0,
     }
     for req in finished_requests:
-        waittimes.append(req.waittime)
+        pickuptimes.append(req.pickuptime)
         pushtimes.append(req.pushtime)
+        waittimes.append(req.pickuptime + req.pushtime)
         traveltimes.append(req.traveltime)
         if req.origin in origins:
             origins[req.origin] = origins[req.origin] + 1
         else:
             origins[req.origin] = 1
+
+    waittimes.sort()
 
     movingtimes = []
     idletimes = []
@@ -309,40 +314,65 @@ def run_sim():
             rebaltimes.append(time_as_hour)
             rebaltraveltimes.append(re.traveltime)
     '''
-    print("HUBWAY DATA: "+str(HUBWAY_DATA))
-    print("TAXI DATA: "+str(TAXI_DATA))
-    print("RANDOM DATA: "+str(RANDOM_DATA))
+    print("HUBWAY DATA: {}".format(HUBWAY_DATA))
+    print("TAXI DATA: {}".format(TAXI_DATA))
+    print("RANDOM DATA: {}".format(RANDOM_DATA))
 
+    # CALCULATE ANALYTICS
     # print("REBALANCE ON?: "+str(REBALANCE_ON)
     # print("RANDOM START?: "+str(RANDOM_START)
-    print("TOTAL TRIPS: "+str(len(finished_requests)))
+    print("TOTAL TRIPS: {}".format(len(finished_requests)))
     for origin in origins.keys():
-        print(origin.upper()+" TRIPS: "+str(origins[origin]))
-    # avg = round(reduce(lambda x, y: x+y, waittimes)/len(waittimes),1)
-    avg = round(statistics.mean(waittimes), 1)
-    print("AVERAGE REQUEST WAITTIME: "+str(avg))
-    # p_avg = round(reduce(lambda x, y: x+y, pushtimes)/len(pushtimes),1)
-    p_avg = round(statistics.mean(pushtimes), 1)
-    print("AVERAGE REQUEST PUSHTIME: "+str(p_avg))
-    # t_avg = round(reduce(lambda x, y: x+y, traveltimes)/len(traveltimes),1)
-    t_avg = round(statistics.mean(traveltimes), 1)
-    print("AVERAGE REQUEST TRAVELTIME: "+str(t_avg))
-    # u_avg = round(reduce(lambda x, y: x+y, utiltimes)/len(utiltimes),1)
-    u_avg = round(statistics.mean(utiltimes), 1)
-    print("AVERAGE CAR COMPLETION: "+str(u_avg))
-    # n_avg = round(reduce(lambda x, y: x+y, navtimes)/len(navtimes),1)
-    n_avg = round(statistics.mean(navtimes), 1)
-    print("AVERAGE CAR NAVIGATION TIME: "+str(n_avg))
-    # m_avg = round(reduce(lambda x, y: x+y, movingtimes)/len(movingtimes),1)
-    m_avg = round(statistics.mean(movingtimes), 1)
-    print("AVERAGE CAR MOVINGTIME: "+str(m_avg))
-    prop = round(float(u_avg)/float(m_avg), 1)
-    print("AVERAGE CAR UTILIZATION PERCENTAGE: "+str(prop))
-    # _avg = round(reduce(lambda x, y: x+y, idletimes)/len(idletimes),1)
-    i_avg = round(statistics.mean(idletimes), 1)
-    print("AVERAGE CAR IDLETIME: "+str(i_avg))
-    p_idle = round(i_avg/(i_avg + m_avg), 1)
-    print("PERCENTAGE IDLE: " + str(p_idle))
+        print(origin.upper()+" TRIPS: {}".format(origins[origin]))
+    # Avg time for PEV to travel to request
+    avg_req_pickup = round(statistics.mean(pickuptimes), 1)
+    print("AVERAGE REQUEST PICKUPTIME: {}".format(avg_req_pickup))
+    # Avg time for PEV to be assigned to request
+    avg_req_assign = round(statistics.mean(pushtimes), 1)
+    print("AVERAGE REQUEST PUSHTIME: {}".format(avg_req_assign))
+    # Avg travel time of each request from origin to destination
+    avg_req_travel = round(statistics.mean(traveltimes), 1)
+    print("AVERAGE REQUEST TRAVELTIME: {}".format(avg_req_travel))
+    # Avg time moving with passenger
+    avg_car_travel = round(statistics.mean(utiltimes), 1)
+    print("AVERAGE CAR UTILIZATION TIME: {}".format(avg_car_travel))
+    # Avg time moving without passenger
+    avg_car_navigate = round(statistics.mean(navtimes), 1)
+    print("AVERAGE CAR NAVIGATION TIME: {}".format(avg_car_navigate))
+    # Avg time spent moving
+    avg_car_move = round(statistics.mean(movingtimes), 1)
+    print("AVERAGE CAR MOVING TIME: {}".format(avg_car_move))
+    # Percent of moving time with passenger
+    percent_travel_over_move = round(avg_car_travel/avg_car_move*100, 1)
+    print("AVERAGE CAR UTILIZATION PERCENTAGE: {}".format(percent_travel_over_move))
+    # Avg time spent idle
+    avg_car_idle = round(statistics.mean(idletimes), 1)
+    print("AVERAGE CAR IDLE TIME: {}".format(avg_car_idle))
+    # Percent of total time spent idle
+    percent_idle_over_total = round(avg_car_idle/(avg_car_idle+avg_car_move)*100, 1)
+    print("AVERAGE CAR IDLE PERCENTAGE: {}".format(percent_idle_over_total))
+    # Percent of total time spent moving
+    percent_move_over_total = round(avg_car_move/(avg_car_move+avg_car_idle)*100, 1)
+    print("AVERAGE CAR MOVEMENT PERCENTAGE: {}".format(percent_move_over_total))
+
+    # waitDist is the distribution of waittimes in 5 min intervals
+    waitDist = [0 for i in range(math.ceil(waittimes[-1]/60/5))]
+    # Place each time into bin
+    for n in waittimes:
+        currentBin = math.floor(n/60/5)
+        waitDist[currentBin] += 1
+    # Waittime analytics
+    # Avg wait time
+    avg_req_wait = statistics.mean(waittimes)
+    print("WAITTIME AVERAGE: {}".format(avg_req_wait))
+    # Request wait time 50th percentile
+    wait_time_50p = waittimes[len(waittimes)//2]
+    print("WAITTIME 50th PERCENTILE: {}".format(wait_time_50p))
+    # Request wait time 75th percentile
+    wait_time_75p = waittimes[len(waittimes)*3//4]
+    print("WAITTIME 75th PERCENTILE: {}".format(wait_time_75p))
+    # Request wait time distribution by 5 minute bins
+    print("WAITTIME DISTRIBUTION BY 5 MIN: {}".format(waitDist))
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
     print("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
@@ -368,7 +398,7 @@ def run_sim():
             trip_json["end_time"] = trip.time+trip.traveltime
             trip_json["duration"] = trip.traveltime
             trip_json["id"] = i
-            trip_json["waittime"] = 0
+            trip_json["pickuptime"] = 0
             trip_json["pushtime"] = 0
             if type(trip) == util.Idle:
                 trip_json["type"] = "Idle"
@@ -383,10 +413,10 @@ def run_sim():
                 elif type(trip) == util.Navigation:
                     trip_json["type"] = "Navigation"
                 else:
-                    trip_json["end_time"] = trip.original_time+trip.traveltime+trip.waittime+trip.pushtime
+                    trip_json["end_time"] = trip.original_time+trip.traveltime+trip.pickuptime+trip.pushtime
                     trip_json["type"] = trip.kind
                     trip_json["pushtime"] = trip.pushtime
-                    trip_json["waittime"] = trip.waittime
+                    trip_json["pickuptime"] = trip.pickuptime
                     trip_json["origin"] = trip.origin
             formatted_trips.append(trip_json)
         car_data[car] = {"history": formatted_trips, "spawn": total_cars[car].spawn}
@@ -408,18 +438,25 @@ def run_sim():
 
     sim_outputs = {
         "TRIPS": origins,
-        "TRIPS_HR": round(len(finished_requests)/(END_HR-START_HR),1),
+        "TRIPS_HR": round(len(finished_requests)/(END_HR-START_HR), 1),
         "TRIPS_DAY": len(finished_requests)/(END_HR-START_HR)*24,
         "SIM RUNTIME": str(delta),
-        "AVERAGE REQUEST WAITTIME": str(avg),
-        "AVERAGE REQUEST PUSHTIME": str(p_avg),
-        "AVERAGE REQUEST TRAVELTIME": str(t_avg),
-        "AVERAGE CAR NAVIGATION": str(n_avg),
-        "AVERAGE CAR COMPLETION": str(u_avg),
-        "AVERAGE CAR MOVINGTIME": str(m_avg),
-        "AVERAGE CAR UTILIZATION": str(prop),
-        "AVERAGE CAR IDLETIME": str(i_avg),
+        "AVERAGE REQUEST PICKUPTIME": str(avg_req_pickup),
+        "AVERAGE REQUEST PUSHTIME": str(avg_req_assign),
+        "AVERAGE REQUEST TRAVELTIME": str(avg_req_travel),
+        "AVERAGE CAR UTILIZATION": str(avg_car_travel),
+        "AVERAGE CAR NAVIGATION": str(avg_car_navigate),
+        "AVERAGE CAR MOVINGTIME": str(avg_car_move),
+        "AVERAGE CAR IDLETIME": str(avg_car_idle),
+        "AVERAGE CAR UTILIZATION PERCENTAGE": str(percent_travel_over_move),
+        "AVERAGE CAR MOVEMENT PERCENTAGE": str(percent_move_over_total),
+        "AVERAGE CAR IDLE PERCENTAGE": str(percent_idle_over_total),
+        "WAITTIME AVERAGE": str(avg_req_wait),
+        "WAITTIME 50th PERCENTILE": str(wait_time_50p),
+        "WAITTIME 75th PERCENTILE": str(wait_time_75p),
+        "WAITTIME DISTRIBUTION": waitDist,
     }
+
     rebal_results = {}
 
     # final data diction to make into JSON
