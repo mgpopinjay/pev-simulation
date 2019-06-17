@@ -92,3 +92,6 @@ db/journal
 # Sim inputs + results
 Backend/Inputs/**
 Backend/Results/**
+Backend/Inputs/
+
+Backend/test\.py
