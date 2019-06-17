@@ -43,7 +43,7 @@ body {
     border-radius: 10px;
     margin-top: 30px;
     padding: 10px 20px 20px 20px;
-    background-color: rgba(100,100,100,0.7); 
+    background-color: rgba(100,100,100,0.7);
 }
 .control-label {
     font-size: 30px;
@@ -156,7 +156,7 @@ body {
 }
 
 #summary td {
-    padding: 5px 20px;
+    padding: 5px 10px;
 }
 
 #graphs {
