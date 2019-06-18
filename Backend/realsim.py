@@ -78,8 +78,10 @@ def run_sim():
     """
     THE SIMULATOR
     """
-    sim_start_time = time.time()
+    sim_sys_start_time = time.time()
     print("Sim Start")
+    sim_time = START_HR * 3600  # Set simulator to start time in secs
+    sim_end_time = END_HR * 3600  # Time for simulator to end
 
     ''' populate requests '''
     requests = []
@@ -130,13 +132,12 @@ def run_sim():
 
     ''' sim logic '''
     while requests:
-        req_time = requests[0].time
         temp_free_cars = []
         # update rebalancing cars to add temp cars them to temp_free_cars
         if rebalancing_cars:
             print('REBALANCING')
             for car in rebalancing_cars:
-                if car.time <= req_time:
+                if car.time <= sim_time:
                     # end rebalancing trip
                     ind = rebalancing_cars.index(car)
                     rebalancing_cars.pop(ind)  # remove the car
@@ -148,13 +149,13 @@ def run_sim():
                 else:
                     # update for rebalance assignment
                     start_time = car.request.time
-                    elapsed = req_time - start_time
+                    elapsed = sim_time - start_time
                     route = car.request.osrm
                     loc = util.find_leg_loc(route, elapsed)  # use time elapsed to find where the car is using legs/steps data
                     car.pos = loc
         # update busy cars to be free
         if busy_cars:
-            while req_time >= busy_cars[0].time:
+            while sim_time >= busy_cars[0].time:
                 # end request trip
                 car = heapq.heappop(busy_cars)
                 # car = busy_cars[0]
@@ -188,22 +189,29 @@ def run_sim():
                         ind = free_cars.index(car)
                         free_cars.pop(ind)
                         station = util.find_closest_station(car.loc)
-                        car.fulfill_recharge(util.Recharge(req_time, car.loc, station, CHARGE_TIME))
+                        car.fulfill_recharge(util.Recharge(sim_time, car.loc, station, CHARGE_TIME))
                         heapq.heappush(busy_cars, car)  # turn free car into busy car
 
         ########################
         ##### ASSIGNMENT #######
         ########################
         temp_free_cars = rebalancing_cars + free_cars
+        req_time = requests[0].time
+        if req_time > sim_time:
+            sim_time += 1
+            continue
+
         req = heapq.heappop(requests)
         # req = requests[0]
         # requests.pop(0)
+
         if len(temp_free_cars) > 0:
             # loop through free_cars to find the car with minimum linear distance to pickup
             min_pair = min(enumerate(free_cars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
             # min_pair = (index, car)
             min_car_index = min_pair[0]
             min_car = min_pair[1]
+            # print("Assigned request to car: {}".format(min_car.id))
             del free_cars[min_car_index]
             idl = min_car.end_idle(req)
             idle_trips.append(idl)
@@ -239,7 +247,7 @@ def run_sim():
                         for ind in inds:
                             ce = random.sample(cells, 1)
                             cell = util.find_snap_coordinates(util.get_snap_output([str(ce[0][0]), str(ce[0][1])]))
-                            r = util.Rebalance(req_time, car.pos, cell)
+                            r = util.Rebalance(sim_time, car.pos, cell)
                             if r.traveltime != 0:
                                 free_cars.pop(ind)
                                 idl = car.end_idle(r)
@@ -267,13 +275,13 @@ def run_sim():
         free_cars.append(car)
 
     print("Sim Done")
-    sim_end_time = time.time()
+    sim_sys_end_time = time.time()
 
     """
     ANALYZE RESULTS
     """
     # runtime
-    delta = sim_end_time - sim_start_time
+    delta = sim_sys_end_time - sim_sys_start_time
     print("SIM RUNTIME: "+str(delta))
     # trip analytics
     pickuptimes = []
