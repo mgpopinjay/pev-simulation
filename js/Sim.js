@@ -530,7 +530,7 @@ $(document).ready(function() {
         }
     }).addTo(map);
     L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-    Progress(0, 800);
+    Progress(0);
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');

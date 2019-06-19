@@ -189,12 +189,39 @@ body {
 
 /* END RESULTS */
 
-#progress {
+#myProgress {
+    position: fixed;
+    width: 50%;
+    transform: translateX(50%);
+    bottom: 5px;
+}
+
+#barBackdrop {
+    width: 100%;
+    background-color: rgba(20, 20, 20, 0.5);
+    border-radius: 10px;
+}
+
+#myBar {
+    width: 10%;
+    height: 20px;
+    background-color: #FFDE75;
+    border-radius: 10px;
+}
+
+#progressLabels {
+    width: 100%;
+}
+
+/* OLD PROGRESS BAR */
+/*#progress {
     position: fixed;
     bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
-}
+    width: 50%;
+    transform: translateX(50%);
+}*/
 /*
 UNUSED
 */
