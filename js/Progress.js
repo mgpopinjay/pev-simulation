@@ -10,31 +10,30 @@ function Progress(time, width) {
             <text x=${3*int} y="40" fill="white">11am</text>
             <text x=${4*int} y="40" fill="white">12pm</text>
             <text x=${5*int} y="40" fill="white">1pm</text>
-        </svg>`
-    )
+        </svg>`)
     UpdateTime(time);
 }
 
 function UpdateTime(seconds) {
-  $('#progress-bar').attr('width', (seconds*100)/(5*60*60) + '%');
+    $('#progress-bar').attr('width', (seconds * 100) / (5 * 60 * 60) + '%');
 }
 
 $(document).ready(function() {
-  $('#progress').click(()=> {
-    if (!PAUSED) {
-      PAUSED = true;
-      console.log(RUNNING);
-      Object.keys(RUNNING).forEach(i => {
-        RUNNING[i].timer.pause();
-        RUNNING[i].marker.pause();
-      });
-    } else {
-      PAUSED = false;
-      Object.keys(RUNNING).forEach(i => {
-        RUNNING[i].timer.resume();
-        RUNNING[i].marker.start();
-      });
-      runTrips();
-    }
-  });
+    $('#progress').click(() => {
+        if (!PAUSED) {
+            PAUSED = true;
+            console.log(RUNNING);
+            Object.keys(RUNNING).forEach(i => {
+                RUNNING[i].timer.pause();
+                RUNNING[i].marker.pause();
+            });
+        } else {
+            PAUSED = false;
+            Object.keys(RUNNING).forEach(i => {
+                RUNNING[i].timer.resume();
+                RUNNING[i].marker.start();
+            });
+            runTrips();
+        }
+    });
 });
