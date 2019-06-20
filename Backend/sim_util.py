@@ -427,8 +427,9 @@ def dist(start, end):
     return d
 
 
-def generate_random_requests(location, ratio, frequency, hrs, fuzzing_enabled):
+def generate_random_requests(location, ratio, frequency, hrs, dist, fuzzing_enabled):
     '''
+    Generate random requests centered around 'location' with a ratio of 'dist'
     '''
     hours = hrs
     requests = []
@@ -439,8 +440,8 @@ def generate_random_requests(location, ratio, frequency, hrs, fuzzing_enabled):
         kind = "Passenger"
         if random.randint(1, 100) <= ratio:
             kind = "Parcel" #CHANGE BACK TO PARCEL
-        start = gaussian_randomizer_two_mile(location, fuzzing_enabled)
-        end = gaussian_randomizer_two_mile(start, fuzzing_enabled)
+        start = gaussian_randomizer(location, dist, fuzzing_enabled)
+        end = gaussian_randomizer(start, dist, fuzzing_enabled)
         start_point = find_snap_coordinates(get_snap_output(start))
         end_point = find_snap_coordinates(get_snap_output(end))
         req = Request(time*60, start_point, end_point, "random",  kind)
@@ -518,20 +519,23 @@ def send_to_visualizer(data, filename):
         json.dump(data, outfile)
 
 
-def gaussian_randomizer(location, distance):
-    # CURRENTLY UNUSED
+def gaussian_randomizer(location, distance, fuzzing_enabled):
     '''
-    Pick a random point within X mile radius of location using gaussian distribution
+    Pick a random point within X km radius of location using gaussian distribution
+    Best accuracy between 0-15 km
     '''
-    cov = [[.0001, 0], [0, .0001]]
+    if fuzzing_enabled is False:
+        return location
+
+    d = distance
+    c = 3.17681940e-06*d*d + 1.95948301e-06*d
+    cov = [[c, 0], [0, c]]
     loc1 = location[0].strip('\"')
     loc2 = location[1].strip('\"')
     loc = [float(loc1), float(loc2)]
     point = np.random.multivariate_normal(loc, cov)
     pointo = [str(point[0]), str(point[1])]
     return pointo
-
-# TODO: make this .16 mile radius
 
 
 def gaussian_randomizer_half_mile(location, fuzzing_enabled):
@@ -612,13 +616,13 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_en
             continue
         start = [row[3], row[4]]
         end = [row[7], row[8]]
-        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(start, fuzzing_enabled)))
+        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(start, 0.8, fuzzing_enabled)))
         rng = random.randint(1, 100)
         kind = "Passenger"
         req = None
         if rng <= ratio:
             kind = "Parcel"
-        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(end, fuzzing_enabled)))
+        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(end, 0.8, fuzzing_enabled)))
         if dist(start_point, dest) < max_dist:
             req = Request(time, start_point, dest, "taxi", kind)
         else:
@@ -680,20 +684,20 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
             continue
         start = row[3]
         end = row[7]
-        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[start], fuzzing_enabled)))
+        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(hubstations[start], 0.8, fuzzing_enabled)))
         rng = random.randint(1, 100)
         kind = "Passenger"
         req = None
         if rng <= ratio:
             kind = "Parcel"
         if start == end:
-            fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_two_mile(hubstations[start], fuzzing_enabled)))
+            fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(hubstations[start], 3.2, fuzzing_enabled)))
             # print fake_dest
             req = Request(time, start_point, fake_dest, "bike", kind)
 
         else:
             # real trip
-            dest = find_snap_coordinates(get_snap_output(gaussian_randomizer_half_mile(hubstations[end], fuzzing_enabled)))
+            dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(hubstations[end], 0.8, fuzzing_enabled)))
             if dist(hubstations[start], dest) < max_dist:
                 req = Request(time, start_point, dest, "bike", kind)
 

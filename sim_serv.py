@@ -55,9 +55,11 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             taxiFreq = int(args["taxi"])
             startHrs = int(args["starthrs"])
             endHrs = int(args["endhrs"])
+            mapSelect = args["mapselect"]
 
             # create dictionary of data to dump as JSON to 'Variable_X.json file'
             data_to_send = {
+                "MapSelect": mapSelect,
                 "Rebalancing_Vehicles": parcFreq,
                 "Fleet_Size": fleet_size,
                 "Bike_Freq": bikeFreq,

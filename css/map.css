@@ -149,6 +149,7 @@ body {
     color: white;
     border-color: white;
     border-collapse: collapse;
+    width: 50%;
 }
 
 #summary thead {

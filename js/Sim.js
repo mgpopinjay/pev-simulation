@@ -197,6 +197,8 @@ function fleet_sim() {
     var rebalanceSize = slider_rebalanceSize;
     var endhrs = slider_hrs;
     var code = Math.floor(Math.random() * 10000);
+    // CHANGE THIS TO A SELECTION BUTTON / DROPDOWN
+    var mapSelect = "Taipei";
     var sim_params = {
         starthrs: 0,
         endhrs: endhrs,
@@ -207,6 +209,7 @@ function fleet_sim() {
         taxi: taxi_freq,
         max_dist: max_dist,
         code: code,
+        mapselect: mapSelect,
     };
     $('#loader').removeClass('disabled');
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
@@ -510,10 +513,13 @@ function updateLines() {
     $(`#trial-${TRIAL}-push`).html(pushAvg);
 }
 
-$(document).ready(function() {
+
+// CREATE DIFFERENT FUNCTIONS FOR EACH MAP
+function setMap() {
     // map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
     L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
-    map = L.map('map-canvas', { zoomControl: false }).setView([42.359456, -71.076336], 14);
+    // map = L.map('map-canvas', { zoomControl: false }).setView([42.359456, -71.076336], 14);
+    map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
     L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
     L.geoJson(mapdata, {
         style: function(feature) {
@@ -534,4 +540,8 @@ $(document).ready(function() {
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
+}
+
+$(document).ready(function() {
+    setMap();
 });

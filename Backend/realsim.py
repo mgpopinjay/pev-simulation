@@ -45,6 +45,7 @@ def run_sim():
     """
     TUNING VARIABLES
     """
+    MAPSELECT   = variables["MapSelect"]
     NUMCARS     = variables["Fleet_Size"]  # number of vehicles
     CODE        = variables["Code"]  # RNG code
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
@@ -62,7 +63,8 @@ def run_sim():
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
     RANDOM_START = SPAWN
-    SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
+    # SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
+    SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"]))
     CHARGING = False  # whether or not to use recharging model
     CHARGE_DISTANCE = MAX_DIST+util.max_stat_dist()
     CHARGE_RANGE = 15000.0
@@ -86,14 +88,22 @@ def run_sim():
     ''' populate requests '''
     requests = []
     stations = []
-    if RANDOM_DATA:
-        requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, END_HR, FUZZING_ON)
-    if TAXI_DATA:
-        requests += util.generate_taxi_trips(MAX_DIST, 0, TAXI_DATA, START_HR, END_HR, FUZZING_ON)
-    if HUBWAY_DATA:
-        res = util.generate_hubway_trips(1000, MAX_DIST, 0, HUBWAY_DATA, START_HR, END_HR, FUZZING_ON)
-        requests += res[0]
-        stations = res[1]
+
+    if MAPSELECT == "Boston":
+        if RANDOM_DATA:
+            requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, END_HR, 3.2, FUZZING_ON)
+        if TAXI_DATA:
+            requests += util.generate_taxi_trips(MAX_DIST, 0, TAXI_DATA, START_HR, END_HR, FUZZING_ON)
+        if HUBWAY_DATA:
+            res = util.generate_hubway_trips(1000, MAX_DIST, 0, HUBWAY_DATA, START_HR, END_HR, FUZZING_ON)
+            requests += res[0]
+            stations = res[1]
+
+    elif MAPSELECT == "Taipei":
+        if RANDOM_DATA:
+            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, RANDOM_DATA, END_HR, 5, True)
+            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, RANDOM_DATA / 2, END_HR, 10, True)
+            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, RANDOM_DATA / 2, END_HR, 8, True)
 
     heapq.heapify(requests)  # sort requests by start time
     finished_requests = []
@@ -120,7 +130,7 @@ def run_sim():
     for i in range(NUMCARS):  # 'i' is car ID
         if RANDOM_START:
             node = random.sample(stations.keys(), 1)  # make cars spawn randomly at clusters
-            p = util.find_snap_coordinates(util.get_snap_output(util.gaussian_randomizer_half_mile(stations[node[0]], FUZZING_ON)))
+            p = util.find_snap_coordinates(util.get_snap_output(util.gaussian_randomizer(stations[node[0]], 0.8, FUZZING_ON)))
         else:
             p = SPAWN_POINT
         car = util.PEV(i, p)
@@ -432,6 +442,7 @@ def run_sim():
 
     ''' retrieve sim/results data '''
     sim_inputs = {
+        "MAPSELECT": MAPSELECT,
         "NUMCARS": NUMCARS,
         "MAX_DIST": MAX_DIST,
         "KIND_RATIO": KIND_RATIO,
