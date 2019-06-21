@@ -241,7 +241,7 @@ function fleet_sim() {
         code: code,
         mapselect: mapSelect,
     };
-    START = slider_startHrs * 3600;
+    START = slider_startHrs * 3600; // start time in seconds
     Progress(START);
     $('#loader').removeClass('disabled');
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
@@ -310,6 +310,7 @@ function createTrips(data) {
 
 function runTrips() {
     console.log("running");
+    // Run timeStep() every LOOPPERIOD (default=100ms)
     LOOP = setInterval(() => timeStep(), LOOPPERIOD);
 };
 
@@ -320,6 +321,7 @@ function timeStep() {
     }
 
     //know how to fix this (mutation of pending trips)
+    // Time based on speed with an initial offset of START seconds
     while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / LOOPFREQ + START)) {
         let trip = PENDING_TRIPS[0];
         PENDING_TRIPS.splice(0, 1);
@@ -342,8 +344,8 @@ function timeStep() {
             );
         }
     }
-    UpdateTime(TIME * SPEED / LOOPFREQ);
-    TIME++;
+    UpdateTime(TIME * SPEED / LOOPFREQ); // Update progress bar
+    TIME++; // Increment to next timestep, not next second
 }
 
 
