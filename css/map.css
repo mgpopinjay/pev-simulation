@@ -6,7 +6,7 @@ body {
     top: 0;
     height: 100%;
     width: 100%;
-    position:absolute;
+    position: absolute;
     z-index: -1;
 }
 
@@ -21,7 +21,7 @@ body {
     width: 100%;
     height: 100%;
     position: absolute;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
     z-index: 10;
     transition: .2s all;
 }
@@ -29,7 +29,7 @@ body {
 #loader svg {
     position: absolute;
     left: 50%;
-    top:50%;
+    top: 50%;
     width: 200px;
     height: 200px;
     transform: translate(-50%, -50%);
@@ -43,8 +43,9 @@ body {
     border-radius: 10px;
     margin-top: 30px;
     padding: 10px 20px 20px 20px;
-    background-color: rgba(100,100,100,0.7);
+    background-color: rgba(100, 100, 100, 0.7);
 }
+
 .control-label {
     font-size: 24px;
     color: white;
@@ -52,6 +53,7 @@ body {
     border-bottom: 2px solid white;
     font-weight: 600;
 }
+
 .button {
     font-size: 14px;
     background-color: #ff66cc;
@@ -112,12 +114,12 @@ body {
     font-weight: bold;
 }
 
-.ui-slider   {
+.ui-slider {
     height: 4px;
     width: 100%;
 }
 
-.ui-slider  .ui-slider-handle   {
+.ui-slider .ui-slider-handle {
     height: 12px;
     width: 12px;
     padding-left: 0px; //add this
@@ -174,7 +176,7 @@ body {
     color: white;
     margin-top: 10px;
     margin-left: 30px;
-    font-weight:600
+    font-weight: 600
 }
 
 
@@ -234,7 +236,7 @@ UNUSED
     overflow-y: scroll;
     font-size: 14px;
     top: 5%;
-    right:1%;
+    right: 1%;
     background-color: white;
 }
 
@@ -242,8 +244,8 @@ UNUSED
     /*width:425px;*/
     /*height:40%;*/
     line-height: 0px;
-    bottom:2%;
-    right:2%;
+    bottom: 2%;
+    right: 2%;
     font-size: 12px;
     font-weight: bold;
     background-color: blue;
@@ -253,7 +255,7 @@ UNUSED
 .style {
     /*background: -webkit-gradient(linear, bottom, left 175px, from(#CCCCCC), to(#EEEEEE));*/
     /*background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);*/
-    margin:auto;
+    margin: auto;
     position: absolute;
     font-family: Tahoma, Geneva, sans-serif;
     color: #09C;
@@ -274,7 +276,7 @@ UNUSED
 .style-upper-right {
     /*background: -webkit-gradient(linear, bottom, left 175px, from(#CCCCCC), to(#EEEEEE));*/
     /*background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);*/
-    margin:auto;
+    margin: auto;
     position: absolute;
     font-family: Tahoma, Geneva, sans-serif;
     color: #09C;
@@ -320,12 +322,13 @@ th {
 td {
     text-align: center;
 }
+
 /*body, a:hover {*/
 /*    cursor: url(http://ani.cursors-4u.net/toons/too-12/too1137.cur), progress !important;*/
 }
 
 body {
-    margin:  0px;
+    margin: 0px;
     padding: 0px;
     font-family: 'Open Sans', sans-serif;
 }
@@ -340,64 +343,62 @@ ol li:hover {
 
 
 .topcol {
-  position: absolute;
-  color: none;
-  width: 100%;
+    position: absolute;
+    color: none;
+    width: 100%;
 }
 
 .topleft {
-  width            : 100%;
-  overflow         : hidden;
+    width: 100%;
+    overflow: hidden;
 }
 
-.Row
-{
-display: table;
-width: 100%;
-table-layout: fixed;
-border-spacing: 10px;
+.Row {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 10px;
 }
 
-.Column
-{
-display: table-cell;
-background-color: ;
+.Column {
+    display: table-cell;
+    background-color: ;
 }
 
 .chart {
-background: none;
-margin: 5px;
+    background: none;
+    margin: 5px;
 }
 
 .chart rect {
-stroke: none;
-fill: #cc99ff;
+    stroke: none;
+    fill: #cc99ff;
 }
 
 .chart text {
-fill: white;
+    fill: white;
 }
 
 .chart text .name {
-fill: white;
+    fill: white;
 }
 
 .chart line {
-stroke: #c1c1c1;
+    stroke: #c1c1c1;
 }
 
 .chart .rule {
-fill: white;
+    fill: white;
 }
 
 /* removed the while stroke as we don't need it anymore */
 #step-5 .chart rect {
-stroke: none;
+    stroke: none;
 }
 
 /* a bit of hovering effect for each bar */
 #step-5 .chart rect:hover {
-fill: #64707D;
+    fill: #64707D;
 }
 
 text {
@@ -406,22 +407,22 @@ text {
 
 .axis path,
 .axis line {
-fill: none;
-stroke: whi;
-shape-rendering: crispEdges;
+    fill: none;
+    stroke: whi;
+    shape-rendering: crispEdges;
 }
 
 .chartControl {
-position: relative;
-left: 140px;
-top: -3px;
+    position: relative;
+    left: 140px;
+    top: -3px;
 }
 
 .axis path,
 .axis line {
-fill: none;
-stroke: #09C;
-shape-rendering: crispEdges;
+    fill: none;
+    stroke: #09C;
+    shape-rendering: crispEdges;
 }
 
 .axis text {
