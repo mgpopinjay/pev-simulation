@@ -1,5 +1,7 @@
 "use strict";
 var map;
+var LOOPPERIOD = 100; // milliseconds
+var LOOPFREQ = 1000 / LOOPPERIOD;
 var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
@@ -28,7 +30,7 @@ var slider_fleetSize = 20;
 var slider_hubway = 20;
 var slider_random = 20;
 var slider_taxi = 20;
-var slider_max = 5;
+var slider_maxDist = 5;
 // var slider_hrs = 3;
 var slider_startHrs = 6;
 var slider_endHrs = 18;
@@ -70,7 +72,7 @@ $(function() {
         step: 1,
         slide: function(event, ui) {
             $("#maxdist").val(ui.value + " mi");
-            slider_max = ui.value;
+            slider_maxDist = ui.value;
         }
     });
     $("#maxdist").val($("#slidermax").slider("value") + " mi");
@@ -214,12 +216,12 @@ function T_on() {
  * Creates all trips given the data received
  */
 function fleet_sim() {
-    TIME = 0;
+    TIME = 0; // not actual time, but loops through the visualizer
     var fleet_size = slider_fleetSize;
     var bike_freq = slider_hubway;
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
-    var max_dist = slider_max;
+    var max_dist = slider_maxDist;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
     var starthrs = slider_startHrs;
@@ -308,7 +310,7 @@ function createTrips(data) {
 
 function runTrips() {
     console.log("running");
-    LOOP = setInterval(() => timeStep(), 100);
+    LOOP = setInterval(() => timeStep(), LOOPPERIOD);
 };
 
 
@@ -318,7 +320,7 @@ function timeStep() {
     }
 
     //know how to fix this (mutation of pending trips)
-    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10 + START)) {
+    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / LOOPFREQ + START)) {
         let trip = PENDING_TRIPS[0];
         PENDING_TRIPS.splice(0, 1);
         if (trip['type'] == "Idle") {
@@ -340,7 +342,7 @@ function timeStep() {
             );
         }
     }
-    UpdateTime(TIME * SPEED / 10);
+    UpdateTime(TIME * SPEED / LOOPFREQ);
     TIME++;
 }
 
