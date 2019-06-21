@@ -1,4 +1,4 @@
-function Progress(time, width) {
+function Progress(starttime) {
     // OLD PROGRESS BAR
     // let int = ((width - 50) / 4)
     // $('#progress').append(`
@@ -12,13 +12,15 @@ function Progress(time, width) {
     //         <text x=${4*int} y="40" fill="white">12pm</text>
     //         <text x=${5*int} y="40" fill="white">1pm</text>
     //     </svg>`)
-    UpdateTime(time);
+    // UpdateTime(time);
+    let elem = document.getElementById("myBar");
+    var leftBar = (starttime * 100) / (24 * 60 * 60);
+    elem.style.setProperty('left', leftBar + '%');
 }
 
 function UpdateTime(seconds) {
     let elem = document.getElementById("myBar");
-    var widthBar = 0;
-    widthBar = (seconds * 100) / (24 * 60 * 60);
+    var widthBar = (seconds * 100) / (24 * 60 * 60);
     elem.style.setProperty('width', widthBar + '%');
     // $('#progress-bar').attr('width', (seconds * 100) / (24 * 60 * 60) + '%');
 }

@@ -14,6 +14,8 @@ var PAUSED = false
 var RUNNING = {};
 var PENDING_TRIPS = [];
 var LOOP;
+var START;
+var TIME = 0;
 
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
@@ -163,7 +165,6 @@ $(function() {
             slider_startHrs = ui.values[0];
             slider_endHrs = ui.values[1];
             timeLength = ui.values[1] - ui.values[0];
-            // Progress(slider_startHrs * 3600);
             $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * timeLength) + " trips)");
             $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * timeLength) + " trips)");
             $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * timeLength) + " trips)");
@@ -213,6 +214,7 @@ function T_on() {
  * Creates all trips given the data received
  */
 function fleet_sim() {
+    TIME = 0;
     var fleet_size = slider_fleetSize;
     var bike_freq = slider_hubway;
     var random_freq = slider_random;
@@ -237,6 +239,8 @@ function fleet_sim() {
         code: code,
         mapselect: mapSelect,
     };
+    START = slider_startHrs * 3600;
+    Progress(START);
     $('#loader').removeClass('disabled');
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
         $('#loader').addClass('disabled');
@@ -261,7 +265,6 @@ function test_fleet_sim() {
  */
 function createTrips(data) {
     console.log(data);
-    TIME = 0;
     Object.keys(RUNNING).forEach(i => {
         RUNNING[i].marker.stop();
     });
@@ -315,7 +318,7 @@ function timeStep() {
     }
 
     //know how to fix this (mutation of pending trips)
-    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10)) {
+    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10 + START)) {
         let trip = PENDING_TRIPS[0];
         PENDING_TRIPS.splice(0, 1);
         if (trip['type'] == "Idle") {
@@ -337,8 +340,8 @@ function timeStep() {
             );
         }
     }
-    TIME++;
     UpdateTime(TIME * SPEED / 10);
+    TIME++;
 }
 
 
@@ -562,7 +565,6 @@ function setMap() {
         }
     }).addTo(map);
     L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-    Progress(0);
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
