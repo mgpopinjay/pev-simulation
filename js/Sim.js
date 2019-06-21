@@ -1,5 +1,13 @@
 "use strict";
 var map;
+var mapID = 0;
+var mapList = ["Boston", "Taipei"];
+var mapSettings = {
+    "Boston": { "latitude": 42.359456, "longitude": -71.076336, "zoom": 14 },
+    "Taipei": { "latitude": 25.031213, "longitude": 121.502746, "zoom": 13 }
+};
+var LOOPPERIOD = 100; // milliseconds
+var LOOPFREQ = 1000 / LOOPPERIOD;
 var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
 var pushTimes = [];
@@ -14,6 +22,8 @@ var PAUSED = false
 var RUNNING = {};
 var PENDING_TRIPS = [];
 var LOOP;
+var START;
+var TIME = 0;
 
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
@@ -26,8 +36,12 @@ var slider_fleetSize = 20;
 var slider_hubway = 20;
 var slider_random = 20;
 var slider_taxi = 20;
-var slider_max = 5;
-var slider_hrs = 3;
+var slider_maxDist = 5;
+// var slider_hrs = 3;
+var slider_startHrs = 6;
+var slider_endHrs = 18;
+
+var timeLength = slider_endHrs - slider_startHrs;
 
 $(function() {
     $("#sliderfleet").slider({
@@ -64,7 +78,7 @@ $(function() {
         step: 1,
         slide: function(event, ui) {
             $("#maxdist").val(ui.value + " mi");
-            slider_max = ui.value;
+            slider_maxDist = ui.value;
         }
     });
     $("#maxdist").val($("#slidermax").slider("value") + " mi");
@@ -78,12 +92,12 @@ $(function() {
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * slider_hrs)
+            let trips = Math.round(ui.value / 100 * triphr * timeLength)
             $("#taxidata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_taxi = ui.value;
         }
     });
-    $("#taxidata").val($("#slidertaxi").slider("value") + " %" + " (" + Math.round(.2 * triphr * slider_hrs) + " trips)");
+    $("#taxidata").val($("#slidertaxi").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
 });
 
 $(function() {
@@ -94,12 +108,12 @@ $(function() {
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * slider_hrs)
+            let trips = Math.round(ui.value / 100 * triphr * timeLength)
             $("#hubwaydata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_hubway = ui.value;
         }
     });
-    $("#hubwaydata").val($("#sliderhubway").slider("value") + " %" + " (" + Math.round(.2 * triphr * slider_hrs) + " trips)");
+    $("#hubwaydata").val($("#sliderhubway").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
 });
 
 $(function() {
@@ -110,12 +124,12 @@ $(function() {
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * slider_hrs);
+            let trips = Math.round(ui.value / 100 * triphr * timeLength);
             $("#randomdata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_random = ui.value;
         }
     });
-    $("#randomdata").val($("#sliderrandom").slider("value") + " %" + " (" + Math.round(.2 * triphr * slider_hrs) + " trips)");
+    $("#randomdata").val($("#sliderrandom").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
 });
 
 $(function() {
@@ -131,21 +145,41 @@ $(function() {
     $("#parcelAmount").val($("#sliderParcelAmount").slider("value") + " /hr");
 });
 
+// $(function() {
+//     $("#sliderhrs").slider({
+//         value: 3,
+//         min: 0,
+//         max: 24,
+//         step: 1,
+//         slide: function(event, ui) {
+//             $("#simhrs").val(ui.value + " hrs");
+//             slider_hrs = ui.value;
+//             $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * slider_hrs) + " trips)");
+//             $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * slider_hrs) + " trips)");
+//             $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * slider_hrs) + " trips)");
+//         }
+//     });
+//     $("#simhrs").val($("#sliderhrs").slider("value") + " hrs");
+// });
+
 $(function() {
-    $("#sliderhrs").slider({
-        value: 3,
+    $("#slider-time").slider({
+        range: true,
         min: 0,
         max: 24,
-        step: 1,
+        values: [slider_startHrs, slider_endHrs],
         slide: function(event, ui) {
-            $("#simhrs").val(ui.value + " hrs");
-            slider_hrs = ui.value;
-            $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * slider_hrs) + " trips)");
-            $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * slider_hrs) + " trips)");
-            $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * slider_hrs) + " trips)");
+            $("#hours").val(ui.values[0] + ":00 - " + ui.values[1] + ":00");
+            slider_startHrs = ui.values[0];
+            slider_endHrs = ui.values[1];
+            timeLength = ui.values[1] - ui.values[0];
+            $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * timeLength) + " trips)");
+            $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * timeLength) + " trips)");
+            $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * timeLength) + " trips)");
         }
     });
-    $("#simhrs").val($("#sliderhrs").slider("value") + " hrs");
+    $("#hours").val($("#slider-time").slider("values", 0) +
+        ":00 - " + $("#slider-time").slider("values", 1) + ":00");
 });
 
 $(function() {
@@ -188,17 +222,21 @@ function T_on() {
  * Creates all trips given the data received
  */
 function fleet_sim() {
+    TIME = 0; // not actual time, but loops through the visualizer
     var fleet_size = slider_fleetSize;
     var bike_freq = slider_hubway;
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
-    var max_dist = slider_max;
+    var max_dist = slider_maxDist;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
-    var endhrs = slider_hrs;
+    var starthrs = slider_startHrs;
+    var endhrs = slider_endHrs;
     var code = Math.floor(Math.random() * 10000);
+    // CHANGE THIS TO A SELECTION BUTTON / DROPDOWN
+    var mapSelect = mapList[mapID];
     var sim_params = {
-        starthrs: 0,
+        starthrs: starthrs,
         endhrs: endhrs,
         size: fleet_size,
         parcels: rebalanceSize,
@@ -207,7 +245,10 @@ function fleet_sim() {
         taxi: taxi_freq,
         max_dist: max_dist,
         code: code,
+        mapselect: mapSelect,
     };
+    START = slider_startHrs * 3600; // start time in seconds
+    Progress(START);
     $('#loader').removeClass('disabled');
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
         $('#loader').addClass('disabled');
@@ -232,7 +273,6 @@ function test_fleet_sim() {
  */
 function createTrips(data) {
     console.log(data);
-    TIME = 0;
     Object.keys(RUNNING).forEach(i => {
         RUNNING[i].marker.stop();
     });
@@ -240,7 +280,7 @@ function createTrips(data) {
     PAUSED = false;
     TRIAL++;
     FLEET_SIZE = Object.keys(data['fleet']).length;
-    $('#summary').append(`
+    $('#summary > tbody').append(`
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
@@ -260,7 +300,7 @@ function createTrips(data) {
     pushTimes = [];
     pickUpTimes = [];
     startTimes = [];
-    //let pendingTrips = [];
+    PENDING_TRIPS = [];
     for (let i = 0; i < Object.keys(data['fleet']).length; i++) {
         for (let j = 0; j < data['fleet'][i]['history'].length; j++) {
             let trip = data['fleet'][i]['history'][j];
@@ -276,7 +316,8 @@ function createTrips(data) {
 
 function runTrips() {
     console.log("running");
-    LOOP = setInterval(() => timeStep(), 100);
+    // Run timeStep() every LOOPPERIOD (default=100ms)
+    LOOP = setInterval(() => timeStep(), LOOPPERIOD);
 };
 
 
@@ -286,7 +327,8 @@ function timeStep() {
     }
 
     //know how to fix this (mutation of pending trips)
-    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / 10)) {
+    // Time based on speed with an initial offset of START seconds
+    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / LOOPFREQ + START)) {
         let trip = PENDING_TRIPS[0];
         PENDING_TRIPS.splice(0, 1);
         if (trip['type'] == "Idle") {
@@ -308,8 +350,8 @@ function timeStep() {
             );
         }
     }
-    TIME++;
-    UpdateTime(TIME * SPEED / 10);
+    UpdateTime(TIME * SPEED / LOOPFREQ); // Update progress bar
+    TIME++; // Increment to next timestep, not next second
 }
 
 
@@ -510,10 +552,14 @@ function updateLines() {
     $(`#trial-${TRIAL}-push`).html(pushAvg);
 }
 
-$(document).ready(function() {
-    // map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
+
+// CREATE DIFFERENT FUNCTIONS FOR EACH MAP
+function setMap(id) {
+    var currentMap = mapList[id];
+    var currentSettings = [mapSettings[currentMap]["latitude"], mapSettings[currentMap]["longitude"], mapSettings[currentMap]["zoom"]];
     L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
-    map = L.map('map-canvas', { zoomControl: false }).setView([42.359456, -71.076336], 14);
+    // map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
+    map = L.map('map-canvas', { zoomControl: false }).setView([currentSettings[0], currentSettings[1]], currentSettings[2]);
     L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
     L.geoJson(mapdata, {
         style: function(feature) {
@@ -530,7 +576,24 @@ $(document).ready(function() {
         }
     }).addTo(map);
     L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-    Progress(0);
+
+}
+
+function changeMap() {
+    map.remove();
+    mapID = (mapID + 1) % mapList.length;
+    setMap(mapID);
+
+    $('#summary > tbody').empty();
+    d3.selectAll("svg").remove();
+
+    //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
+    lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
+    $('#line-graph').css('display', 'block');
+}
+
+$(document).ready(function() {
+    setMap(0);
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');

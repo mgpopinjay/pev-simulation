@@ -46,7 +46,7 @@ body {
     background-color: rgba(100,100,100,0.7);
 }
 .control-label {
-    font-size: 30px;
+    font-size: 24px;
     color: white;
     padding: 5px 0px;
     border-bottom: 2px solid white;
@@ -149,6 +149,7 @@ body {
     color: white;
     border-color: white;
     border-collapse: collapse;
+    width: 50%;
 }
 
 #summary thead {
@@ -161,10 +162,9 @@ body {
 
 #graphs {
     position: absolute;
-    left: 250px;
+    right: 0px;
     bottom: 70px;
     padding: 0px 50px;
-    width: calc(100vw - 350px);
     text-align: right;
 }
 
@@ -203,7 +203,9 @@ body {
 }
 
 #myBar {
-    width: 10%;
+    position: relative;
+    left: 0%;
+    width: 0%;
     height: 20px;
     background-color: #FFDE75;
     border-radius: 10px;
