@@ -38,6 +38,11 @@
     <!-- Access Token -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
+    <!-- Double Slider -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 
 <body style="font-family: 'Open Sans', sans-serif">
@@ -140,11 +145,16 @@
                     <input type="text" id="randomdata">
                 </p>
                 <div id="sliderrandom" style="margin-top: -10px"></div>
-                <p class="slider-label">
+                <!-- <p class="slider-label">
                     <label style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
                     <input type="text" id="simhrs">
                 </p>
-                <div id="sliderhrs" style="margin-top: -10px"></div>
+                <div id="sliderhrs" style="margin-top: -10px"></div> -->
+                <p class="slider-label">
+                  <label style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
+                  <input type="text" id="hours">
+                </p>
+                <div id="slider-time" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>Sim Speed</label>
                     <input type="text" id="simspeed">

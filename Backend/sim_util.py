@@ -427,14 +427,13 @@ def dist(start, end):
     return d
 
 
-def generate_random_requests(location, ratio, frequency, hrs, dist, fuzzing_enabled):
+def generate_random_requests(location, ratio, frequency, starthrs, endhrs, dist, fuzzing_enabled):
     '''
     Generate random requests centered around 'location' with a ratio of 'dist'
     '''
-    hours = hrs
     requests = []
     # percent random request every minute
-    for time in range(0, hours*60):
+    for time in range(starthrs*60, endhrs*60):
         if random.randint(1, 100) > frequency:
             continue
         kind = "Passenger"

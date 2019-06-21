@@ -204,7 +204,9 @@ body {
 }
 
 #myBar {
-    width: 10%;
+    position: relative;
+    left: 0%;
+    width: 0%;
     height: 20px;
     background-color: #FFDE75;
     border-radius: 10px;

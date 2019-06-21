@@ -91,7 +91,7 @@ def run_sim():
 
     if MAPSELECT == "Boston":
         if RANDOM_DATA:
-            requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, END_HR, 3.2, FUZZING_ON)
+            requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, START_HR, END_HR, 3.2, FUZZING_ON)
         if TAXI_DATA:
             requests += util.generate_taxi_trips(MAX_DIST, 0, TAXI_DATA, START_HR, END_HR, FUZZING_ON)
         if HUBWAY_DATA:
@@ -101,9 +101,9 @@ def run_sim():
 
     elif MAPSELECT == "Taipei":
         if RANDOM_DATA:
-            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, RANDOM_DATA, END_HR, 5, True)
-            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, RANDOM_DATA / 2, END_HR, 10, True)
-            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, RANDOM_DATA / 2, END_HR, 8, True)
+            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, RANDOM_DATA, START_HR, END_HR, 5, True)
+            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, RANDOM_DATA / 2, START_HR, END_HR, 10, True)
+            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, RANDOM_DATA / 2, START_HR, END_HR, 8, True)
 
     heapq.heapify(requests)  # sort requests by start time
     finished_requests = []

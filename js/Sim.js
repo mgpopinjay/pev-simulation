@@ -27,7 +27,11 @@ var slider_hubway = 20;
 var slider_random = 20;
 var slider_taxi = 20;
 var slider_max = 5;
-var slider_hrs = 3;
+// var slider_hrs = 3;
+var slider_startHrs = 6;
+var slider_endHrs = 18;
+
+var timeLength = slider_endHrs - slider_startHrs;
 
 $(function() {
     $("#sliderfleet").slider({
@@ -78,12 +82,12 @@ $(function() {
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * slider_hrs)
+            let trips = Math.round(ui.value / 100 * triphr * timeLength)
             $("#taxidata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_taxi = ui.value;
         }
     });
-    $("#taxidata").val($("#slidertaxi").slider("value") + " %" + " (" + Math.round(.2 * triphr * slider_hrs) + " trips)");
+    $("#taxidata").val($("#slidertaxi").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
 });
 
 $(function() {
@@ -94,12 +98,12 @@ $(function() {
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * slider_hrs)
+            let trips = Math.round(ui.value / 100 * triphr * timeLength)
             $("#hubwaydata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_hubway = ui.value;
         }
     });
-    $("#hubwaydata").val($("#sliderhubway").slider("value") + " %" + " (" + Math.round(.2 * triphr * slider_hrs) + " trips)");
+    $("#hubwaydata").val($("#sliderhubway").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
 });
 
 $(function() {
@@ -110,12 +114,12 @@ $(function() {
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * slider_hrs);
+            let trips = Math.round(ui.value / 100 * triphr * timeLength);
             $("#randomdata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_random = ui.value;
         }
     });
-    $("#randomdata").val($("#sliderrandom").slider("value") + " %" + " (" + Math.round(.2 * triphr * slider_hrs) + " trips)");
+    $("#randomdata").val($("#sliderrandom").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
 });
 
 $(function() {
@@ -131,21 +135,42 @@ $(function() {
     $("#parcelAmount").val($("#sliderParcelAmount").slider("value") + " /hr");
 });
 
+// $(function() {
+//     $("#sliderhrs").slider({
+//         value: 3,
+//         min: 0,
+//         max: 24,
+//         step: 1,
+//         slide: function(event, ui) {
+//             $("#simhrs").val(ui.value + " hrs");
+//             slider_hrs = ui.value;
+//             $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * slider_hrs) + " trips)");
+//             $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * slider_hrs) + " trips)");
+//             $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * slider_hrs) + " trips)");
+//         }
+//     });
+//     $("#simhrs").val($("#sliderhrs").slider("value") + " hrs");
+// });
+
 $(function() {
-    $("#sliderhrs").slider({
-        value: 3,
+    $("#slider-time").slider({
+        range: true,
         min: 0,
         max: 24,
-        step: 1,
+        values: [slider_startHrs, slider_endHrs],
         slide: function(event, ui) {
-            $("#simhrs").val(ui.value + " hrs");
-            slider_hrs = ui.value;
-            $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * slider_hrs) + " trips)");
-            $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * slider_hrs) + " trips)");
-            $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * slider_hrs) + " trips)");
+            $("#hours").val(ui.values[0] + ":00 - " + ui.values[1] + ":00");
+            slider_startHrs = ui.values[0];
+            slider_endHrs = ui.values[1];
+            timeLength = ui.values[1] - ui.values[0];
+            // Progress(slider_startHrs * 3600);
+            $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * timeLength) + " trips)");
+            $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * timeLength) + " trips)");
+            $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * timeLength) + " trips)");
         }
     });
-    $("#simhrs").val($("#sliderhrs").slider("value") + " hrs");
+    $("#hours").val($("#slider-time").slider("values", 0) +
+        ":00 - " + $("#slider-time").slider("values", 1) + ":00");
 });
 
 $(function() {
@@ -195,12 +220,13 @@ function fleet_sim() {
     var max_dist = slider_max;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
-    var endhrs = slider_hrs;
+    var starthrs = slider_startHrs;
+    var endhrs = slider_endHrs;
     var code = Math.floor(Math.random() * 10000);
     // CHANGE THIS TO A SELECTION BUTTON / DROPDOWN
     var mapSelect = "Taipei";
     var sim_params = {
-        starthrs: 0,
+        starthrs: starthrs,
         endhrs: endhrs,
         size: fleet_size,
         parcels: rebalanceSize,
