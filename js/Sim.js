@@ -1,5 +1,11 @@
 "use strict";
 var map;
+var mapID = 0;
+var mapList = ["Boston", "Taipei"];
+var mapSettings = {
+    "Boston": { "latitude": 42.359456, "longitude": -71.076336, "zoom": 14 },
+    "Taipei": { "latitude": 25.031213, "longitude": 121.502746, "zoom": 13 }
+};
 var LOOPPERIOD = 100; // milliseconds
 var LOOPFREQ = 1000 / LOOPPERIOD;
 var SPEED = 600;
@@ -228,7 +234,7 @@ function fleet_sim() {
     var endhrs = slider_endHrs;
     var code = Math.floor(Math.random() * 10000);
     // CHANGE THIS TO A SELECTION BUTTON / DROPDOWN
-    var mapSelect = "Taipei";
+    var mapSelect = mapList[mapID];
     var sim_params = {
         starthrs: starthrs,
         endhrs: endhrs,
@@ -274,7 +280,7 @@ function createTrips(data) {
     PAUSED = false;
     TRIAL++;
     FLEET_SIZE = Object.keys(data['fleet']).length;
-    $('#summary').append(`
+    $('#summary > tbody').append(`
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
@@ -294,7 +300,7 @@ function createTrips(data) {
     pushTimes = [];
     pickUpTimes = [];
     startTimes = [];
-    //let pendingTrips = [];
+    PENDING_TRIPS = [];
     for (let i = 0; i < Object.keys(data['fleet']).length; i++) {
         for (let j = 0; j < data['fleet'][i]['history'].length; j++) {
             let trip = data['fleet'][i]['history'][j];
@@ -548,11 +554,12 @@ function updateLines() {
 
 
 // CREATE DIFFERENT FUNCTIONS FOR EACH MAP
-function setMap() {
-    // map = L.map('map-canvas', {zoomControl: false}).setView([42.359456, -71.076336], 14);
+function setMap(id) {
+    var currentMap = mapList[id];
+    var currentSettings = [mapSettings[currentMap]["latitude"], mapSettings[currentMap]["longitude"], mapSettings[currentMap]["zoom"]];
     L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
-    // map = L.map('map-canvas', { zoomControl: false }).setView([42.359456, -71.076336], 14);
-    map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
+    // map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
+    map = L.map('map-canvas', { zoomControl: false }).setView([currentSettings[0], currentSettings[1]], currentSettings[2]);
     L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
     L.geoJson(mapdata, {
         style: function(feature) {
@@ -569,11 +576,25 @@ function setMap() {
         }
     }).addTo(map);
     L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
+
+}
+
+function changeMap() {
+    map.remove();
+    mapID = (mapID + 1) % mapList.length;
+    setMap(mapID);
+
+    $('#summary > tbody').empty();
+    d3.selectAll("svg").remove();
+
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
 }
 
 $(document).ready(function() {
-    setMap();
+    setMap(0);
+    //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
+    lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
+    $('#line-graph').css('display', 'block');
 });

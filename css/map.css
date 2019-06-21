@@ -46,7 +46,7 @@ body {
     background-color: rgba(100,100,100,0.7);
 }
 .control-label {
-    font-size: 30px;
+    font-size: 24px;
     color: white;
     padding: 5px 0px;
     border-bottom: 2px solid white;
@@ -162,10 +162,9 @@ body {
 
 #graphs {
     position: absolute;
-    left: 250px;
+    right: 0px;
     bottom: 70px;
     padding: 0px 50px;
-    width: calc(100vw - 350px);
     text-align: right;
 }
 

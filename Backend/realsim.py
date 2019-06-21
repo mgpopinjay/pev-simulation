@@ -63,8 +63,6 @@ def run_sim():
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
     RANDOM_START = SPAWN
-    # SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
-    SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"]))
     CHARGING = False  # whether or not to use recharging model
     CHARGE_DISTANCE = MAX_DIST+util.max_stat_dist()
     CHARGE_RANGE = 15000.0
@@ -75,7 +73,7 @@ def run_sim():
     PRINT_ANALYTICS = True  # whether to print final analytics
     DISABLE_SPECIFICS = []
     ENABLE_SPECIFICS = []
-    FUZZING_ON = False
+    FUZZING_ON = True
 
     """
     THE SIMULATOR
@@ -90,6 +88,7 @@ def run_sim():
     stations = []
 
     if MAPSELECT == "Boston":
+        SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
         if RANDOM_DATA:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, START_HR, END_HR, 3.2, FUZZING_ON)
         if TAXI_DATA:
@@ -100,10 +99,11 @@ def run_sim():
             stations = res[1]
 
     elif MAPSELECT == "Taipei":
+        SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"]))
         if RANDOM_DATA:
-            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, RANDOM_DATA, START_HR, END_HR, 5, True)
-            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, RANDOM_DATA / 2, START_HR, END_HR, 10, True)
-            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, RANDOM_DATA / 2, START_HR, END_HR, 8, True)
+            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, RANDOM_DATA, START_HR, END_HR, 5, FUZZING_ON)
+            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, RANDOM_DATA / 2, START_HR, END_HR, 10, FUZZING_ON)
+            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, RANDOM_DATA / 2, START_HR, END_HR, 8, FUZZING_ON)
 
     heapq.heapify(requests)  # sort requests by start time
     finished_requests = []

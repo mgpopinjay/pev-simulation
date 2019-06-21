@@ -126,7 +126,7 @@
                     <label style="font-weight:600"> <i class="fas fa-road"></i>Max Distance</label>
                     <input type="text" id="maxdist">
                 </p>
-                <div id="slidermax" style="margin-top: -10px"></div>
+                <div id="slidermax" class="ui-slider" style="margin-top: -10px"></div>
             </div>
             <div class="control-section">
                 <div class="control-label">Demand</div>
@@ -168,6 +168,7 @@
         <!-- <input class="button func" value="Street Modification" onclick=""> -->
         <!-- <input class="button func" value="Re-Start"> -->
         <input class="button func" value="Simulate" onclick="fleet_sim()">
+        <input class="button func" value="Change Map" style="margin-top: 5px" onclick="changeMap()">
         <!-- <input class="button func" value="Test Sim" onclick="test_fleet_sim()"> -->
     </div>
     </div>
@@ -190,6 +191,8 @@
             <td>Movement Utilization</td>
             <td>Time Utilization</td>
         </thead>
+        <tbody>
+        </tbody>
     </table>
     <div id="loader" class="disabled">
         <svg version="1.1" id="loader-1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 50 50" xml:space="preserve">
