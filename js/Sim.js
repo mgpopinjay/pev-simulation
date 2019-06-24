@@ -557,25 +557,28 @@ function updateLines() {
 function setMap(id) {
     var currentMap = mapList[id];
     var currentSettings = [mapSettings[currentMap]["latitude"], mapSettings[currentMap]["longitude"], mapSettings[currentMap]["zoom"]];
-    L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
+    // L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
+    L.mapbox.accessToken = 'pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4YW14OWkxMThqdzNxdXQzZngxdDQzOCJ9.IivhzJPxo-H2W5_Z5kJNyg';
     // map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
     map = L.map('map-canvas', { zoomControl: false }).setView([currentSettings[0], currentSettings[1]], currentSettings[2]);
     L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
-    L.geoJson(mapdata, {
-        style: function(feature) {
-            console.log(feature)
-            return {
-                color: "#B1260A",
-                fill: true,
-                opacity: 1,
-                clickable: false
-            };
-        },
-        onEachFeature: function(feature, layer) {
-            return
-        }
-    }).addTo(map);
-    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
+    // CUSTOM MAP DATA
+    // L.geoJson(mapdata, {
+    //     style: function(feature) {
+    //         console.log(feature)
+    //         return {
+    //             color: "#B1260A",
+    //             fill: true,
+    //             opacity: 1,
+    //             clickable: false
+    //         };
+    //     },
+    //     onEachFeature: function(feature, layer) {
+    //         return
+    //     }
+    // }).addTo(map);
+    // L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
+    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4YW14OWkxMThqdzNxdXQzZngxdDQzOCJ9.IivhzJPxo-H2W5_Z5kJNyg').addTo(map);
 
 }
 

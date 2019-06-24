@@ -43,7 +43,7 @@ body {
     border-radius: 10px;
     margin-top: 30px;
     padding: 10px 20px 20px 20px;
-    background-color: rgba(100, 100, 100, 0.7);
+    background-color: rgba(100, 100, 100, 0.35);
 }
 
 .control-label {
@@ -56,7 +56,7 @@ body {
 
 .button {
     font-size: 14px;
-    background-color: #ff66cc;
+    background-color: rgba(255, 102, 204, 0.35);
     color: white;
     border: 2px solid #ff66cc;
     border-radius: 5px;
@@ -98,7 +98,7 @@ body {
 }
 
 #sliders {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .slider-label {
@@ -152,6 +152,7 @@ body {
     border-color: white;
     border-collapse: collapse;
     width: 50%;
+    font-size: small;
 }
 
 #summary thead {
@@ -159,7 +160,7 @@ body {
 }
 
 #summary td {
-    padding: 5px 10px;
+    padding: 5px 5px;
 }
 
 #graphs {

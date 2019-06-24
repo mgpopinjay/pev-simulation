@@ -25,8 +25,7 @@
     <script type="text/javascript" src="js/Sim.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/map.css">
-    </link>
+
     <!-- libraries -->
     <script type="text/javascript" src="js/lib/AnimatedMaker.js"></script>
     <script type="text/javascript" src="js/lib/MovingMarker.js"></script>
@@ -43,6 +42,8 @@
     <link rel="stylesheet" href="/resources/demos/style.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/map.css">
+    </link>
 </head>
 
 <body style="font-family: 'Open Sans', sans-serif">
@@ -116,7 +117,7 @@
                     <label style="font-weight:600"> <i class="fa fa-rocket"></i>Fleet Size:</label>
                     <input type="text" id="fleet">
                 </p>
-                <div id="sliderfleet" style="margin-top: -10px"></div>
+                <div id="sliderfleet" style="margin-top: -10px; height:5px"></div>
                 <!-- <p class="slider-label"> -->
                 <!-- <label style="font-weight:600"> <i class="fa fa-rocket"></i>Rebal PEVs:</label> -->
                 <!-- <input type="text" id="rebalance"> -->
@@ -180,7 +181,7 @@
             <td>PEVs</td>
             <td>Trips</td>
             <td>Bike / Taxi / Random</td>
-            <td>Trips/Day</td>
+            <td>Trips/Hr</td>
             <td>Pickup Time</td>
             <td>Assignment Time</td>
             <td>Avg Wait Time</td>

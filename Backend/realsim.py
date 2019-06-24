@@ -73,7 +73,8 @@ def run_sim():
     PRINT_ANALYTICS = True  # whether to print final analytics
     DISABLE_SPECIFICS = []
     ENABLE_SPECIFICS = []
-    FUZZING_ON = True
+    FUZZING_ON = False
+    SPAWN_POINT = []
 
     """
     THE SIMULATOR
@@ -88,7 +89,11 @@ def run_sim():
     stations = []
 
     if MAPSELECT == "Boston":
-        SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"]))  # lat/long of car depot (Media Lab)
+        SPAWN_POINT = [
+            util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.098146", "42.346608"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.062631", "42.357599"]))
+        ]  # lat/long of car depot (Media Lab)
         if RANDOM_DATA:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, START_HR, END_HR, 3.2, FUZZING_ON)
         if TAXI_DATA:
@@ -99,7 +104,7 @@ def run_sim():
             stations = res[1]
 
     elif MAPSELECT == "Taipei":
-        SPAWN_POINT = util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"]))
+        SPAWN_POINT = [util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"]))]
         if RANDOM_DATA:
             requests += util.generate_random_requests(["121.538912", "25.044209"], 50, RANDOM_DATA, START_HR, END_HR, 5, FUZZING_ON)
             requests += util.generate_random_requests(["121.484580", "25.019766"], 50, RANDOM_DATA / 2, START_HR, END_HR, 10, FUZZING_ON)
@@ -132,7 +137,7 @@ def run_sim():
             node = random.sample(stations.keys(), 1)  # make cars spawn randomly at clusters
             p = util.find_snap_coordinates(util.get_snap_output(util.gaussian_randomizer(stations[node[0]], 0.8, FUZZING_ON)))
         else:
-            p = SPAWN_POINT
+            p = SPAWN_POINT[i % len(SPAWN_POINT)]
         car = util.PEV(i, p)
         free_cars.append(car)
         total_cars[i] = car
