@@ -588,7 +588,7 @@ function changeMap() {
     setMap(mapID);
 
     $('#summary > tbody').empty();
-    d3.selectAll("svg").remove();
+    d3.selectAll("#graphs > *").remove();
 
     //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");

@@ -90,9 +90,19 @@ def run_sim():
 
     if MAPSELECT == "Boston":
         SPAWN_POINT = [
-            util.find_snap_coordinates(util.get_snap_output(["-71.0873", "42.3604"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.098146", "42.346608"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.062631", "42.357599"]))
+            util.find_snap_coordinates(util.get_snap_output(["-71.093196", "42.358296"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.088376", "42.362249"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.085130", "42.362500"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.108264", "42.350325"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.097831", "42.344706"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.088076", "42.347284"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.086029", "42.344000"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.072874", "42.355593"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.070359", "42.352096"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.066270", "42.351172"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.062733", "42.352414"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.063130", "42.354835"])),
+            util.find_snap_coordinates(util.get_snap_output(["-71.100281", "42.363463"])),
         ]  # lat/long of car depot (Media Lab)
         if RANDOM_DATA:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, RANDOM_DATA, START_HR, END_HR, 3.2, FUZZING_ON)

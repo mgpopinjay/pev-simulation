@@ -106,12 +106,35 @@ body {
     color: white;
 }
 
+.slider-label .label-text {
+    position: relative;
+}
+
 .slider-label input {
     border: 0;
     font-size: 12px;
     background-color: transparent;
     color: #ff66cc;
     font-weight: bold;
+}
+
+.slider-label .label-text .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color #fff;
+    text-align: center;
+    padding: 5px 5px;
+    border-radius: 6px;
+
+    position: absolute;
+    z-index: 3;
+    top: -5px;
+    left: 105%;
+}
+
+.label-text:hover .tooltiptext {
+    visibility: visible;
 }
 
 .ui-slider {
