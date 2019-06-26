@@ -59,7 +59,8 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
+# API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://18.20.247.61:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -167,22 +168,22 @@ class Request(object):
 
     ''' compare methods for heap '''
     def __eq__(self, other):
-        return self.time == other.time
+        return self.original_time == other.original_time
 
     def __ne__(self, other):
-        return self.time != other.time
+        return self.original_time != other.original_time
 
     def __lt__(self, other):
-        return self.time < other.time
+        return self.original_time < other.original_time
 
     def __le__(self, other):
-        return self.time <= other.time
+        return self.original_time <= other.original_time
 
     def __gt__(self, other):
-        return self.time > other.time
+        return self.original_time > other.original_time
 
     def __ge__(self, other):
-        return self.time >= other.time
+        return self.original_time >= other.original_time
 
     def __repr__(self):
         ''' represent method for stuff '''
@@ -329,15 +330,12 @@ class PEV(object):
         self.request = Idle(time, self.pos)
 
     def end_idle(self, req):
-        temp = Idle(self.request.time, self.request.pickup)
-        temp.end_time = req.time
-        temp.get_duration()
-        self.idletime += temp.traveltime
-        if type(req) == Rebalance:
-            self.fulfill_rebalance(req)  # could be rebalance or real request
-        else:
-            self.fulfill_request(req)
-        return temp
+        current_idle = self.request
+        current_idle.end_time = req.time
+        current_idle.get_duration()
+        self.idletime += current_idle.traveltime
+        self.fulfill_request(req)
+        return current_idle
 
     def end_trip(self):
         ''' update car when trip ends '''
@@ -735,3 +733,11 @@ def max_stat_dist():
             if dis > max_dist:
                 max_dist = dis
     return max_dist
+
+
+def assignFinishedTrip(lst, car, trip):
+    if car.id in lst.keys():
+        lst[car.id].append(trip)
+    else:
+        lst[car.id] = [trip]
+    return lst

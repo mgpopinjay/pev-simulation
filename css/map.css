@@ -81,10 +81,15 @@ body {
 
 #title-outer {
     color: white;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    margin-top: 0px;
+    margin-left: 25px;
 }
 
 #title-outer h1 {
-    font-size: 23px;
+    font-size: 32px;
     margin-bottom: 0px;
 }
 

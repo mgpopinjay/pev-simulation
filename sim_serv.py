@@ -9,7 +9,7 @@ import http.server
 import socketserver
 import logging
 import json
-from Backend.realsim import run_sim
+from Backend.realsim import runSim
 # from server import routes, dynamic_trips
 # import sys
 # import simplejson
@@ -85,7 +85,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             # temp_path = curpath+"/realsim.py"
             # subprocess.call(['python', temp_path])
 
-            resp = run_sim()
+            resp = runSim()
             self.send_response(200, "OK")
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Access-Control-Allow-Origin', '*')
