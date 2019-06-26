@@ -1,5 +1,6 @@
 ''' Fernando Sanchez, August 2017 '''
 from . import sim_util as util
+from .sim_assign import updateRequests
 import heapq
 import time
 import random
@@ -57,13 +58,6 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, hubwayRatio, sta
     heapq.heapify(requests)  # sort requests by start time
     return requests
 
-def assignFinishedTrip(lst, car, trip):
-    if car.id in lst.keys():
-        lst[car.id].append(trip)
-    else:
-        lst[car.id] = [trip]
-    return lst
-
 def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
     if mapName == "Boston":
         spawnPoints = [
@@ -89,6 +83,7 @@ def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
 
     for i in range(numCars):
         p = spawnPoints[i % len(spawnPoints)]
+        print(p)
         car = util.PEV(i, p)
         freeCars.append(car)
         totalCars[i] = car
@@ -99,60 +94,24 @@ def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
 def updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests):
     if len(busyCars) == 0:
         return "No busy cars to update"
-    else:
-        updatedCars = []  # debug purposes
-        while simTime >= busyCars[0].time:
-            # end request
-            car = heapq.heappop(busyCars)
-            if type(car.request) == util.Request:
-                doub = car.end_trip()  # doub is a tuple of (finished_trip, finished_nav)
-                finished = doub[0]  # finished_trip
-                finished_nav = doub[1]  # finished_nav
-                assignFinishedTrip(finishedTrips, car, finished_nav)
-                assignFinishedTrip(finishedTrips, car, finished)
-                finishedRequests.append(finished)
-                car.become_idle(finished.time+finished.pickuptime+finished.traveltime)
-                freeCars.append(car)
-            updatedCars.append(str(car.id))  # debug purposes
-
-            if len(busyCars) == 0:
-                break
-        return "Updated the following cars: {}".format(updatedCars)
-
-def assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips):
-    tempFreeCars = rebalancingCars + freeCars
-    req = heapq.heappop(requests)
-
-    if len(tempFreeCars) > 0:
-        # loop through free_cars to find the car with minimum linear distance to pickup
-        minCarIndex, minCar = min(enumerate(freeCars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
-        del freeCars[minCarIndex]
-        idl = minCar.end_idle(req)
-        idleTrips.append(idl)
-        assignFinishedTrip(finishedTrips, minCar, idl)
-        heapq.heappush(busyCars, minCar)  # move car to busy list
-        return "Assigned request to car: {}".format(minCar.id)
-
-    else:  # there are no free cars
-        # Try implementing system where pushed back requests are not equal
-        req.pushtime += 1.0  # increment time by 1 second
-        req.time += 1.0  # move the request time forward until a car is free to claim it
-        heapq.heappush(requests, req)
-        return "Pushed back request"
-
-def finishBusyCars(busyCars, freeCars, finishedTrips, finishedRequests):
-    car = heapq.heappop(busyCars)  # get first busy car
-    if type(car.request) == util.Request:
-        doub = car.end_trip()
-        finished = doub[0]
-        finishedNav = doub[1]
-        if (json.loads(finishedNav.osrm)["code"] == "Ok"):
-            assignFinishedTrip(finishedTrips, car, finishedNav)
-            assignFinishedTrip(finishedTrips, car, finished)
+    updatedCars = []  # debug purposes
+    while simTime >= busyCars[0].time:
+        # end request
+        car = heapq.heappop(busyCars)
+        if type(car.request) == util.Request:
+            doub = car.end_trip()  # doub is a tuple of (finished_trip, finished_nav)
+            finished = doub[0]  # finished_trip
+            finished_nav = doub[1]  # finished_nav
+            util.assignFinishedTrip(finishedTrips, car, finished_nav)
+            util.assignFinishedTrip(finishedTrips, car, finished)
             finishedRequests.append(finished)
             car.become_idle(finished.time+finished.pickuptime+finished.traveltime)
-    freeCars.append(car)
-    return "Finished request for car: {}".format(car.id)
+            freeCars.append(car)
+        updatedCars.append(str(car.id))  # debug purposes
+
+        if len(busyCars) == 0:
+            break
+    return "Updated the following cars: {}".format(updatedCars)
 
 def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     pickuptimes = []
@@ -198,39 +157,39 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     # CALCULATE ANALYTICS
     # print("REBALANCE ON?: "+str(REBALANCE_ON)
     # print("RANDOM START?: "+str(RANDOM_START)
-    print("TOTAL TRIPS: {}".format(len(finishedRequests)))
+    print("Total Trips: {}".format(len(finishedRequests)))
     for origin in origins.keys():
-        print(origin.upper()+" TRIPS: {}".format(origins[origin]))
+        print(origin.upper()+" trips: {}".format(origins[origin]))
     # Avg time for PEV to travel to request
-    avg_req_pickup = round(statistics.mean(pickuptimes), 1)
-    print("AVERAGE REQUEST PICKUPTIME: {}".format(avg_req_pickup))
+    avgReqPickup = round(statistics.mean(pickuptimes), 1)
+    print("Average Request Pickup Time: {}".format(avgReqPickup))
     # Avg time for PEV to be assigned to request
-    avg_req_assign = round(statistics.mean(pushtimes), 1)
-    print("AVERAGE REQUEST PUSHTIME: {}".format(avg_req_assign))
+    avgReqAssign = round(statistics.mean(pushtimes), 1)
+    print("Average Request Push Time: {}".format(avgReqAssign))
     # Avg travel time of each request from origin to destination
-    avg_req_travel = round(statistics.mean(traveltimes), 1)
-    print("AVERAGE REQUEST TRAVELTIME: {}".format(avg_req_travel))
+    avgReqTravel = round(statistics.mean(traveltimes), 1)
+    print("Average Request Travel Time: {}".format(avgReqTravel))
     # Avg time moving with passenger
-    avg_car_travel = round(statistics.mean(utiltimes), 1)
-    print("AVERAGE CAR UTILIZATION TIME: {}".format(avg_car_travel))
+    avgCarTravel = round(statistics.mean(utiltimes), 1)
+    print("Average Car Utilization Time: {}".format(avgCarTravel))
     # Avg time moving without passenger
-    avg_car_navigate = round(statistics.mean(navtimes), 1)
-    print("AVERAGE CAR NAVIGATION TIME: {}".format(avg_car_navigate))
+    avgCarNavigate = round(statistics.mean(navtimes), 1)
+    print("Average Car Navigation Time: {}".format(avgCarNavigate))
     # Avg time spent moving
-    avg_car_move = round(statistics.mean(movingtimes), 1)
-    print("AVERAGE CAR MOVING TIME: {}".format(avg_car_move))
+    avgCarMove = round(statistics.mean(movingtimes), 1)
+    print("Average Car Moving Time: {}".format(avgCarMove))
     # Percent of moving time with passenger
-    percent_travel_over_move = round(avg_car_travel/avg_car_move*100, 1)
-    print("AVERAGE CAR UTILIZATION PERCENTAGE: {}".format(percent_travel_over_move))
+    percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
+    print("Average Car Utilization Percentage: {}".format(percentTravelOverMove))
     # Avg time spent idle
-    avg_car_idle = round(statistics.mean(idletimes), 1)
-    print("AVERAGE CAR IDLE TIME: {}".format(avg_car_idle))
+    avgCarIdle = round(statistics.mean(idletimes), 1)
+    print("Average Car Idle Time: {}".format(avgCarIdle))
     # Percent of total time spent idle
-    percent_idle_over_total = round(avg_car_idle/(avg_car_idle+avg_car_move)*100, 1)
-    print("AVERAGE CAR IDLE PERCENTAGE: {}".format(percent_idle_over_total))
+    percentIdleOverTotal = round(avgCarIdle/(avgCarIdle+avgCarMove)*100, 1)
+    print("Average Car Idle Percentage: {}".format(percentIdleOverTotal))
     # Percent of total time spent moving
-    percent_move_over_total = round(avg_car_move/(avg_car_move+avg_car_idle)*100, 1)
-    print("AVERAGE CAR MOVEMENT PERCENTAGE: {}".format(percent_move_over_total))
+    percentMoveOverTotal = round(avgCarMove/(avgCarMove+avgCarIdle)*100, 1)
+    print("Average Car Movement Percentage: {}".format(percentMoveOverTotal))
 
     # waitDist is the distribution of waittimes in 5 min intervals
     waitDist = [0 for i in range(math.ceil(waittimes[-1]/60/5))]
@@ -240,16 +199,16 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         waitDist[currentBin] += 1
     # Waittime analytics
     # Avg wait time
-    avg_req_wait = statistics.mean(waittimes)
-    print("WAITTIME AVERAGE: {}".format(avg_req_wait))
+    avgReqWait = statistics.mean(waittimes)
+    print("Average Wait Time: {}".format(avgReqWait))
     # Request wait time 50th percentile
-    wait_time_50p = waittimes[len(waittimes)//2]
-    print("WAITTIME 50th PERCENTILE: {}".format(wait_time_50p))
+    waitTime50p = waittimes[len(waittimes)//2]
+    print("50th Percentile Wait Time: {}".format(waitTime50p))
     # Request wait time 75th percentile
-    wait_time_75p = waittimes[len(waittimes)*3//4]
-    print("WAITTIME 75th PERCENTILE: {}".format(wait_time_75p))
+    waitTime75p = waittimes[len(waittimes)*3//4]
+    print("75th Percentile Wait Time: {}".format(waitTime75p))
     # Request wait time distribution by 5 minute bins
-    print("WAITTIME DISTRIBUTION BY 5 MIN: {}".format(waitDist))
+    print("Distribution of Wait Times by 5 min: {}".format(waitDist))
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
     print("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
@@ -264,19 +223,19 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "TRIPS_HR": round(len(finishedRequests)/(endHr-startHr), 1),
         "TRIPS_DAY": len(finishedRequests)/(endHr-startHr)*24,
         "SIM RUNTIME": str(systemDelta),
-        "AVERAGE REQUEST PICKUPTIME": str(avg_req_pickup),
-        "AVERAGE REQUEST PUSHTIME": str(avg_req_assign),
-        "AVERAGE REQUEST TRAVELTIME": str(avg_req_travel),
-        "AVERAGE CAR UTILIZATION": str(avg_car_travel),
-        "AVERAGE CAR NAVIGATION": str(avg_car_navigate),
-        "AVERAGE CAR MOVINGTIME": str(avg_car_move),
-        "AVERAGE CAR IDLETIME": str(avg_car_idle),
-        "AVERAGE CAR UTILIZATION PERCENTAGE": str(percent_travel_over_move),
-        "AVERAGE CAR MOVEMENT PERCENTAGE": str(percent_move_over_total),
-        "AVERAGE CAR IDLE PERCENTAGE": str(percent_idle_over_total),
-        "WAITTIME AVERAGE": str(avg_req_wait),
-        "WAITTIME 50th PERCENTILE": str(wait_time_50p),
-        "WAITTIME 75th PERCENTILE": str(wait_time_75p),
+        "AVERAGE REQUEST PICKUPTIME": str(avgReqPickup),
+        "AVERAGE REQUEST PUSHTIME": str(avgReqAssign),
+        "AVERAGE REQUEST TRAVELTIME": str(avgReqTravel),
+        "AVERAGE CAR UTILIZATION": str(avgCarTravel),
+        "AVERAGE CAR NAVIGATION": str(avgCarNavigate),
+        "AVERAGE CAR MOVINGTIME": str(avgCarMove),
+        "AVERAGE CAR IDLETIME": str(avgCarIdle),
+        "AVERAGE CAR UTILIZATION PERCENTAGE": str(percentTravelOverMove),
+        "AVERAGE CAR MOVEMENT PERCENTAGE": str(percentMoveOverTotal),
+        "AVERAGE CAR IDLE PERCENTAGE": str(percentIdleOverTotal),
+        "WAITTIME AVERAGE": str(avgReqWait),
+        "WAITTIME 50th PERCENTILE": str(waitTime50p),
+        "WAITTIME 75th PERCENTILE": str(waitTime75p),
         "WAITTIME DISTRIBUTION": waitDist,
     }
 
@@ -329,6 +288,7 @@ def runSim():
     TUNING VARIABLES
     """
     MAPSELECT   = variables["MapSelect"]
+    print("Map Name: {}".format(MAPSELECT))
     NUMCARS     = variables["Fleet_Size"]  # number of vehicles
     CODE        = variables["Code"]  # RNG code
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
@@ -339,8 +299,8 @@ def runSim():
     START_HR    = variables["Start_Hour"] # end hour of the simulation
     END_HR      = variables["End_Hour"] # start hour of the simulation
 
-    print("NUMCARS: " + str(NUMCARS))
-    print("CODE: " + str(CODE))
+    print("Number of cars: " + str(NUMCARS))
+    print("Code: " + str(CODE))
 
     NUMDATA = 1  # number of spreadsheets of data used
     KIND_RATIO = 70  # percent of trips that are passengers
@@ -356,12 +316,13 @@ def runSim():
     PRINT_ANALYTICS = True  # whether to print final analytics
     DISABLE_SPECIFICS = []
     ENABLE_SPECIFICS = []
-    FUZZING_ON = False
+    FUZZING_ON = True
     SPAWN_POINT = []
 
     """
     THE SIMULATOR
     """
+    simRunning = True
     requests = []
     finishedRequests = []
     rebalanceTrips = []  # ?
@@ -381,18 +342,24 @@ def runSim():
     # initiateRebalance()
     populatePEVs(NUMCARS, totalCars, freeCars, busyCars, MAPSELECT)
 
-    while len(requests) > 0:
+    while simRunning:
         # updateRebalancingCars()
         updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests)
-        reqTime = requests[0].time
-        if reqTime > simTime:
-            simTime += 1
-            continue
-        assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
+        updateRequests(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
         # rebalanceCars()
+        simTime += 1
+        if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0:
+            simRunning = False
 
-    while len(busyCars) > 0:
-        finishBusyCars(busyCars, freeCars, finishedTrips, finishedRequests)
+    # while len(requests) > 0:
+    #     # updateRebalancingCars()
+    #     updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests)
+    #     reqTime = requests[0].time
+    #     if reqTime > simTime:
+    #         simTime += 1
+    #         continue
+    #     assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
+    #     # rebalanceCars()
 
     print("Sim Done")
     systemEndTime = time.time()

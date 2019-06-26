@@ -59,7 +59,8 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
+# API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://18.20.247.61:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -735,3 +736,11 @@ def max_stat_dist():
             if dis > max_dist:
                 max_dist = dis
     return max_dist
+
+
+def assignFinishedTrip(lst, car, trip):
+    if car.id in lst.keys():
+        lst[car.id].append(trip)
+    else:
+        lst[car.id] = [trip]
+    return lst
