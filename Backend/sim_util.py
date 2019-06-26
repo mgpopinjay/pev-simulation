@@ -330,15 +330,12 @@ class PEV(object):
         self.request = Idle(time, self.pos)
 
     def end_idle(self, req):
-        temp = Idle(self.request.time, self.request.pickup)
-        temp.end_time = req.time
-        temp.get_duration()
-        self.idletime += temp.traveltime
-        if type(req) == Rebalance:
-            self.fulfill_rebalance(req)  # could be rebalance or real request
-        else:
-            self.fulfill_request(req)
-        return temp
+        current_idle = self.request
+        current_idle.end_time = req.time
+        current_idle.get_duration()
+        self.idletime += current_idle.traveltime
+        self.fulfill_request(req)
+        return current_idle
 
     def end_trip(self):
         ''' update car when trip ends '''
