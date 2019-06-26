@@ -1,6 +1,6 @@
 ''' Fernando Sanchez, August 2017 '''
 from . import sim_util as util
-from .sim_assign import updateRequests
+from .sim_assign import assignMethods as updateRequests
 import heapq
 import time
 import random
@@ -83,7 +83,6 @@ def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
 
     for i in range(numCars):
         p = spawnPoints[i % len(spawnPoints)]
-        print(p)
         car = util.PEV(i, p)
         freeCars.append(car)
         totalCars[i] = car
@@ -288,7 +287,6 @@ def runSim():
     TUNING VARIABLES
     """
     MAPSELECT   = variables["MapSelect"]
-    print("Map Name: {}".format(MAPSELECT))
     NUMCARS     = variables["Fleet_Size"]  # number of vehicles
     CODE        = variables["Code"]  # RNG code
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
@@ -316,7 +314,7 @@ def runSim():
     PRINT_ANALYTICS = True  # whether to print final analytics
     DISABLE_SPECIFICS = []
     ENABLE_SPECIFICS = []
-    FUZZING_ON = True
+    FUZZING_ON = False
     SPAWN_POINT = []
 
     """
@@ -332,6 +330,7 @@ def runSim():
     freeCars = []
     busyCars = []
     rebalancingCars = []
+    assignType = "greedy"
 
     systemStartTime = time.time()
     print("Sim Start")
@@ -345,7 +344,7 @@ def runSim():
     while simRunning:
         # updateRebalancingCars()
         updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests)
-        updateRequests(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
+        updateRequests[assignType](freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
         # rebalanceCars()
         simTime += 1
         if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0:
@@ -365,6 +364,7 @@ def runSim():
     systemEndTime = time.time()
     systemDelta = systemEndTime - systemStartTime
     print("Sim Runtime: {}".format(systemDelta))
+    print("Assignment Type: {}".format(assignType))
     print("Hubway Ratio: {}".format(HUBWAY_DATA))
     print("Taxi Ratio: {}".format(TAXI_DATA))
     print("Random Ratio: {}".format(RANDOM_DATA))
