@@ -168,22 +168,22 @@ class Request(object):
 
     ''' compare methods for heap '''
     def __eq__(self, other):
-        return self.time == other.time
+        return self.original_time == other.original_time
 
     def __ne__(self, other):
-        return self.time != other.time
+        return self.original_time != other.original_time
 
     def __lt__(self, other):
-        return self.time < other.time
+        return self.original_time < other.original_time
 
     def __le__(self, other):
-        return self.time <= other.time
+        return self.original_time <= other.original_time
 
     def __gt__(self, other):
-        return self.time > other.time
+        return self.original_time > other.original_time
 
     def __ge__(self, other):
-        return self.time >= other.time
+        return self.original_time >= other.original_time
 
     def __repr__(self):
         ''' represent method for stuff '''
