@@ -7,6 +7,8 @@ import json
 import requests
 import numpy as np
 import os
+import heapq
+import statistics
 
 """
 NOTES FOR THE READER:
@@ -741,3 +743,191 @@ def assignFinishedTrip(lst, car, trip):
     else:
         lst[car.id] = [trip]
     return lst
+
+def updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests):
+    if len(busyCars) == 0:
+        return "No busy cars to update"
+    updatedCars = []  # debug purposes
+    while simTime >= busyCars[0].time:
+        # end request
+        car = heapq.heappop(busyCars)
+        if type(car.request) == Request:
+            doub = car.end_trip()  # doub is a tuple of (finished_trip, finished_nav)
+            finished = doub[0]  # finished_trip
+            finished_nav = doub[1]  # finished_nav
+            assignFinishedTrip(finishedTrips, car, finished_nav)
+            assignFinishedTrip(finishedTrips, car, finished)
+            finishedRequests.append(finished)
+            car.become_idle(finished.time+finished.pickuptime+finished.traveltime)
+            freeCars.append(car)
+        updatedCars.append(str(car.id))  # debug purposes
+
+        if len(busyCars) == 0:
+            break
+    return "Updated the following cars: {}".format(updatedCars)
+
+def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
+    pickuptimes = []
+    pushtimes = []
+    waittimes = []
+    traveltimes = []
+    origins = {
+        "taxi": 0,
+        "bike": 0,
+        "random": 0,
+    }
+    for req in finishedRequests:
+        pickuptimes.append(req.pickuptime)
+        pushtimes.append(req.pushtime)
+        waittimes.append(req.pickuptime + req.pushtime)
+        traveltimes.append(req.traveltime)
+        if req.origin in origins:
+            origins[req.origin] = origins[req.origin] + 1
+        else:
+            origins[req.origin] = 1
+
+    waittimes.sort()
+
+    movingtimes = []
+    idletimes = []
+    utiltimes = []
+    navtimes = []
+    for car in freeCars:
+        movingtimes.append(car.movingtime)
+        idletimes.append(car.idletime)
+        utiltimes.append(car.utiltime)
+        navtimes.append(car.movingtime-car.utiltime)
+
+    ''' REBALANCING ANALYTICS
+        rebaltimes = []
+        rebaltraveltimes = []
+        for re in rebalance_trips:
+            time_as_hour = '0'+str(int(re.time)/60)+':'+str(int(re.time)%60)
+            rebaltimes.append(time_as_hour)
+            rebaltraveltimes.append(re.traveltime)
+    '''
+
+    # CALCULATE ANALYTICS
+    # print("REBALANCE ON?: "+str(REBALANCE_ON)
+    # print("RANDOM START?: "+str(RANDOM_START)
+    print("Total Trips: {}".format(len(finishedRequests)))
+    for origin in origins.keys():
+        print(origin.upper()+" trips: {}".format(origins[origin]))
+    # Avg time for PEV to travel to request
+    avgReqPickup = round(statistics.mean(pickuptimes), 1)
+    print("Average Request Pickup Time: {}".format(avgReqPickup))
+    # Avg time for PEV to be assigned to request
+    avgReqAssign = round(statistics.mean(pushtimes), 1)
+    print("Average Request Push Time: {}".format(avgReqAssign))
+    # Avg travel time of each request from origin to destination
+    avgReqTravel = round(statistics.mean(traveltimes), 1)
+    print("Average Request Travel Time: {}".format(avgReqTravel))
+    # Avg time moving with passenger
+    avgCarTravel = round(statistics.mean(utiltimes), 1)
+    print("Average Car Utilization Time: {}".format(avgCarTravel))
+    # Avg time moving without passenger
+    avgCarNavigate = round(statistics.mean(navtimes), 1)
+    print("Average Car Navigation Time: {}".format(avgCarNavigate))
+    # Avg time spent moving
+    avgCarMove = round(statistics.mean(movingtimes), 1)
+    print("Average Car Moving Time: {}".format(avgCarMove))
+    # Percent of moving time with passenger
+    percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
+    print("Average Car Utilization Percentage: {}".format(percentTravelOverMove))
+    # Avg time spent idle
+    avgCarIdle = round(statistics.mean(idletimes), 1)
+    print("Average Car Idle Time: {}".format(avgCarIdle))
+    # Percent of total time spent idle
+    percentIdleOverTotal = round(avgCarIdle/(avgCarIdle+avgCarMove)*100, 1)
+    print("Average Car Idle Percentage: {}".format(percentIdleOverTotal))
+    # Percent of total time spent moving
+    percentMoveOverTotal = round(avgCarMove/(avgCarMove+avgCarIdle)*100, 1)
+    print("Average Car Movement Percentage: {}".format(percentMoveOverTotal))
+
+    # waitDist is the distribution of waittimes in 5 min intervals
+    waitDist = [0 for i in range(math.ceil(waittimes[-1]/60/5))]
+    # Place each time into bin
+    for n in waittimes:
+        currentBin = math.floor(n/60/5)
+        waitDist[currentBin] += 1
+    # Waittime analytics
+    # Avg wait time
+    avgReqWait = statistics.mean(waittimes)
+    print("Average Wait Time: {}".format(avgReqWait))
+    # Request wait time 50th percentile
+    waitTime50p = waittimes[len(waittimes)//2]
+    print("50th Percentile Wait Time: {}".format(waitTime50p))
+    # Request wait time 75th percentile
+    waitTime75p = waittimes[len(waittimes)*3//4]
+    print("75th Percentile Wait Time: {}".format(waitTime75p))
+    # Request wait time distribution by 5 minute bins
+    print("Distribution of Wait Times by 5 min: {}".format(waitDist))
+
+    ''' MORE REBALANCING ANALYTICS TODO: Fix this
+    print("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
+    print("TIME OF REBALANCE TRIPS: \n"+str(rebaltimes))
+    print("LENGTH OF REBALANCE TRIPS: \n"+str(rebaltraveltimes))
+    r_avg = reduce(lambda x,y:x+y, rebaltraveltimes)/len(rebaltraveltimes)
+    print("AVERAGE LENGTH OF REBALANCE TRIP: "+str(r_avg))
+    '''
+
+    simOutputs = {
+        "TRIPS": origins,
+        "TRIPS_HR": round(len(finishedRequests)/(endHr-startHr), 1),
+        "TRIPS_DAY": len(finishedRequests)/(endHr-startHr)*24,
+        "SIM RUNTIME": str(systemDelta),
+        "AVERAGE REQUEST PICKUPTIME": str(avgReqPickup),
+        "AVERAGE REQUEST PUSHTIME": str(avgReqAssign),
+        "AVERAGE REQUEST TRAVELTIME": str(avgReqTravel),
+        "AVERAGE CAR UTILIZATION": str(avgCarTravel),
+        "AVERAGE CAR NAVIGATION": str(avgCarNavigate),
+        "AVERAGE CAR MOVINGTIME": str(avgCarMove),
+        "AVERAGE CAR IDLETIME": str(avgCarIdle),
+        "AVERAGE CAR UTILIZATION PERCENTAGE": str(percentTravelOverMove),
+        "AVERAGE CAR MOVEMENT PERCENTAGE": str(percentMoveOverTotal),
+        "AVERAGE CAR IDLE PERCENTAGE": str(percentIdleOverTotal),
+        "WAITTIME AVERAGE": str(avgReqWait),
+        "WAITTIME 50th PERCENTILE": str(waitTime50p),
+        "WAITTIME 75th PERCENTILE": str(waitTime75p),
+        "WAITTIME DISTRIBUTION": waitDist,
+    }
+
+    return simOutputs
+
+def getCarData(totalCars, finishedTrips):
+    carData = {}
+    for car in totalCars:
+        carData[car] = {"history": [], "spawn": totalCars[car].spawn}
+    for car in finishedTrips.keys():
+        trips = finishedTrips[car]
+        formattedTrips = []
+        for i in range(len(trips)):
+            trip = trips[i]
+            tripJson = {}
+            tripJson["start_time"] = trip.original_time
+            tripJson["end_time"] = trip.time+trip.traveltime
+            tripJson["duration"] = trip.traveltime
+            tripJson["id"] = i
+            tripJson["pickuptime"] = 0
+            tripJson["pushtime"] = 0
+            if type(trip) == Idle:
+                tripJson["type"] = "Idle"
+                tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
+            else:
+                tripJson["steps_polyline"] = parse_for_visualizer_steps(trip.osrm)
+                tripJson["overview_polyline"] = parse_for_visualizer_whole(trip.osrm)
+                tripJson["start_point"] = trip.pickup
+                tripJson["end_point"] = trip.dropoff
+                if type(trip) == Rebalance:
+                    tripJson["type"] = "Rebalance"
+                elif type(trip) == Navigation:
+                    tripJson["type"] = "Navigation"
+                else:
+                    tripJson["end_time"] = trip.original_time+trip.traveltime+trip.pickuptime+trip.pushtime
+                    tripJson["type"] = trip.kind
+                    tripJson["pushtime"] = trip.pushtime
+                    tripJson["pickuptime"] = trip.pickuptime
+                    tripJson["origin"] = trip.origin
+            formattedTrips.append(tripJson)
+        carData[car] = {"history": formattedTrips, "spawn": totalCars[car].spawn}
+    return carData
