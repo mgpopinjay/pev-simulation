@@ -25,8 +25,7 @@
     <script type="text/javascript" src="js/Sim.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/map.css">
-    </link>
+
     <!-- libraries -->
     <script type="text/javascript" src="js/lib/AnimatedMaker.js"></script>
     <script type="text/javascript" src="js/lib/MovingMarker.js"></script>
@@ -38,6 +37,13 @@
     <!-- Access Token -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
+    <!-- Double Slider -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/map.css">
+    </link>
 </head>
 
 <body style="font-family: 'Open Sans', sans-serif">
@@ -73,8 +79,9 @@
    </table>
 </div> -->
     <div id="controls">
-        <!-- <div id="title-outer"> -->
-        <!--   <h1 style="margin-top:10px; font-style:italic">PEV-SIMULATOR V4</h1> -->
+        <div id="title-outer">
+            <h1 style="font-style:italic">PEV SimApp V4</h1>
+        </div>
         <!--   <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p> -->
         <!-- </div> -->
         <!-- <div id="city-select"> -->
@@ -108,45 +115,65 @@
             <div class="control-section">
                 <div class="control-label">Supply</div>
                 <p class="slider-label">
-                    <label style="font-weight:600"> <i class="fa fa-rocket"></i>Fleet Size:</label>
+                    <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">Number of PEVs</span>
+                        <i class="fa fa-rocket"></i>Fleet Size:
+                    </label>
                     <input type="text" id="fleet">
                 </p>
-                <div id="sliderfleet" style="margin-top: -10px"></div>
+                <div id="sliderfleet" style="margin-top: -10px; height:5px"></div>
                 <!-- <p class="slider-label"> -->
                 <!-- <label style="font-weight:600"> <i class="fa fa-rocket"></i>Rebal PEVs:</label> -->
                 <!-- <input type="text" id="rebalance"> -->
                 <!-- </p> -->
                 <!-- <div id="sliderRebalance" style="margin-top: -10px"></div> -->
                 <p class="slider-label">
-                    <label style="font-weight:600"> <i class="fas fa-road"></i>Max Distance</label>
+                    <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">Maximum length of each trip</span>
+                        <i class="fas fa-road"></i>Max Distance
+                    </label>
                     <input type="text" id="maxdist">
                 </p>
-                <div id="slidermax" style="margin-top: -10px"></div>
+                <div id="slidermax" class="ui-slider" style="margin-top: -10px"></div>
             </div>
             <div class="control-section">
                 <div class="control-label">Demand</div>
                 <p class="slider-label">
-                    <label style="font-weight:600"> <i class="fas fa-taxi"></i>Taxi Data</label>
+                    <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">2012 Taxi data</span>
+                        <i class="fas fa-taxi"></i>Taxi Data
+                    </label>
                     <input type="text" id="taxidata">
                 </p>
                 <div id="slidertaxi" style="margin-top: -10px"></div>
                 <p class="slider-label">
-                    <label style="font-weight:600"> <i class="fas fa-bicycle"></i>Hubway Data</label>
+                    <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext" style="width:240px">2012 Hubway data from http://hubwaydatachallenge.org/trip-history-data/</span>
+                        <i class="fas fa-bicycle"></i>Hubway Data
+                    </label>
                     <input type="text" id="hubwaydata">
                 </p>
                 <div id="sliderhubway" style="margin-top: -10px"></div>
                 <p class="slider-label">
-                    <label style="font-weight:600"> <i class="fas fa-globe"></i>Random Data</label>
+                    <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">Randomly generated jobs</span>
+                        <i class="fas fa-globe"></i>Random Data
+                    </label>
                     <input type="text" id="randomdata">
                 </p>
                 <div id="sliderrandom" style="margin-top: -10px"></div>
-                <p class="slider-label">
+                <!-- <p class="slider-label">
                     <label style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
                     <input type="text" id="simhrs">
                 </p>
-                <div id="sliderhrs" style="margin-top: -10px"></div>
+                <div id="sliderhrs" style="margin-top: -10px"></div> -->
                 <p class="slider-label">
-                    <label style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>Sim Speed</label>
+                    <label class="label-text" style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
+                    <input type="text" id="hours">
+                </p>
+                <div id="slider-time" style="margin-top: -10px"></div>
+                <p class="slider-label">
+                    <label class="label-text" style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>Sim Speed</label>
                     <input type="text" id="simspeed">
                 </p>
                 <div id="sliderspeed" style="margin-top: -10px"></div>
@@ -158,18 +185,19 @@
         <!-- <input class="button func" value="Street Modification" onclick=""> -->
         <!-- <input class="button func" value="Re-Start"> -->
         <input class="button func" value="Simulate" onclick="fleet_sim()">
+        <input class="button func" value="Change Map" style="margin-top: 5px" onclick="changeMap()">
         <!-- <input class="button func" value="Test Sim" onclick="test_fleet_sim()"> -->
     </div>
     </div>
     <div id="graphs">
     </div>
-    <table id="summary" style="width:50%">
+    <table id="summary">
         <thead>
             <td>Trial</td>
             <td>PEVs</td>
             <td>Trips</td>
             <td>Bike / Taxi / Random</td>
-            <td>Trips/Day</td>
+            <td>Trips/Hr</td>
             <td>Pickup Time</td>
             <td>Assignment Time</td>
             <td>Avg Wait Time</td>
@@ -180,6 +208,8 @@
             <td>Movement Utilization</td>
             <td>Time Utilization</td>
         </thead>
+        <tbody>
+        </tbody>
     </table>
     <div id="loader" class="disabled">
         <svg version="1.1" id="loader-1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 50 50" xml:space="preserve">

@@ -9,7 +9,7 @@ import http.server
 import socketserver
 import logging
 import json
-from Backend.realsim import run_sim
+from Backend.realsim import runSim
 # from server import routes, dynamic_trips
 # import sys
 # import simplejson
@@ -55,9 +55,11 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             taxiFreq = int(args["taxi"])
             startHrs = int(args["starthrs"])
             endHrs = int(args["endhrs"])
+            mapSelect = args["mapselect"]
 
             # create dictionary of data to dump as JSON to 'Variable_X.json file'
             data_to_send = {
+                "MapSelect": mapSelect,
                 "Rebalancing_Vehicles": parcFreq,
                 "Fleet_Size": fleet_size,
                 "Bike_Freq": bikeFreq,
@@ -83,7 +85,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             # temp_path = curpath+"/realsim.py"
             # subprocess.call(['python', temp_path])
 
-            resp = run_sim()
+            resp = runSim()
             self.send_response(200, "OK")
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Access-Control-Allow-Origin', '*')

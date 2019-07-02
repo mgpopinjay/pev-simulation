@@ -6,7 +6,7 @@ body {
     top: 0;
     height: 100%;
     width: 100%;
-    position:absolute;
+    position: absolute;
     z-index: -1;
 }
 
@@ -21,7 +21,7 @@ body {
     width: 100%;
     height: 100%;
     position: absolute;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
     z-index: 10;
     transition: .2s all;
 }
@@ -29,7 +29,7 @@ body {
 #loader svg {
     position: absolute;
     left: 50%;
-    top:50%;
+    top: 50%;
     width: 200px;
     height: 200px;
     transform: translate(-50%, -50%);
@@ -43,18 +43,20 @@ body {
     border-radius: 10px;
     margin-top: 30px;
     padding: 10px 20px 20px 20px;
-    background-color: rgba(100,100,100,0.7);
+    background-color: rgba(100, 100, 100, 0.35);
 }
+
 .control-label {
-    font-size: 30px;
+    font-size: 24px;
     color: white;
     padding: 5px 0px;
     border-bottom: 2px solid white;
     font-weight: 600;
 }
+
 .button {
     font-size: 14px;
-    background-color: #ff66cc;
+    background-color: rgba(255, 102, 204, 0.35);
     color: white;
     border: 2px solid #ff66cc;
     border-radius: 5px;
@@ -79,10 +81,15 @@ body {
 
 #title-outer {
     color: white;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    margin-top: 0px;
+    margin-left: 25px;
 }
 
 #title-outer h1 {
-    font-size: 23px;
+    font-size: 32px;
     margin-bottom: 0px;
 }
 
@@ -96,12 +103,16 @@ body {
 }
 
 #sliders {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .slider-label {
     width: 150%;
     color: white;
+}
+
+.slider-label .label-text {
+    position: relative;
 }
 
 .slider-label input {
@@ -112,12 +123,31 @@ body {
     font-weight: bold;
 }
 
-.ui-slider   {
+.slider-label .label-text .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color #fff;
+    text-align: center;
+    padding: 5px 5px;
+    border-radius: 6px;
+
+    position: absolute;
+    z-index: 3;
+    top: -5px;
+    left: 105%;
+}
+
+.label-text:hover .tooltiptext {
+    visibility: visible;
+}
+
+.ui-slider {
     height: 4px;
     width: 100%;
 }
 
-.ui-slider  .ui-slider-handle   {
+.ui-slider .ui-slider-handle {
     height: 12px;
     width: 12px;
     padding-left: 0px; //add this
@@ -149,6 +179,8 @@ body {
     color: white;
     border-color: white;
     border-collapse: collapse;
+    width: 50%;
+    font-size: small;
 }
 
 #summary thead {
@@ -156,15 +188,14 @@ body {
 }
 
 #summary td {
-    padding: 5px 10px;
+    padding: 5px 5px;
 }
 
 #graphs {
     position: absolute;
-    left: 250px;
+    right: 0px;
     bottom: 70px;
     padding: 0px 50px;
-    width: calc(100vw - 350px);
     text-align: right;
 }
 
@@ -174,7 +205,7 @@ body {
     color: white;
     margin-top: 10px;
     margin-left: 30px;
-    font-weight:600
+    font-weight: 600
 }
 
 
@@ -203,7 +234,9 @@ body {
 }
 
 #myBar {
-    width: 10%;
+    position: relative;
+    left: 0%;
+    width: 0%;
     height: 20px;
     background-color: #FFDE75;
     border-radius: 10px;
@@ -232,7 +265,7 @@ UNUSED
     overflow-y: scroll;
     font-size: 14px;
     top: 5%;
-    right:1%;
+    right: 1%;
     background-color: white;
 }
 
@@ -240,8 +273,8 @@ UNUSED
     /*width:425px;*/
     /*height:40%;*/
     line-height: 0px;
-    bottom:2%;
-    right:2%;
+    bottom: 2%;
+    right: 2%;
     font-size: 12px;
     font-weight: bold;
     background-color: blue;
@@ -251,7 +284,7 @@ UNUSED
 .style {
     /*background: -webkit-gradient(linear, bottom, left 175px, from(#CCCCCC), to(#EEEEEE));*/
     /*background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);*/
-    margin:auto;
+    margin: auto;
     position: absolute;
     font-family: Tahoma, Geneva, sans-serif;
     color: #09C;
@@ -272,7 +305,7 @@ UNUSED
 .style-upper-right {
     /*background: -webkit-gradient(linear, bottom, left 175px, from(#CCCCCC), to(#EEEEEE));*/
     /*background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);*/
-    margin:auto;
+    margin: auto;
     position: absolute;
     font-family: Tahoma, Geneva, sans-serif;
     color: #09C;
@@ -318,12 +351,13 @@ th {
 td {
     text-align: center;
 }
+
 /*body, a:hover {*/
 /*    cursor: url(http://ani.cursors-4u.net/toons/too-12/too1137.cur), progress !important;*/
 }
 
 body {
-    margin:  0px;
+    margin: 0px;
     padding: 0px;
     font-family: 'Open Sans', sans-serif;
 }
@@ -338,64 +372,62 @@ ol li:hover {
 
 
 .topcol {
-  position: absolute;
-  color: none;
-  width: 100%;
+    position: absolute;
+    color: none;
+    width: 100%;
 }
 
 .topleft {
-  width            : 100%;
-  overflow         : hidden;
+    width: 100%;
+    overflow: hidden;
 }
 
-.Row
-{
-display: table;
-width: 100%;
-table-layout: fixed;
-border-spacing: 10px;
+.Row {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 10px;
 }
 
-.Column
-{
-display: table-cell;
-background-color: ;
+.Column {
+    display: table-cell;
+    background-color: ;
 }
 
 .chart {
-background: none;
-margin: 5px;
+    background: none;
+    margin: 5px;
 }
 
 .chart rect {
-stroke: none;
-fill: #cc99ff;
+    stroke: none;
+    fill: #cc99ff;
 }
 
 .chart text {
-fill: white;
+    fill: white;
 }
 
 .chart text .name {
-fill: white;
+    fill: white;
 }
 
 .chart line {
-stroke: #c1c1c1;
+    stroke: #c1c1c1;
 }
 
 .chart .rule {
-fill: white;
+    fill: white;
 }
 
 /* removed the while stroke as we don't need it anymore */
 #step-5 .chart rect {
-stroke: none;
+    stroke: none;
 }
 
 /* a bit of hovering effect for each bar */
 #step-5 .chart rect:hover {
-fill: #64707D;
+    fill: #64707D;
 }
 
 text {
@@ -404,22 +436,22 @@ text {
 
 .axis path,
 .axis line {
-fill: none;
-stroke: whi;
-shape-rendering: crispEdges;
+    fill: none;
+    stroke: whi;
+    shape-rendering: crispEdges;
 }
 
 .chartControl {
-position: relative;
-left: 140px;
-top: -3px;
+    position: relative;
+    left: 140px;
+    top: -3px;
 }
 
 .axis path,
 .axis line {
-fill: none;
-stroke: #09C;
-shape-rendering: crispEdges;
+    fill: none;
+    stroke: #09C;
+    shape-rendering: crispEdges;
 }
 
 .axis text {
