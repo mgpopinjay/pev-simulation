@@ -38,21 +38,23 @@ def loadVariables():
         infile.write(str(sim_id + 1))
     return json.load(open(os.path.dirname(curpath)+"/Backend/Inputs/"+filename))
 
-def populateRequests(requests, mapName, randomRatio, taxiRatio, hubwayRatio, startHr, endHr, fuzzing, maxDist):
+def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, startHr, endHr, fuzzing, maxDist):
     if mapName == "Boston":
         if randomRatio:
-            requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, randomRatio, startHr, endHr, 3.2, fuzzing)
+            requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, randomRatio, startHr, endHr, 3.2, True)
         if taxiRatio:
             requests += util.generate_taxi_trips(maxDist, 0, taxiRatio, startHr, endHr, fuzzing)
-        if hubwayRatio:
-            res = util.generate_hubway_trips(1000, maxDist, 0, hubwayRatio, startHr, endHr, fuzzing)
+        if bikeRatio:
+            res = util.generate_hubway_trips(maxDist, 0, bikeRatio, startHr, endHr, fuzzing)
             requests += res[0]
 
     elif mapName == "Taipei":
         if randomRatio:
-            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, randomRatio, startHr, endHr, 5, fuzzing)
-            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, randomRatio / 2, startHr, endHr, 10, fuzzing)
-            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, randomRatio / 2, startHr, endHr, 8, fuzzing)
+            requests += util.generate_random_requests(["121.538912", "25.044209"], 50, randomRatio, startHr, endHr, 5, True)
+            requests += util.generate_random_requests(["121.484580", "25.019766"], 50, randomRatio / 2, startHr, endHr, 10, True)
+            requests += util.generate_random_requests(["121.469703", "25.066972"], 50, randomRatio / 2, startHr, endHr, 8, True)
+        if bikeRatio:
+            requests += util.generate_youbike_trips(maxDist, 0, bikeRatio, startHr, endHr, fuzzing)
 
     heapq.heapify(requests)  # sort requests by start time
     return requests
@@ -101,7 +103,7 @@ def runSim():
     NUMCARS     = variables["Fleet_Size"]  # number of vehicles
     CODE        = variables["Code"]  # RNG code
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
-    HUBWAY_DATA = variables["Bike_Freq"]  # percentage of hubway data trips to be used
+    BIKE_DATA = variables["Bike_Freq"]  # percentage of hubway data trips to be used
     TAXI_DATA   = variables["Taxi_Freq"] # percentage of taxi data
     MAX_DIST    = variables["Max_Dist"] * 1609.34
     SPAWN       = variables["Spawn_Point"]
@@ -148,7 +150,7 @@ def runSim():
     simTime = START_HR * 3600  # Set simulator to start time in secs
     simEndTime = END_HR * 3600  # Time for simulator to end
 
-    populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, HUBWAY_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
+    populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
     populatePEVs(NUMCARS, totalCars, freeCars, busyCars, MAPSELECT)
 
@@ -176,7 +178,7 @@ def runSim():
     systemDelta = systemEndTime - systemStartTime
     print("Sim Runtime: {}".format(systemDelta))
     print("Assignment Type: {}".format(assignType))
-    print("Hubway Ratio: {}".format(HUBWAY_DATA))
+    print("Hubway Ratio: {}".format(BIKE_DATA))
     print("Taxi Ratio: {}".format(TAXI_DATA))
     print("Random Ratio: {}".format(RANDOM_DATA))
 
@@ -193,7 +195,7 @@ def runSim():
         "SPAWN_POINT": SPAWN_POINT,
         "REBALANCE_ON": REBALANCE_ON,
         "TAXI_DATA": TAXI_DATA,
-        "BIKE_DATA": HUBWAY_DATA,
+        "BIKE_DATA": BIKE_DATA,
         "RANDOM_DATA": RANDOM_DATA,
         "START_HR": START_HR,
         "END_HR": END_HR

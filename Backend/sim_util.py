@@ -62,7 +62,7 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
 # API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.247.61:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://192.168.29.233:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -609,7 +609,7 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_en
         if time <= starthrs * 60 * 60:
             continue
         if time >= endhrs * 60 * 60:
-            break
+            continue
         rand_freq = random.randint(1, 100)
         if rand_freq > frequency:
             continue
@@ -649,7 +649,7 @@ hubstations = {}  # global variable for Hubway stations dictionary
 #[13]birth year
 #[14]gender
 
-def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
+def generate_hubway_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
     '''
     Use hubway data to generate trips
     '''
@@ -677,7 +677,7 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
         if time <= starthrs * 60 * 60:
             continue
         if time >= endhrs * 60 * 60:
-            break
+            continue
         rand_freq = random.randint(1, 100)
         if rand_freq > frequency:
             continue
@@ -702,9 +702,58 @@ def generate_hubway_trips(max_trips, max_dist, ratio, frequency, starthrs, endhr
 
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             trips.append(req)
-        if len(trips) >= max_trips:
-            break
     return trips, hubstations
+
+
+def generate_youbike_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
+    '''
+    Use youbike data to generate trips
+    '''
+    data = []
+    trips = []
+    curpath = os.path.dirname(os.path.abspath(__file__))
+
+    with open(curpath+'/youbike-day.csv', 'rU') as file:
+        spamreader = csv.reader(file, delimiter=',')
+        for row in spamreader:
+            data.append(row)
+    current_count = 0
+    for row in data[1:]:
+        pretime = row[0]
+        time = int(pretime[-8:-6])*60*60+int(pretime[-5:-3])*60+int(pretime[-2:])
+        # TIME IN SECONDS
+        if time <= starthrs * 60 * 60:
+            continue
+        if time >= endhrs * 60 * 60:
+            continue
+        rand_freq = random.randint(1, 100)
+        if rand_freq > frequency:
+            continue
+        startpos = [row[2].strip(' '), row[1].strip(' ')]
+        endpos = [row[4].strip(' '), row[3].strip(' ')]
+        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(startpos, 0.8, fuzzing_enabled)))
+        rng = random.randint(1, 100)
+        kind = "Passenger"
+        req = None
+        if current_count % 2500 == 0:
+            print(current_count)
+        current_count += 1
+        if rng <= ratio:
+            kind = "Parcel"
+        if startpos == endpos:
+            fake_dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(startpos, 3.2, fuzzing_enabled)))
+            # print fake_dest
+            req = Request(time, start_point, fake_dest, "bike", kind)
+
+        else:
+            # real trip
+            dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 0.8, fuzzing_enabled)))
+            if dist(startpos, dest) < max_dist:
+                req = Request(time, start_point, dest, "bike", kind)
+
+        if req is not None and json.loads(req.osrm)["code"] == "Ok":
+            trips.append(req)
+    return trips
 
 
 def find_closest_station(loc):
@@ -931,3 +980,4 @@ def getCarData(totalCars, finishedTrips):
             formattedTrips.append(tripJson)
         carData[car] = {"history": formattedTrips, "spawn": totalCars[car].spawn}
     return carData
+
