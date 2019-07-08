@@ -25,6 +25,15 @@ var LOOP;
 var START;
 var TIME = 0;
 
+var bike_triphr = {
+    "Boston": 4516 / 24,
+    "Taipei": 73649 / 24
+}
+var taxi_triphr = {
+    "Boston": 107 / 24,
+    "Taipei": 0
+}
+
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
 ////////////////////  Slider inputs  //////////////////////
@@ -33,7 +42,7 @@ var TIME = 0;
 
 var slider_rebalanceSize = 20;
 var slider_fleetSize = 20;
-var slider_hubway = 20;
+var slider_bike = 20;
 var slider_random = 20;
 var slider_taxi = 20;
 var slider_maxDist = 5;
@@ -47,7 +56,7 @@ $(function() {
     $("#sliderfleet").slider({
         value: 20,
         min: 0,
-        max: 200,
+        max: 2500,
         step: 5,
         slide: function(event, ui) {
             $("#fleet").val(ui.value + " ");
@@ -85,35 +94,33 @@ $(function() {
 });
 
 $(function() {
-    let triphr = 4;
     $("#slidertaxi").slider({
         value: 20,
         min: 0,
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * timeLength)
+            let trips = Math.round(ui.value / 100 * taxi_triphr[mapList[mapID]] * timeLength)
             $("#taxidata").val(ui.value + " %" + " (" + trips + " trips)");
             slider_taxi = ui.value;
         }
     });
-    $("#taxidata").val($("#slidertaxi").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
+    $("#taxidata").val($("#slidertaxi").slider("value") + " %" + " (" + Math.round(.2 * taxi_triphr[mapList[mapID]] * timeLength) + " trips)");
 });
 
 $(function() {
-    let triphr = 50;
-    $("#sliderhubway").slider({
+    $("#sliderbike").slider({
         value: 20,
         min: 0,
         max: 100,
         step: 10,
         slide: function(event, ui) {
-            let trips = Math.round(ui.value / 100 * triphr * timeLength)
-            $("#hubwaydata").val(ui.value + " %" + " (" + trips + " trips)");
-            slider_hubway = ui.value;
+            let trips = Math.round(ui.value / 100 * bike_triphr[mapList[mapID]] * timeLength)
+            $("#bikedata").val(ui.value + " %" + " (" + trips + " trips)");
+            slider_bike = ui.value;
         }
     });
-    $("#hubwaydata").val($("#sliderhubway").slider("value") + " %" + " (" + Math.round(.2 * triphr * timeLength) + " trips)");
+    $("#bikedata").val($("#sliderbike").slider("value") + " %" + " (" + Math.round(.2 * bike_triphr[mapList[mapID]] * timeLength) + " trips)");
 });
 
 $(function() {
@@ -173,9 +180,9 @@ $(function() {
             slider_startHrs = ui.values[0];
             slider_endHrs = ui.values[1];
             timeLength = ui.values[1] - ui.values[0];
-            $("#hubwaydata").val(slider_hubway + " %" + " (" + Math.round(slider_hubway / 100 * 50 * timeLength) + " trips)");
+            $("#bikedata").val(slider_bike + " %" + " (" + Math.round(slider_bike / 100 * bike_triphr[mapList[mapID]] * timeLength) + " trips)");
             $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * timeLength) + " trips)");
-            $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * 4 * timeLength) + " trips)");
+            $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * taxi_triphr[mapList[mapID]] * timeLength) + " trips)");
         }
     });
     $("#hours").val($("#slider-time").slider("values", 0) +
@@ -224,7 +231,7 @@ function T_on() {
 function fleet_sim() {
     TIME = 0; // not actual time, but loops through the visualizer
     var fleet_size = slider_fleetSize;
-    var bike_freq = slider_hubway;
+    var bike_freq = slider_bike;
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
     var max_dist = slider_maxDist;
@@ -558,7 +565,7 @@ function setMap(id) {
     var currentMap = mapList[id];
     var currentSettings = [mapSettings[currentMap]["latitude"], mapSettings[currentMap]["longitude"], mapSettings[currentMap]["zoom"]];
     // L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
-    L.mapbox.accessToken = 'pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4YW14OWkxMThqdzNxdXQzZngxdDQzOCJ9.IivhzJPxo-H2W5_Z5kJNyg';
+    L.mapbox.accessToken = 'pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4dWo4d2w5MTR5NjNjbWo3dTE3ZHloaCJ9.8QzBC_5yC5B8Lqm1Zkp4Uw';
     // map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
     map = L.map('map-canvas', { zoomControl: false }).setView([currentSettings[0], currentSettings[1]], currentSettings[2]);
     L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
@@ -578,7 +585,7 @@ function setMap(id) {
     //     }
     // }).addTo(map);
     // L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4YW14OWkxMThqdzNxdXQzZngxdDQzOCJ9.IivhzJPxo-H2W5_Z5kJNyg').addTo(map);
+    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4dWo4d2w5MTR5NjNjbWo3dTE3ZHloaCJ9.8QzBC_5yC5B8Lqm1Zkp4Uw').addTo(map);
 
 }
 
