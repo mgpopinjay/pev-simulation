@@ -3,11 +3,10 @@ from . import sim_util as util
 from .sim_assign import assignMethods as updateRequests
 import heapq
 import time
-import random
 # import datetime
 import os
 import json
-import math
+import numpy as np
 
 """
 NOTES FOR THE READER:
@@ -76,11 +75,13 @@ def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
             util.find_snap_coordinates(util.get_snap_output(["-71.063130", "42.354835"])),
             util.find_snap_coordinates(util.get_snap_output(["-71.100281", "42.363463"])),
         ]
+        weights = []
 
     elif mapName == "Taipei":
         spawnPoints = [
             util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"])),
         ]
+        weights = []
 
     for i in range(numCars):
         p = spawnPoints[i % len(spawnPoints)]
@@ -113,6 +114,7 @@ def runSim():
     print("Number of cars: " + str(NUMCARS))
     print("Code: " + str(CODE))
 
+    TIMESTEP = 1  # seconds per time step
     NUMDATA = 1  # number of spreadsheets of data used
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
@@ -127,7 +129,8 @@ def runSim():
     PRINT_ANALYTICS = True  # whether to print final analytics
     DISABLE_SPECIFICS = []
     ENABLE_SPECIFICS = []
-    FUZZING_ON = False
+    FUZZING_ON = False  # used to spread out job spawns
+    FIXED_RANDOM_SEED = True
     SPAWN_POINT = []
 
     """
@@ -157,9 +160,9 @@ def runSim():
     while simRunning:
         # updateRebalancingCars()
         util.updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests)
-        updateRequests[assignType](freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
+        updateRequests[assignType](freeCars, rebalancingCars, busyCars, simTime, TIMESTEP, requests, finishedTrips, idleTrips)
         # rebalanceCars()
-        simTime += 1
+        simTime += TIMESTEP
         if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0:
             simRunning = False
 

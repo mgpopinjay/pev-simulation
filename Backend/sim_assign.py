@@ -1,7 +1,7 @@
 import heapq
 from . import sim_util as util
 
-def assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips):
+def assignRequest(freeCars, rebalancingCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips):
     tempFreeCars = rebalancingCars + freeCars
     req = heapq.heappop(requests)
 
@@ -17,17 +17,17 @@ def assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finish
 
     else:  # there are no free cars
         # Try implementing system where pushed back requests are not equal
-        req.pushtime += 1.0  # increment time by 1 second
-        req.time += 1.0  # move the request time forward until a car is free to claim it
+        req.pushtime += timeStep  # increment time by 1 second
+        req.time += timeStep  # move the request time forward until a car is free to claim it
         heapq.heappush(requests, req)
         return "Pushed back request"
 
-def updateRequests(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips):
+def updateRequests(freeCars, rebalancingCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips):
     count = 0
     while len(requests) > 0:
         req = requests[0]
         if req.time <= simTime:
-            assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
+            assignRequest(freeCars, rebalancingCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips)
             count += 1
         else:
             break
