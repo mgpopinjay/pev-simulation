@@ -146,7 +146,7 @@ def runSim():
     freeCars = []
     busyCars = []
     rebalancingCars = []
-    assignType = "greedy"
+    assignType = "closestCar"
 
     systemStartTime = time.time()
     print("Sim Start")
