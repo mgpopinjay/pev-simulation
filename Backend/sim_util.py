@@ -285,19 +285,10 @@ class PEV(object):
         self.nav = nav
 
     def fulfill_request(self, request):
-        ''' begin route towards request '''
+        ''' begin navigation towards request '''
         self.request = request
         self.create_nav()
-        traveltime1 = self.nav.traveltime  # drive to pickup
-        traveltime2 = self.request.traveltime  # drive to dropoff
-        self.time = request.time + traveltime1 + traveltime2  # update time
-        # update traveltime and utilization time for analytics
-        self.movingtime += traveltime1+traveltime2
-        self.movingspace += self.request.traveldist+self.nav.traveldist
-        self.c_movingspace += self.request.traveldist+self.nav.traveldist
-        self.utiltime += traveltime2
-        # hold pickuptime for trip delivery
-        self.request.pickuptime = traveltime1
+        self.time = request.time + self.nav.traveltime  # update car time
 
     def fulfill_rebalance(self, rebalance):
         ''' begin route for a rebalance '''
@@ -339,11 +330,26 @@ class PEV(object):
         self.fulfill_request(req)
         return current_idle
 
+    def end_nav(self):
+        ''' update car when nav ends '''
+        # update travel time and utilization time for analytics
+        self.movingtime += self.nav.traveltime
+        self.movingspace += self.nav.traveldist
+        self.c_movingspace += self.nav.traveldist
+        self.time += self.request.traveltime
+        # hold pickuptime for trip delivery
+        self.request.pickuptime = self.nav.traveltime
+        return self.nav
+
     def end_trip(self):
         ''' update car when trip ends '''
+        # update travel time and utilization time for analytics
+        self.movingtime += self.request.traveltime
+        self.movingspace += self.request.traveldist
+        self.c_movingspace += self.request.traveldist
         self.time = None
         self.pos = self.request.dropoff
-        return (self.request, self.nav)
+        return self.request
 
     def end_rebalance(self):
         ''' update car if trip ends '''
@@ -793,26 +799,41 @@ def assignFinishedTrip(lst, car, trip):
         lst[car.id] = [trip]
     return lst
 
-def updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests):
-    if len(busyCars) == 0:
-        return "No busy cars to update"
+def updateBusyCars(navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests):
     updatedCars = []  # debug purposes
-    while simTime >= busyCars[0].time:
-        # end request
-        car = heapq.heappop(busyCars)
-        if type(car.request) == Request:
-            doub = car.end_trip()  # doub is a tuple of (finished_trip, finished_nav)
-            finished = doub[0]  # finished_trip
-            finished_nav = doub[1]  # finished_nav
-            assignFinishedTrip(finishedTrips, car, finished_nav)
-            assignFinishedTrip(finishedTrips, car, finished)
-            finishedRequests.append(finished)
-            car.become_idle(finished.time+finished.pickuptime+finished.traveltime)
-            freeCars.append(car)
-        updatedCars.append(str(car.id))  # debug purposes
+    output = ""
+    if len(busyCars) == 0:
+        output = "No cars to update"
+    else:
+        while simTime >= busyCars[0].time:
+            # end request
+            car = heapq.heappop(busyCars)
+            if type(car.request) == Request:
+                finishedTrip = car.end_trip()
+                assignFinishedTrip(finishedTrips, car, finishedTrip)
+                finishedRequests.append(finishedTrip)
+                car.become_idle(finishedTrip.time+finishedTrip.pickuptime+finishedTrip.traveltime)
+                freeCars.append(car)
+            updatedCars.append(str(car.id))  # debug purposes
 
-        if len(busyCars) == 0:
-            break
+            if len(busyCars) == 0:
+                break
+    if len(navCars) == 0:
+        output = "No cars to update"
+    else:
+        while simTime >= navCars[0].time:
+            # end navigation
+            car = heapq.heappop(navCars)
+            finishedNav = car.end_nav()
+            assignFinishedTrip(finishedTrips, car, finishedNav)
+            busyCars.append(car)
+            updatedCars.append(str(car.id))
+
+            if len(navCars) == 0:
+                break
+
+
+
     return "Updated the following cars: {}".format(updatedCars)
 
 def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):

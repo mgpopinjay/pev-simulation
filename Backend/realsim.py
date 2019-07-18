@@ -144,6 +144,7 @@ def runSim():
     finishedTrips = {}
     totalCars = {}
     freeCars = []
+    navCars = []
     busyCars = []
     rebalancingCars = []
     assignType = "closestCar"
@@ -159,8 +160,8 @@ def runSim():
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests)
-        updateRequests[assignType](freeCars, rebalancingCars, busyCars, simTime, TIMESTEP, requests, finishedTrips, idleTrips)
+        util.updateBusyCars(navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests)
+        updateRequests[assignType](freeCars, rebalancingCars, navCars, busyCars, simTime, TIMESTEP, requests, finishedTrips, idleTrips)
         # rebalanceCars()
         simTime += TIMESTEP
         if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0:

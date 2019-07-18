@@ -1,7 +1,7 @@
 import heapq
 from . import sim_util as util
 
-def assignRequest(freeCars, rebalancingCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips):
+def assignRequest(freeCars, rebalancingCars, navCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips):
     tempFreeCars = rebalancingCars + freeCars
     req = heapq.heappop(requests)
 
@@ -12,7 +12,7 @@ def assignRequest(freeCars, rebalancingCars, busyCars, simTime, timeStep, reques
         idl = minCar.end_idle(req)
         idleTrips.append(idl)
         util.assignFinishedTrip(finishedTrips, minCar, idl)
-        heapq.heappush(busyCars, minCar)  # move car to busy list
+        heapq.heappush(navCars, minCar)  # move car to busy list
         return "Assigned request to car: {}".format(minCar.id)
 
     else:  # there are no free cars
@@ -22,12 +22,12 @@ def assignRequest(freeCars, rebalancingCars, busyCars, simTime, timeStep, reques
         heapq.heappush(requests, req)
         return "Pushed back request"
 
-def updateRequests(freeCars, rebalancingCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips):
+def updateRequests(freeCars, rebalancingCars, navCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips):
     count = 0
     while len(requests) > 0:
         req = requests[0]
         if req.time <= simTime:
-            assignRequest(freeCars, rebalancingCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips)
+            assignRequest(freeCars, rebalancingCars, navCars, busyCars, simTime, timeStep, requests, finishedTrips, idleTrips)
             count += 1
         else:
             break
