@@ -61,7 +61,7 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
-# API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
+# API_BASE = 'http://143.107.108.165:9000/' if LOCAL else 'https://router.project-osrm.org/'
 API_BASE = 'http://18.20.163.75:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
@@ -289,6 +289,7 @@ class PEV(object):
         self.request = request
         self.create_nav()
         self.time = request.time + self.nav.traveltime  # update car time
+        # Add random time to self.time for waiting and loading
 
     def fulfill_rebalance(self, rebalance):
         ''' begin route for a rebalance '''
@@ -321,6 +322,7 @@ class PEV(object):
 
     def become_idle(self, time):
         self.request = Idle(time, self.pos)
+        # Add time for unloading
 
     def end_idle(self, req):
         current_idle = self.request
@@ -336,7 +338,7 @@ class PEV(object):
         self.movingtime += self.nav.traveltime
         self.movingspace += self.nav.traveldist
         self.c_movingspace += self.nav.traveldist
-        self.time += self.request.traveltime
+        self.time += self.request.traveltime  # duration of transporation
         # hold pickuptime for trip delivery
         self.request.pickuptime = self.nav.traveltime
         return self.nav

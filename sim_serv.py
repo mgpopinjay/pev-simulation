@@ -93,7 +93,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(resp).encode("utf-8"))
         else:
-            testdata = json.load(open("test.JSON"))
+            testdata = json.load(open("test-taipei.JSON"))
             self.send_response(200, "OK")
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Access-Control-Allow-Origin', '*')

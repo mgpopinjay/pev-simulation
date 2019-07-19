@@ -3,7 +3,7 @@ var map;
 var mapID = 0;
 var mapList = ["Boston", "Taipei"];
 var mapSettings = {
-    "Boston": { "latitude": 42.359456, "longitude": -71.076336, "zoom": 14 },
+    "Boston": { "latitude": -42.359456, "longitude": -71.076336, "zoom": 14 },
     "Taipei": { "latitude": 25.031213, "longitude": 121.502746, "zoom": 13 }
 };
 var LOOPPERIOD = 100; // milliseconds
@@ -267,7 +267,11 @@ function fleet_sim() {
 function test_fleet_sim() {
     // Tee = new BostonTee(SUBWAYSPEED, T_API, map, 0.6)
     // Tee.start();
+    $('#loader').removeClass('disabled');
     $.post('/', function(data) {
+        START = data[''] * 3600; // start time in seconds
+        Progress(START);
+        $('#loader').addClass('disabled');
         createTrips(data);
     }, 'json');
 }
@@ -565,7 +569,7 @@ function setMap(id) {
     var currentMap = mapList[id];
     var currentSettings = [mapSettings[currentMap]["latitude"], mapSettings[currentMap]["longitude"], mapSettings[currentMap]["zoom"]];
     // L.mapbox.accessToken = 'pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g';
-    L.mapbox.accessToken = 'pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4dWo4d2w5MTR5NjNjbWo3dTE3ZHloaCJ9.8QzBC_5yC5B8Lqm1Zkp4Uw';
+    L.mapbox.accessToken = 'pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p5N255M3ZhMDFocjNtcWxobzV0M293cSJ9.pHza8i4YLcgP4vvfn3EVeA';
     // map = L.map('map-canvas', { zoomControl: false }).setView([25.031213, 121.502746], 13);
     map = L.map('map-canvas', { zoomControl: false }).setView([currentSettings[0], currentSettings[1]], currentSettings[2]);
     L.mapbox.styleLayer('mapbox://styles/jbogle/cjcqkdujd4tnr2roaeq00m30t').addTo(map);
@@ -585,7 +589,7 @@ function setMap(id) {
     //     }
     // }).addTo(map);
     // L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamJvZ2xlIiwiYSI6ImNqY3FrYnR1bjE4bmsycW9jZGtwZXNzeDIifQ.Y9bViJkRjtBUr6Ftuh0I4g').addTo(map);
-    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p4dWo4d2w5MTR5NjNjbWo3dTE3ZHloaCJ9.8QzBC_5yC5B8Lqm1Zkp4Uw').addTo(map);
+    L.tileLayer('https://api.mapbox.com/styles/v1/jbogle/cjcqkdujd4tnr2roaeq00m30t/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGFyeHRhcjAwMDAiLCJhIjoiY2p5N255M3ZhMDFocjNtcWxobzV0M293cSJ9.pHza8i4YLcgP4vvfn3EVeA').addTo(map);
 
 }
 
