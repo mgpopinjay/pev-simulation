@@ -10,8 +10,8 @@ var LOOPPERIOD = 100; // milliseconds
 var LOOPFREQ = 1000 / LOOPPERIOD;
 var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
-var pushTimes = [];
 var pickUpTimes = [];
+var assignTimes = [];
 var startTimes = [];
 var T_API = "mTBUGDZNyU6IS_nJpCzNSw";
 var Tee;
@@ -295,7 +295,7 @@ function createTrips(data) {
         <td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
         <td id="trial-${TRIAL}-pickup">0 min</td>
-        <td id="trial-${TRIAL}-push">0 min</td>
+        <td id="trial-${TRIAL}-assign">0 min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME AVERAGE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 50th PERCENTILE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 75th PERCENTILE']/60)*100)/100} min</td>
@@ -304,8 +304,8 @@ function createTrips(data) {
         <td>${data['outputs']['AVERAGE CAR UTILIZATION PERCENTAGE']}%</td>
         <td>${data['outputs']['AVERAGE CAR MOVEMENT PERCENTAGE']}%</td>
       </tr>`)
-    pushTimes = [];
     pickUpTimes = [];
+    assignTimes = [];
     startTimes = [];
     PENDING_TRIPS = [];
     for (let i = 0; i < Object.keys(data['fleet']).length; i++) {
@@ -350,7 +350,7 @@ function timeStep() {
                 trip['start_time'],
                 trip['end_time'],
                 trip['pickuptime'],
-                trip['pushtime'],
+                trip['assigntime'],
                 trip['duration'],
                 trip['type'],
                 trip['steps_polyline'],
@@ -385,12 +385,12 @@ function idleCar(start_loc, duration) {
  * @param  {int} start_time [starting time in seconds **UNUSED**]
  * @param  {int} end_time   [ending time in seconds **UNUSED**]
  * @param  {int} pickuptime   [time spent waiting for a car in seconds]
- * @param  {int} pushtime   [time spent waiting for trip assignment in seconds]
+ * @param  {int} assigntime   [time spent waiting for trip assignment in seconds]
  * @param  {int} duration   [duration of trip in seconds]
  * @param  {string} type    [type of drip ('Navigation', 'Passenger', 'Parcel')]
  * @param  {path} path      [OSRM path]
  */
-function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, pushtime, duration, type, path) {
+function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, assigntime, duration, type, path) {
     let icon;
     let color;
     let reqIcon;
@@ -445,11 +445,11 @@ function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, pushtim
             map.removeLayer(reqMark);
             // map.addLayer(heatLayer);  HEAT LAYER - Slows down simulation
             pickUpTimes.push(pickuptime / 60);
-            pushTimes.push(pushtime / 60);
+            assignTimes.push(assigntime / 60);
             startTimes.push(start_time / 60 / 60);
             updateLines();
         };
-    }, ((pickuptime + pushtime) * 1000) / SPEED);
+    }, ((pickuptime + assigntime) * 1000) / SPEED);
     RUNNING[id].timer = timer;
     RUNNING[id].marker = navMarker
 
@@ -542,21 +542,21 @@ function prepareStartTimes(times) {
 }
 
 /**
- * Update pickup times with the current push and pickuptimes
+ * Update pickup times with the current assign and pickuptimes
  * Redraws graphs using barGraph() function defined in Graphs.js
  */
 function updateLines() {
     let pickUpTimeDataSet = prepareLines(pickUpTimes);
-    let pushTimeDataSet = prepareLines(pushTimes);
+    let assignTimeDataSet = prepareLines(assignTimes);
     let startTimesDataSet = prepareStartTimes(startTimes);
     addLine(startTimesDataSet, "pickup-graph", TRIAL);
-    //addLine(pushTimeDataSet, "push-graph", TRIAL);
+    //addLine(assignTimeDataSet, "assign-graph", TRIAL);
     var pickUpSum = pickUpTimes.reduce(function(a, b) { return a + b; });
     var pickUpAvg = Math.round(100 * pickUpSum / pickUpTimes.length) / 100;
-    var pushSum = pushTimes.reduce(function(a, b) { return a + b; });
-    var pushAvg = Math.round(100 * pushSum / pushTimes.length) / 100;
+    var assignSum = assignTimes.reduce(function(a, b) { return a + b; });
+    var assignAvg = Math.round(100 * assignSum / assignTimes.length) / 100;
     $(`#trial-${TRIAL}-pickup`).html(pickUpAvg);
-    $(`#trial-${TRIAL}-push`).html(pushAvg);
+    $(`#trial-${TRIAL}-assign`).html(assignAvg);
 }
 
 
@@ -597,14 +597,14 @@ function changeMap() {
     $('#summary > tbody').empty();
     d3.selectAll("#graphs > *").remove();
 
-    //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
+    //lineGraph("assign-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
 }
 
 $(document).ready(function() {
     setMap(0);
-    //lineGraph("push-graph", 20, 50, 270, 150, "Assignment Times");
+    //lineGraph("assign-graph", 20, 50, 270, 150, "Assignment Times");
     lineGraph("pickup-graph", 24, 100, 270, 150, "Demand Graph");
     $('#line-graph').css('display', 'block');
 });
