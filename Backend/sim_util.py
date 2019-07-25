@@ -227,6 +227,12 @@ class Idle(Request):
         self.traveltime = self.end_time-self.time
 
 
+class Wait(Idle):
+
+    def __init__(self, start_time, loc):
+        Idle.__init__(self, start_time, loc)
+
+
 class Recharge(Request):
 
     def __init__(self, time, start, end, charge_time):
@@ -239,23 +245,21 @@ class PEV(object):
 
     def __init__(self, iden, pos, time=0):
         '''
-        request = request being fulfilled
-        pos = position if empty
-        time = time of arrival if fulfilling request
         '''
         self.spawn = pos
-        self.id = iden
         self.pos = pos
+        self.id = iden
+        self.state = "IDLE"
         self.request = Idle(time, self.pos)
         self.time = None
+        self.prevtime = None
         self.movingtime = 0
         self.movingspace = 0
-        self.c_movingspace = 0
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
 
-    ''' compare methods for heap '''
+        ''' compare methods for heap '''
     def __eq__(self, other):
         return self.time == other.time
 
@@ -274,89 +278,220 @@ class PEV(object):
     def __ge__(self, other):
         return self.time >= other.time
 
-    def low_power(self, c_dist):
-        if abs(self.c_movingspace-c_range) >= c_dist:
-            return True
-        return False
+    def update(self, simTime, finishedTrips, idleTrips=None, finishedRequests=None, req=None):
+        if self.state == "IDLE":
+            if type(req) == Request:
+                ''' end idle and add to history '''
+                idle = self.request
+                idle.end_time = req.time
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                idleTrips.append(idle)
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                ''' create navigation and move to pickup '''
+                self.request = req
+                nav = Navigation(req.time, self.pos, self.request.pickup)
+                self.nav = nav
+                self.prevtime = req.time
+                self.time = req.time + self.nav.traveltime
+                self.state = "NAV"
+                return "NAV"  # maybe return state? or return state at the end of update
+            else:
+                return f"Idling at {self.pos}."
 
-    def create_nav(self):
-        ''' create a navigation object '''
-        nav = Navigation(self.request.time, self.pos, self.request.pickup)
-        self.nav = nav
+        elif self.state == "NAV":
+            if simTime >= self.time:
+                ''' end nav and wait for loading '''
+                self.movingtime += self.nav.traveltime
+                self.movingspace += self.nav.traveldist
+                self.request.pickuptime = self.nav.traveltime  # record how long pickup took
+                assignFinishedTrip(finishedTrips, self.id, self.nav)
+                # customers take 1-15 seconds to arrive and board PEV
+                waitLoad = random.randint(1, 16)
+                self.prevtime = self.time
+                self.time += waitLoad
+                self.pos = self.nav.dropoff
+                self.state = "WAITLOAD1"
+                return "WAITLOAD1"
+            else:
+                return f"Navigating to {self.nav.dropoff}"
 
-    def fulfill_request(self, request):
-        ''' begin navigation towards request '''
-        self.request = request
-        self.create_nav()
-        self.time = request.time + self.nav.traveltime  # update car time
+        elif self.state == "WAITLOAD1":
+            if simTime >= self.time:
+                ''' end wait and move to destination '''
+                wait = Wait(self.prevtime, self.pos)
+                wait.end_time = self.time
+                wait.get_duration()
+                # self.idletime += wait.traveltime
+                assignFinishedTrip(finishedTrips, self.id, wait)
+                ''' transport to destination '''
+                self.prevtime = self.time
+                self.time += self.request.traveltime
+                self.state = "TRANSPORT"
+                return "TRANSPORT"
+            else:
+                return f"Waiting for pickup at {self.pos}."
 
-    def fulfill_rebalance(self, rebalance):
-        ''' begin route for a rebalance '''
-        # it is assumed a rebalance has pickup = self.pos
-        self.request = rebalance
-        self.time = rebalance.traveltime
+        elif self.state == "TRANSPORT":
+            if simTime >= self.time:
+                ''' end transport and wait for unloading '''
+                self.movingtime += self.request.traveltime
+                self.movingspace += self.nav.traveldist
+                self.utiltime += self.request.traveltime
+                assignFinishedTrip(finishedTrips, self.id, self.request)
+                finishedRequests.append(self.request)
+                # customers take 1-15 seconds to unload PEV
+                waitLoad = random.randint(1, 16)
+                self.prevtime = self.time
+                self.time += waitLoad
+                self.pos = self.request.dropoff
+                self.state = "WAITLOAD2"
+                return "WAITLOAD2"
+            else:
+                return f"Transporting to {self.request.dropoff}."
 
-    def fulfill_recharge(self, recharge):
-        ''' begin route to recharge station and idle there for set amount of time '''
-        self.request = recharge
-        self.time = self.request.idle.time+self.charge_time
-        self.movingtime += self.request.traveltime
-        self.movingspace += self.request.traveldist
-        self.c_movingspace += self.request.traveldist
+        elif self.state == "WAITLOAD2":
+            if simTime >= self.time:
+                ''' end wait and become idle '''
+                wait = Wait(self.prevtime, self.pos)
+                wait.end_time = self.time
+                wait.get_duration()
+                # self.idletime += wait.traveltime
+                assignFinishedTrip(finishedTrips, self.id, wait)
+                ''' become idle '''
+                self.request = Idle(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
+                self.state = "IDLE"
+                return "IDLE"
+            else:
+                return f"Waiting for dropoff at {self.pos}."
 
-    def end_recharge(self):
-        self.loc = self.request.dropoff
-        temp = Recharge(self.request.time, self.request.pickup, self.request.dropoff, self.request.charge_time)
-        temp_id = Idle(self.request.idle.time, self.request.idle.pickup)
-        temp_id.end_time = temp_id.time+temp_id.charge_time
-        temp_id.get_duration()
-        self.become_idle(self.time, self.pos)
-        self.time = None
-        self.c_movingspace = 0
-        return (temp, temp_id)
 
-    def update_rebalance(self, request):
-        # reroute car to new request
-        self.fulfill_request(request)
 
-    def become_idle(self, time):
-        self.request = Idle(time, self.pos)
 
-    def end_idle(self, req):
-        current_idle = self.request
-        current_idle.end_time = req.time
-        current_idle.get_duration()
-        self.idletime += current_idle.traveltime
-        self.fulfill_request(req)
-        return current_idle
+# class PEV(object):
 
-    def end_nav(self):
-        ''' update car when nav ends '''
-        # update travel time and utilization time for analytics
-        self.movingtime += self.nav.traveltime
-        self.movingspace += self.nav.traveldist
-        self.c_movingspace += self.nav.traveldist
-        self.time += self.request.traveltime
-        # hold pickuptime for trip delivery
-        self.request.pickuptime = self.nav.traveltime
-        return self.nav
+#     def __init__(self, iden, pos, time=0):
+#         '''
+#         request = request being fulfilled
+#         pos = position if empty
+#         time = time of arrival if fulfilling request
+#         '''
+#         self.spawn = pos
+#         self.id = iden
+#         self.pos = pos
+#         self.request = Idle(time, self.pos)
+#         self.time = None
+#         self.movingtime = 0
+#         self.movingspace = 0
+#         self.c_movingspace = 0
+#         self.utiltime = 0
+#         self.idletime = 0
+#         self.nav = None
 
-    def end_trip(self):
-        ''' update car when trip ends '''
-        # update travel time and utilization time for analytics
-        self.movingtime += self.request.traveltime
-        self.movingspace += self.request.traveldist
-        self.c_movingspace += self.request.traveldist
-        self.utiltime += self.request.traveltime
-        self.time = None
-        self.pos = self.request.dropoff
-        return self.request
+#     ''' compare methods for heap '''
+#     def __eq__(self, other):
+#         return self.time == other.time
 
-    def end_rebalance(self):
-        ''' update car if trip ends '''
-        self.time = None
-        self.pos = self.request.dropoff
-        return self.request
+#     def __ne__(self, other):
+#         return self.time != other.time
+
+#     def __lt__(self, other):
+#         return self.time < other.time
+
+#     def __le__(self, other):
+#         return self.time <= other.time
+
+#     def __gt__(self, other):
+#         return self.time > other.time
+
+#     def __ge__(self, other):
+#         return self.time >= other.time
+
+#     def low_power(self, c_dist):
+#         if abs(self.c_movingspace-c_range) >= c_dist:
+#             return True
+#         return False
+
+#     def create_nav(self):
+#         ''' create a navigation object '''
+#         nav = Navigation(self.request.time, self.pos, self.request.pickup)
+#         self.nav = nav
+
+#     def fulfill_request(self, request):
+#         ''' begin navigation towards request '''
+#         self.request = request
+#         self.create_nav()
+#         self.time = request.time + self.nav.traveltime  # update car time
+
+#     def fulfill_rebalance(self, rebalance):
+#         ''' begin route for a rebalance '''
+#         # it is assumed a rebalance has pickup = self.pos
+#         self.request = rebalance
+#         self.time = rebalance.traveltime
+
+#     def fulfill_recharge(self, recharge):
+#         ''' begin route to recharge station and idle there for set amount of time '''
+#         self.request = recharge
+#         self.time = self.request.idle.time+self.charge_time
+#         self.movingtime += self.request.traveltime
+#         self.movingspace += self.request.traveldist
+#         self.c_movingspace += self.request.traveldist
+
+#     def end_recharge(self):
+#         self.loc = self.request.dropoff
+#         temp = Recharge(self.request.time, self.request.pickup, self.request.dropoff, self.request.charge_time)
+#         temp_id = Idle(self.request.idle.time, self.request.idle.pickup)
+#         temp_id.end_time = temp_id.time+temp_id.charge_time
+#         temp_id.get_duration()
+#         self.become_idle(self.time, self.pos)
+#         self.time = None
+#         self.c_movingspace = 0
+#         return (temp, temp_id)
+
+#     def update_rebalance(self, request):
+#         # reroute car to new request
+#         self.fulfill_request(request)
+
+#     def become_idle(self, time):
+#         self.request = Idle(time, self.pos)
+
+#     def end_idle(self, req):
+#         current_idle = self.request
+#         current_idle.end_time = req.time
+#         current_idle.get_duration()
+#         self.idletime += current_idle.traveltime
+#         self.fulfill_request(req)
+#         return current_idle
+
+#     def end_nav(self):
+#         ''' update car when nav ends '''
+#         # update travel time and utilization time for analytics
+#         self.movingtime += self.nav.traveltime
+#         self.movingspace += self.nav.traveldist
+#         self.c_movingspace += self.nav.traveldist
+#         self.time += self.request.traveltime
+#         # hold pickuptime for trip delivery
+#         self.request.pickuptime = self.nav.traveltime
+#         return self.nav
+
+#     def end_trip(self):
+#         ''' update car when trip ends '''
+#         # update travel time and utilization time for analytics
+#         self.movingtime += self.request.traveltime
+#         self.movingspace += self.request.traveldist
+#         self.c_movingspace += self.request.traveldist
+#         self.utiltime += self.request.traveltime
+#         self.time = None
+#         self.pos = self.request.dropoff
+#         return self.request
+
+#     def end_rebalance(self):
+#         ''' update car if trip ends '''
+#         self.time = None
+#         self.pos = self.request.dropoff
+#         return self.request
 
 
 class RebalanceData():
@@ -793,52 +928,64 @@ def max_stat_dist():
     return max_dist
 
 
-def assignFinishedTrip(lst, car, trip):
-    if car.id in lst.keys():
-        lst[car.id].append(trip)
+def assignFinishedTrip(lst, iden, trip):
+    if iden in lst.keys():
+        lst[iden].append(trip)
     else:
-        lst[car.id] = [trip]
+        lst[iden] = [trip]
     return lst
 
-def updateBusyCars(navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests):
+def updateBusyCars(waitCars, navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests):
     '''
     Check if
     '''
     updatedCars = []  # debug purposes
-    output = ""
-    if len(busyCars) == 0:
-        output = "No cars to update"
-    else:
+    if len(busyCars) > 0:
         while simTime >= busyCars[0].time:
-            # end request
+            # finish request
             car = heapq.heappop(busyCars)
-            if type(car.request) == Request:
-                finishedTrip = car.end_trip()
-                assignFinishedTrip(finishedTrips, car, finishedTrip)
-                finishedRequests.append(finishedTrip)
-                car.become_idle(finishedTrip.time+finishedTrip.pickuptime+finishedTrip.traveltime)
-                freeCars.append(car)
+            print(car.state)
+            resp = car.update(simTime, finishedTrips, finishedRequests=finishedRequests)
+            print(resp)
+            heapq.heappush(waitCars, car)
             updatedCars.append(str(car.id))  # debug purposes
 
             if len(busyCars) == 0:
                 break
-    if len(navCars) == 0:
-        output = "No cars to update"
-    else:
+
+    if len(navCars) > 0:
         while simTime >= navCars[0].time:
             # end navigation
             car = heapq.heappop(navCars)
-            finishedNav = car.end_nav()
-            assignFinishedTrip(finishedTrips, car, finishedNav)
-            busyCars.append(car)
+            print(car.state)
+            resp = car.update(simTime, finishedTrips)
+            print(resp)
+            heapq.heappush(waitCars, car)
             updatedCars.append(str(car.id))
 
             if len(navCars) == 0:
                 break
 
+    if len(waitCars) > 0:
+        while simTime >= waitCars[0].time:
+            # end waiting
+            car = heapq.heappop(waitCars)
+            print(car.state)
+            resp = car.update(simTime, finishedTrips)
+            print(resp)
+            if resp == "TRANSPORT":
+                heapq.heappush(busyCars, car)
+            elif resp == "IDLE":
+                freeCars.append(car)
+            updatedCars.append(str(car.id))
 
+            if len(waitCars) == 0:
+                break
 
-    return "Updated the following cars: {}".format(updatedCars)
+    if len(updatedCars) > 0:
+        return "Updated the following cars: {}.".format(updatedCars)
+    else:
+        return "No cars to update."
 
 def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     pickuptimes = []
@@ -986,6 +1133,9 @@ def getCarData(totalCars, finishedTrips):
             tripJson["assigntime"] = 0
             if type(trip) == Idle:
                 tripJson["type"] = "Idle"
+                tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
+            elif type(trip) == Wait:
+                tripJson["type"] = "Wait"
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             else:
                 tripJson["steps_polyline"] = parse_for_visualizer_steps(trip.osrm)

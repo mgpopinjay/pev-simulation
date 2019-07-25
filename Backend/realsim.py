@@ -58,7 +58,7 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, start
     heapq.heapify(requests)  # sort requests by start time
     return requests
 
-def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
+def populatePEVs(numCars, totalCars, freeCars, mapName):
     if mapName == "Boston":
         spawnPoints = [
             util.find_snap_coordinates(util.get_snap_output(["-71.093196", "42.358296"])),
@@ -89,7 +89,6 @@ def populatePEVs(numCars, totalCars, freeCars, busyCars, mapName):
         freeCars.append(car)
         totalCars[i] = car
 
-    heapq.heapify(busyCars)
     return freeCars
 
 
@@ -145,6 +144,7 @@ def runSim():
     totalCars = {}
     freeCars = []
     navCars = []
+    waitCars = []
     busyCars = []
     rebalancingCars = []
     assignType = "closestCar"
@@ -156,15 +156,15 @@ def runSim():
 
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
-    populatePEVs(NUMCARS, totalCars, freeCars, busyCars, MAPSELECT)
+    populatePEVs(NUMCARS, totalCars, freeCars, MAPSELECT)
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests)
+        util.updateBusyCars(waitCars, navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests)
         updateRequests[assignType](freeCars, rebalancingCars, navCars, busyCars, simTime, TIMESTEP, requests, finishedTrips, idleTrips)
         # rebalanceCars()
         simTime += TIMESTEP
-        if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0:
+        if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0 and len(waitCars) == 0 and len(navCars) == 0:
             simRunning = False
 
     # while len(requests) > 0:

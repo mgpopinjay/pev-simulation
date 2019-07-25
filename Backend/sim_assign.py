@@ -9,9 +9,7 @@ def assignRequest(freeCars, rebalancingCars, navCars, busyCars, simTime, timeSte
         # loop through free_cars to find the car with minimum linear distance to pickup
         minCarIndex, minCar = min(enumerate(freeCars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
         del freeCars[minCarIndex]
-        idl = minCar.end_idle(req)
-        idleTrips.append(idl)
-        util.assignFinishedTrip(finishedTrips, minCar, idl)
+        minCar.update(simTime, finishedTrips, idleTrips=idleTrips, req=req)
         heapq.heappush(navCars, minCar)  # move car to busy list
         return "Assigned request to car: {}".format(minCar.id)
 
