@@ -17,7 +17,7 @@ def assignRequest(freeCars, rebalancingCars, navCars, busyCars, simTime, timeSte
 
     else:  # there are no free cars
         # Try implementing system where pushed back requests are not equal
-        req.pushtime += timeStep  # increment time by 1 second
+        req.assigntime += timeStep  # increment time by 1 second
         req.time += timeStep  # move the request time forward until a car is free to claim it
         heapq.heappush(requests, req)
         return "Pushed back request"

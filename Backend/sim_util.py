@@ -22,7 +22,7 @@ VOCABULARY:
 - idle: 'trip' where the car sits idle in one position
 - RebalanceData object: this data structure holds a set of clusters (using k-means clustering) for the rebalancing procedure
 - req: I didn't decide on the above framework until most of the logic was written so I use 'req' and 'request' to describe arbitrary trips in addition to real requests
-- pushtime: amount of waittime caused by not having enough vehicles
+- assigntime: amount of waittime caused by not having enough vehicles
 - kind: kind of request (passenger or parcel)
 - movingtime: amount of time the car spends moving (not idle)
 - utiltime: amount of time a car is moving while carrying a passenger or parcel
@@ -162,7 +162,7 @@ class Request(object):
         self.pickup = pickup
         self.dropoff = dropoff
         self.pickuptime = 0
-        self.pushtime = 0  # jank fix to know how much of waittime comes from unavailability rather than travel times
+        self.assigntime = 0  # jank fix to know how much of waittime comes from unavailability rather than travel times
         self.osrm = get_osrm_output(self.pickup, self.dropoff)
         self.traveltime = find_total_duration(self.osrm)
         self.traveldist = find_total_distance(self.osrm)
@@ -347,6 +347,7 @@ class PEV(object):
         self.movingtime += self.request.traveltime
         self.movingspace += self.request.traveldist
         self.c_movingspace += self.request.traveldist
+        self.utiltime += self.request.traveltime
         self.time = None
         self.pos = self.request.dropoff
         return self.request
@@ -800,6 +801,9 @@ def assignFinishedTrip(lst, car, trip):
     return lst
 
 def updateBusyCars(navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests):
+    '''
+    Check if
+    '''
     updatedCars = []  # debug purposes
     output = ""
     if len(busyCars) == 0:
@@ -838,7 +842,7 @@ def updateBusyCars(navCars, busyCars, freeCars, simTime, finishedTrips, finished
 
 def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     pickuptimes = []
-    pushtimes = []
+    assigntimes = []
     waittimes = []
     traveltimes = []
     origins = {
@@ -848,8 +852,8 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     }
     for req in finishedRequests:
         pickuptimes.append(req.pickuptime)
-        pushtimes.append(req.pushtime)
-        waittimes.append(req.pickuptime + req.pushtime)
+        assigntimes.append(req.assigntime)
+        waittimes.append(req.pickuptime + req.assigntime)
         traveltimes.append(req.traveltime)
         if req.origin in origins:
             origins[req.origin] = origins[req.origin] + 1
@@ -887,7 +891,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     avgReqPickup = round(statistics.mean(pickuptimes), 1)
     print("Average Request Pickup Time: {}".format(avgReqPickup))
     # Avg time for PEV to be assigned to request
-    avgReqAssign = round(statistics.mean(pushtimes), 1)
+    avgReqAssign = round(statistics.mean(assigntimes), 1)
     print("Average Request Push Time: {}".format(avgReqAssign))
     # Avg travel time of each request from origin to destination
     avgReqTravel = round(statistics.mean(traveltimes), 1)
@@ -947,7 +951,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "TRIPS_DAY": len(finishedRequests)/(endHr-startHr)*24,
         "SIM RUNTIME": str(systemDelta),
         "AVERAGE REQUEST PICKUPTIME": str(avgReqPickup),
-        "AVERAGE REQUEST PUSHTIME": str(avgReqAssign),
+        "AVERAGE REQUEST ASSIGNTIME": str(avgReqAssign),
         "AVERAGE REQUEST TRAVELTIME": str(avgReqTravel),
         "AVERAGE CAR UTILIZATION": str(avgCarTravel),
         "AVERAGE CAR NAVIGATION": str(avgCarNavigate),
@@ -979,7 +983,7 @@ def getCarData(totalCars, finishedTrips):
             tripJson["duration"] = trip.traveltime
             tripJson["id"] = i
             tripJson["pickuptime"] = 0
-            tripJson["pushtime"] = 0
+            tripJson["assigntime"] = 0
             if type(trip) == Idle:
                 tripJson["type"] = "Idle"
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
@@ -993,9 +997,9 @@ def getCarData(totalCars, finishedTrips):
                 elif type(trip) == Navigation:
                     tripJson["type"] = "Navigation"
                 else:
-                    tripJson["end_time"] = trip.original_time+trip.traveltime+trip.pickuptime+trip.pushtime
+                    tripJson["end_time"] = trip.original_time+trip.traveltime+trip.pickuptime+trip.assigntime
                     tripJson["type"] = trip.kind
-                    tripJson["pushtime"] = trip.pushtime
+                    tripJson["assigntime"] = trip.assigntime
                     tripJson["pickuptime"] = trip.pickuptime
                     tripJson["origin"] = trip.origin
             formattedTrips.append(tripJson)

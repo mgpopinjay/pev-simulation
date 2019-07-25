@@ -182,7 +182,7 @@ def runSim():
     systemDelta = systemEndTime - systemStartTime
     print("Sim Runtime: {}".format(systemDelta))
     print("Assignment Type: {}".format(assignType))
-    print("Hubway Ratio: {}".format(BIKE_DATA))
+    print("Bike Ratio: {}".format(BIKE_DATA))
     print("Taxi Ratio: {}".format(TAXI_DATA))
     print("Random Ratio: {}".format(RANDOM_DATA))
 
