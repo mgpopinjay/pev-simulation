@@ -57,7 +57,7 @@ $(function() {
         value: 20,
         min: 0,
         max: 2500,
-        step: 5,
+        step: 1,
         slide: function(event, ui) {
             $("#fleet").val(ui.value + " ");
             slider_fleetSize = ui.value;
@@ -338,7 +338,7 @@ function timeStep() {
     while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / LOOPFREQ + START)) {
         let trip = PENDING_TRIPS[0];
         PENDING_TRIPS.splice(0, 1);
-        if (trip['type'] == "Idle") {
+        if (trip['type'] == "Idle" || trip['type'] == "Wait") {
             idleCar(
                 trip['start_point'],
                 trip['duration'],

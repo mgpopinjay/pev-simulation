@@ -164,7 +164,7 @@ class Request(object):
         self.pickuptime = 0
         self.assigntime = 0  # jank fix to know how much of waittime comes from unavailability rather than travel times
         self.osrm = get_osrm_output(self.pickup, self.dropoff)
-        self.traveltime = find_total_duration(self.osrm)
+        self.traveltime = round(find_total_duration(self.osrm))
         self.traveldist = find_total_distance(self.osrm)
         self.kind = kind
 
@@ -325,6 +325,7 @@ class PEV(object):
                 # self.idletime += wait.traveltime
                 assignFinishedTrip(finishedTrips, self.id, wait)
                 ''' transport to destination '''
+                self.request.time = self.time  # update request start time to the current time
                 self.prevtime = self.time
                 self.time += self.request.traveltime
                 self.state = "TRANSPORT"
@@ -999,7 +1000,8 @@ def getCarData(totalCars, finishedTrips):
         for i in range(len(trips)):
             trip = trips[i]
             tripJson = {}
-            tripJson["start_time"] = trip.original_time
+            tripJson["orig_time"] = trip.original_time
+            tripJson["start_time"] = trip.time
             tripJson["end_time"] = trip.time+trip.traveltime
             tripJson["duration"] = trip.traveltime
             tripJson["id"] = i
@@ -1021,7 +1023,6 @@ def getCarData(totalCars, finishedTrips):
                 elif type(trip) == Navigation:
                     tripJson["type"] = "Navigation"
                 else:
-                    tripJson["end_time"] = trip.original_time+trip.traveltime+trip.pickuptime+trip.assigntime
                     tripJson["type"] = trip.kind
                     tripJson["assigntime"] = trip.assigntime
                     tripJson["pickuptime"] = trip.pickuptime
