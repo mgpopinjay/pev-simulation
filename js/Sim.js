@@ -24,6 +24,9 @@ var PENDING_TRIPS = [];
 var LOOP;
 var START = 0;
 var TIME = 0;
+// var t0 = 0;
+// var t1 = 0;
+// var filteredspeed = SPEED;
 
 var bike_triphr = {
     "Boston": 4516 / 24,
@@ -366,6 +369,11 @@ function timeStep() {
     document.getElementById("debugtripcount").innerHTML = (PENDING_TRIPS.length);
     // TIME = TIME + SPEED / LOOPFREQ;
     TIME = TIME + SPEED / LOOPFREQ;
+    // t0 = t1;
+    // t1 = performance.now();
+    // var instspeed = (SPEED / LOOPFREQ * 1000) / (t1 - t0);
+    // filteredspeed = 0.9 * filteredspeed + 0.1 * instspeed;
+    // document.getElementById("debugspeed").innerHTML = filteredspeed;
 }
 
 
