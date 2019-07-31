@@ -6,7 +6,7 @@ var mapSettings = {
     "Boston": { "latitude": 42.359456, "longitude": -71.076336, "zoom": 14 },
     "Taipei": { "latitude": 25.031213, "longitude": 121.502746, "zoom": 13 }
 };
-var LOOPPERIOD = 100; // milliseconds
+var LOOPPERIOD = 10; // milliseconds
 var LOOPFREQ = 1000 / LOOPPERIOD;
 var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
@@ -22,7 +22,7 @@ var PAUSED = false
 var RUNNING = {};
 var PENDING_TRIPS = [];
 var LOOP;
-var START;
+var START = 0;
 var TIME = 0;
 
 var bike_triphr = {
@@ -229,7 +229,6 @@ function T_on() {
  * Creates all trips given the data received
  */
 function fleet_sim() {
-    TIME = 0; // not actual time, but loops through the visualizer
     var fleet_size = slider_fleetSize;
     var bike_freq = slider_bike;
     var random_freq = slider_random;
@@ -255,6 +254,7 @@ function fleet_sim() {
         mapselect: mapSelect,
     };
     START = slider_startHrs * 3600; // start time in seconds
+    TIME = START; // not actual time, but loops through the visualizer
     Progress(START);
     $('#loader').removeClass('disabled');
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
@@ -332,11 +332,13 @@ function timeStep() {
     if (PENDING_TRIPS.length == 0 || PAUSED) {
         clearInterval(LOOP);
     }
-
+    //console.log(`Time is ${(TIME/3600).toFixed(2)} and remaining trips is ${PENDING_TRIPS.length}.`);
     //know how to fix this (mutation of pending trips)
     // Time based on speed with an initial offset of START seconds
-    while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / LOOPFREQ + START)) {
+    //while (PENDING_TRIPS[0]['start_time'] <= (TIME * SPEED / LOOPFREQ + START)) {
+    while (PENDING_TRIPS[0]['start_time'] <= (TIME)) {
         let trip = PENDING_TRIPS[0];
+        //console.log(`Trip of trip type: ${trip['type']}`);
         PENDING_TRIPS.splice(0, 1);
         if (trip['type'] == "Idle" || trip['type'] == "Wait") {
             idleCar(
@@ -357,8 +359,13 @@ function timeStep() {
             );
         }
     }
-    UpdateTime(TIME * SPEED / LOOPFREQ); // Update progress bar
-    TIME++; // Increment to next timestep, not next second
+    // UpdateTime(TIME * SPEED / LOOPFREQ); // Update progress bar
+    // TIME++; // Increment to next timestep, not next second
+    UpdateTime(TIME - START);
+    document.getElementById("debugclock").innerHTML = (TIME/3600).toFixed(2);
+    document.getElementById("debugtripcount").innerHTML = (PENDING_TRIPS.length);
+    // TIME = TIME + SPEED / LOOPFREQ;
+    TIME = TIME + SPEED / LOOPFREQ;
 }
 
 
