@@ -370,61 +370,67 @@ class PEV(object):
 
 
 class RebalanceData():
-    # object for maintaining cluster data
+    def __init__(self, centers, weights):
+        self.centers = centers
+        self.weights = weights
 
-    def __init__(self, spreadsheet, k):
-        '''
-        Process data for clustering for rebalancing
-        '''
-        data1 = []
-        for i in range(spreadsheet, spreadsheet+1):  # start with 1 spreadsheet of data (the last hour) and update with completed trips
-            samp = 'Data/Hour_'+str(i)+'_100.csv'
-            with open(samp, 'rb') as file:
-                spamreader = csv.reader(file, delimiter=',', quotechar='|')
-                for row in spamreader:
-                    data1.append(row)
-        self.points = []
-        for row in data1:
-            temp = [float(row[3]), float(row[4])]
-            self.points.append(temp)
-        self.means = []
-        self.k = k
 
-    # Lloyd's alg for k-means-clustering
-    # credit to https://datasciencelab.wordpress.com/2013/12/12/clustering-with-k-means-in-python/
-    def cluster(self):
-        # associate each point with a cluster
-        clusters = {}
-        for x in self.points:
-            bestmean = min([(i[0], np.linalg.norm([i-j for i, j in zip(list(x), list(self.means[i[0]]))])) for i in enumerate(self.means)], key=lambda t: t[1])[0]
-            try:
-                clusters[bestmean].append(x)
-            except KeyError:
-                clusters[bestmean] = [x]
-        return clusters
+# class RebalanceData():
+#     # object for maintaining cluster data
 
-    def reevaluate(self, clusters):
-        # find new clusters
-        new_means = []
-        keys = sorted(clusters.keys())
-        for k in keys:
-            new_means.append(np.mean(clusters[k], axis=0))
-        return new_means
+#     def __init__(self, spreadsheet, k):
+#         '''
+#         Process data for clustering for rebalancing
+#         '''
+#         data1 = []
+#         for i in range(spreadsheet, spreadsheet+1):  # start with 1 spreadsheet of data (the last hour) and update with completed trips
+#             samp = 'Data/Hour_'+str(i)+'_100.csv'
+#             with open(samp, 'rb') as file:
+#                 spamreader = csv.reader(file, delimiter=',', quotechar='|')
+#                 for row in spamreader:
+#                     data1.append(row)
+#         self.points = []
+#         for row in data1:
+#             temp = [float(row[3]), float(row[4])]
+#             self.points.append(temp)
+#         self.means = []
+#         self.k = k
 
-    def has_converged(self, old_means):
-        # check for convergence
-        return (set([tuple(a) for a in self.means]) == set([tuple(a) for a in old_means]))
+#     # Lloyd's alg for k-means-clustering
+#     # credit to https://datasciencelab.wordpress.com/2013/12/12/clustering-with-k-means-in-python/
+#     def cluster(self):
+#         # associate each point with a cluster
+#         clusters = {}
+#         for x in self.points:
+#             bestmean = min([(i[0], np.linalg.norm([i-j for i, j in zip(list(x), list(self.means[i[0]]))])) for i in enumerate(self.means)], key=lambda t: t[1])[0]
+#             try:
+#                 clusters[bestmean].append(x)
+#             except KeyError:
+#                 clusters[bestmean] = [x]
+#         return clusters
 
-    def find_centers(self):
-        # initialize
-        oldmeans = random.sample(self.points, self.k)
-        self.means = random.sample(self.points, self.k)
-        # run until convergence
-        while not self.has_converged(oldmeans):
-            oldmeans = self.means
-            clusters = self.cluster()
-            self.means = self.reevaluate(clusters)
-        return (self.means, clusters)
+#     def reevaluate(self, clusters):
+#         # find new clusters
+#         new_means = []
+#         keys = sorted(clusters.keys())
+#         for k in keys:
+#             new_means.append(np.mean(clusters[k], axis=0))
+#         return new_means
+
+#     def has_converged(self, old_means):
+#         # check for convergence
+#         return (set([tuple(a) for a in self.means]) == set([tuple(a) for a in old_means]))
+
+#     def find_centers(self):
+#         # initialize
+#         oldmeans = random.sample(self.points, self.k)
+#         self.means = random.sample(self.points, self.k)
+#         # run until convergence
+#         while not self.has_converged(oldmeans):
+#             oldmeans = self.means
+#             clusters = self.cluster()
+#             self.means = self.reevaluate(clusters)
+#         return (self.means, clusters)
 
 
 def dist(start, end):
@@ -1030,4 +1036,3 @@ def getCarData(totalCars, finishedTrips):
             formattedTrips.append(tripJson)
         carData[car] = {"history": formattedTrips, "spawn": totalCars[car].spawn}
     return carData
-
