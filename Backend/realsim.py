@@ -58,31 +58,39 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, start
     heapq.heapify(requests)  # sort requests by start time
     return requests
 
-def populatePEVs(numCars, totalCars, freeCars, mapName):
+def map2PEVCoords(mapName):
+    ''' temporary until coordinate selection is implemented in frontend '''
     if mapName == "Boston":
-        spawnPoints = [
-            util.find_snap_coordinates(util.get_snap_output(["-71.093196", "42.358296"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.088376", "42.362249"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.085130", "42.362500"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.108264", "42.350325"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.097831", "42.344706"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.088076", "42.347284"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.086029", "42.344000"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.072874", "42.355593"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.070359", "42.352096"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.066270", "42.351172"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.062733", "42.352414"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.063130", "42.354835"])),
-            util.find_snap_coordinates(util.get_snap_output(["-71.100281", "42.363463"])),
+        coords = [
+            [-71.093196, 42.358296],
+            [-71.088376, 42.362249],
+            [-71.085130, 42.362500],
+            [-71.108264, 42.350325],
+            [-71.097831, 42.344706],
+            [-71.088076, 42.347284],
+            [-71.086029, 42.344000],
+            [-71.072874, 42.355593],
+            [-71.070359, 42.352096],
+            [-71.066270, 42.351172],
+            [-71.062733, 42.352414],
+            [-71.063130, 42.354835],
+            [-71.100281, 42.363463],
         ]
         weights = []
 
     elif mapName == "Taipei":
-        spawnPoints = [
-            util.find_snap_coordinates(util.get_snap_output(["121.502746", "25.031213"])),
+        coords = [
+            [121.502746, 25.031213]
         ]
         weights = []
 
+    return coords, weights
+
+
+def populatePEVs(numCars, totalCars, freeCars, coords, weights):
+    spawnPoints = []
+    for s in coords:
+        spawnPoints.append(util.find_snap_coordinates(util.get_snap_output(s)))
     for i in range(numCars):
         p = spawnPoints[i % len(spawnPoints)]
         car = util.PEV(i, p)
@@ -142,11 +150,13 @@ def runSim():
     idleTrips = []
     finishedTrips = {}
     totalCars = {}
-    freeCars = []
-    navCars = []
-    waitCars = []
-    busyCars = []
-    rebalancingCars = []
+    cars = {
+        'freeCars': [],
+        'navCars': [],
+        'waitCars': [],
+        'busyCars': [],
+        'rebalancingCars': []
+    }
     assignType = "closestCar"
 
     centers = [[121.54140119, 25.05149155],
@@ -173,15 +183,16 @@ def runSim():
 
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
-    populatePEVs(NUMCARS, totalCars, freeCars, MAPSELECT)
+    c, w = map2PEVCoords(MAPSELECT)
+    populatePEVs(NUMCARS, totalCars, cars['freeCars'], c, w)
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(waitCars, navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests)
-        updateRequests[assignType](freeCars, rebalancingCars, navCars, busyCars, simTime, TIMESTEP, requests, finishedTrips, idleTrips)
+        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests})
+        updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips, 'idleTrips': idleTrips})
         # rebalanceCars()
         simTime += TIMESTEP
-        if simTime > simEndTime and len(requests) == 0 and len(busyCars) == 0 and len(waitCars) == 0 and len(navCars) == 0:
+        if simTime > simEndTime and len(requests) == 0 and len(cars['busyCars']) == 0 and len(cars['waitCars']) == 0 and len(cars['navCars']) == 0:
             simRunning = False
 
     # while len(requests) > 0:
@@ -221,7 +232,7 @@ def runSim():
         "START_HR": START_HR,
         "END_HR": END_HR
     }
-    simOutputs = util.analyzeResults(finishedRequests, freeCars, systemDelta, START_HR, END_HR)
+    simOutputs = util.analyzeResults(finishedRequests, cars['freeCars'], systemDelta, START_HR, END_HR)
 
     finalData = {}
     finalData["fleet"] = carData

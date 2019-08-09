@@ -62,7 +62,7 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
 # API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.163.75:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://18.20.247.61:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -296,6 +296,17 @@ class PEV(object):
                 self.time = req.time + self.nav.traveltime
                 self.state = "NAV"
                 return "NAV"  # maybe return state? or return state at the end of update
+            elif type(req) == Rebalance:
+                ''' end idle and add to history '''
+                idle = self.request
+                idle.end_time = req.time
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                idleTrips.append(idle)
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                self.request = req
+                # WORK IN PROGRESS
+                # MERGE REDUNDANT CODE
             else:
                 return f"Idling at {self.pos}."
 
@@ -816,51 +827,51 @@ def assignFinishedTrip(lst, iden, trip):
         lst[iden] = [trip]
     return lst
 
-def updateBusyCars(waitCars, navCars, busyCars, freeCars, simTime, finishedTrips, finishedRequests):
+def updateBusyCars(simTime, cars, logs):
     '''
     Check if
     '''
     updatedCars = []  # debug purposes
-    if len(busyCars) > 0:
-        while simTime >= busyCars[0].time:
+    if len(cars['busyCars']) > 0:
+        while simTime >= cars['busyCars'][0].time:
             # finish request
-            car = heapq.heappop(busyCars)
+            car = heapq.heappop(cars['busyCars'])
             print(car.state)
-            resp = car.update(simTime, finishedTrips, finishedRequests=finishedRequests)
+            resp = car.update(simTime, logs['finishedTrips'], finishedRequests=logs['finishedRequests'])
             print(resp)
-            heapq.heappush(waitCars, car)
+            heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))  # debug purposes
 
-            if len(busyCars) == 0:
+            if len(cars['busyCars']) == 0:
                 break
 
-    if len(navCars) > 0:
-        while simTime >= navCars[0].time:
+    if len(cars['navCars']) > 0:
+        while simTime >= cars['navCars'][0].time:
             # end navigation
-            car = heapq.heappop(navCars)
+            car = heapq.heappop(cars['navCars'])
             print(car.state)
-            resp = car.update(simTime, finishedTrips)
+            resp = car.update(simTime, logs['finishedTrips'])
             print(resp)
-            heapq.heappush(waitCars, car)
+            heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))
 
-            if len(navCars) == 0:
+            if len(cars['navCars']) == 0:
                 break
 
-    if len(waitCars) > 0:
-        while simTime >= waitCars[0].time:
+    if len(cars['waitCars']) > 0:
+        while simTime >= cars['waitCars'][0].time:
             # end waiting
-            car = heapq.heappop(waitCars)
+            car = heapq.heappop(cars['waitCars'])
             print(car.state)
-            resp = car.update(simTime, finishedTrips)
+            resp = car.update(simTime, logs['finishedTrips'])
             print(resp)
             if resp == "TRANSPORT":
-                heapq.heappush(busyCars, car)
+                heapq.heappush(cars['busyCars'], car)
             elif resp == "IDLE":
-                freeCars.append(car)
+                cars['freeCars'].append(car)
             updatedCars.append(str(car.id))
 
-            if len(waitCars) == 0:
+            if len(cars['waitCars']) == 0:
                 break
 
     if len(updatedCars) > 0:
