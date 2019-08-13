@@ -1,5 +1,7 @@
 import heapq
 from . import sim_util as util
+import logging
+logging.basicConfig(level=logging.INFO, format='%(%(levelname)s - %(message)s')
 
 def assignRequest(simTime, timeStep, cars, requests, logs):
     for car in cars['rebalancingCars']:
@@ -29,7 +31,7 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
             del cars['rebalancingCars'][minCarIndexR]
         prevState = minCar.state
         resp = minCar.update(simTime, logs['finishedTrips'], idleTrips=logs['idleTrips'], req=req)
-        print(f"{prevState} -> {resp}")
+        logging.debug(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")
         heapq.heappush(cars['navCars'], minCar)  # move car to busy list
         return "Assigned request to car: {}".format(minCar.id)
 

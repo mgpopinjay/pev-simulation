@@ -7,6 +7,8 @@ import time
 import os
 import json
 import numpy as np
+import logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 """
 NOTES FOR THE READER:
@@ -38,7 +40,7 @@ def loadVariables():
     return json.load(open(os.path.dirname(curpath)+"/Backend/Inputs/"+filename))
 
 def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, startHr, endHr, fuzzing, maxDist):
-    print("Populating requests")
+    logging.info("Populating requests")
     if mapName == "Boston":
         if randomRatio:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, randomRatio, startHr, endHr, 3.2, True)
@@ -89,7 +91,7 @@ def map2PEVCoords(mapName):
 
 
 def populatePEVs(numCars, totalCars, freeCars, coords, weights):
-    print("Populating PEVs")
+    logging.info("Populating PEVs")
     spawnPoints = []
     for s in coords:
         spawnPoints.append(util.find_snap_coordinates(util.get_snap_output(s)))
@@ -121,7 +123,7 @@ def rebalancePEVs(simTime, cars, finishedTrips, idleTrips):
 
 
 def runSim():
-    print("running simulation...")
+    logging.info("Running simulation...")
     variables = loadVariables()
 
     """
@@ -138,8 +140,8 @@ def runSim():
     START_HR    = variables["Start_Hour"] # end hour of the simulation
     END_HR      = variables["End_Hour"] # start hour of the simulation
 
-    print("Number of cars: " + str(NUMCARS))
-    print("Code: " + str(CODE))
+    logging.info("Number of cars: " + str(NUMCARS))
+    logging.info("Code: " + str(CODE))
 
     TIMESTEP = 1  # seconds per time step
     NUMDATA = 1  # number of spreadsheets of data used
@@ -197,7 +199,7 @@ def runSim():
     RData = util.RebalanceData(centers, weights)
 
     systemStartTime = time.time()
-    print("Sim Start")
+    logging.info("Sim Start")
     simTime = START_HR * 3600  # Set simulator to start time in secs
     simEndTime = END_HR * 3600  # Time for simulator to end
 
@@ -226,14 +228,14 @@ def runSim():
     #     assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
     #     # rebalanceCars()
 
-    print("Sim Done")
+    logging.info("Sim Done")
     systemEndTime = time.time()
     systemDelta = systemEndTime - systemStartTime
-    print("Sim Runtime: {}".format(systemDelta))
-    print("Assignment Type: {}".format(assignType))
-    print("Bike Ratio: {}".format(BIKE_DATA))
-    print("Taxi Ratio: {}".format(TAXI_DATA))
-    print("Random Ratio: {}".format(RANDOM_DATA))
+    logging.info("Sim Runtime: {}".format(systemDelta))
+    logging.info("Assignment Type: {}".format(assignType))
+    logging.info("Bike Ratio: {}".format(BIKE_DATA))
+    logging.info("Taxi Ratio: {}".format(TAXI_DATA))
+    logging.info("Random Ratio: {}".format(RANDOM_DATA))
 
     """
     Create results JSON
@@ -263,8 +265,8 @@ def runSim():
     if MADE_FILE:
         filename = "sim_results_"+str(CODE)+".JSON"
         util.send_to_visualizer(finalData, filename)
-        print("Made file")
-    print("DONE")
+        logging.info("Made file")
+    logging.info("DONE")
     return finalData
 
 
