@@ -25,8 +25,8 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
     """ Local Python Server to run the simulation"""
 
     def do_GET(self):
-        logging.warning("======= GET STARTED =======")
-        logging.warning(self.headers)
+        logging.debug("======= GET STARTED =======")
+        logging.debug(self.headers)
         http.server.SimpleHTTPRequestHandler.do_GET(self)
 
     def do_OPTIONS(self):
