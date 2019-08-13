@@ -62,7 +62,7 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
 # API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.247.61:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://18.20.170.37:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -210,6 +210,10 @@ class Rebalance(Request):
         '''
         Request.__init__(self, time, start, end)
         self.cut_short = cut_short
+        self.end_time = self.time + self.traveltime
+
+    def get_duration(self):
+        self.traveltime = self.end_time-self.time
 
 
 class Idle(Request):
@@ -267,7 +271,11 @@ class PEV(object):
         return self.time != other.time
 
     def __lt__(self, other):
-        return self.time < other.time
+        # Debug purposes for when idle cars end up in the wrong lists
+        try:
+            return self.time < other.time
+        except TypeError:
+            print(f"{self.state}, {self.id}, {self.req}, {self.nav}, {other.state}, {other.id}, {other.req}, {other.nav}")
 
     def __le__(self, other):
         return self.time <= other.time
@@ -281,38 +289,40 @@ class PEV(object):
     def update(self, simTime, finishedTrips, idleTrips=None, finishedRequests=None, req=None):
         if self.state == "IDLE":
             if type(req) == Request:
-                ''' end idle and add to history '''
+                # end idle and add to history
                 idle = self.request
                 idle.end_time = req.time
                 idle.get_duration()
                 self.idletime += idle.traveltime
                 idleTrips.append(idle)
                 assignFinishedTrip(finishedTrips, self.id, idle)
-                ''' create navigation and move to pickup '''
+                # create navigation and move to pickup
                 self.request = req
                 nav = Navigation(req.time, self.pos, self.request.pickup)
                 self.nav = nav
                 self.prevtime = req.time
                 self.time = req.time + self.nav.traveltime
                 self.state = "NAV"
-                return "NAV"  # maybe return state? or return state at the end of update
+                return "NAV"
             elif type(req) == Rebalance:
-                ''' end idle and add to history '''
+                # end idle and add to history
                 idle = self.request
                 idle.end_time = req.time
                 idle.get_duration()
                 self.idletime += idle.traveltime
                 idleTrips.append(idle)
                 assignFinishedTrip(finishedTrips, self.id, idle)
-                self.request = req
-                # WORK IN PROGRESS
-                # MERGE REDUNDANT CODE
+                self.nav = req
+                self.prevtime = req.time
+                self.time = req.time + req.traveltime
+                self.state = "REBALANCE"
+                return "REBALANCE"
             else:
                 return f"Idling at {self.pos}."
 
         elif self.state == "NAV":
             if simTime >= self.time:
-                ''' end nav and wait for loading '''
+                # end nav and wait for loading
                 self.movingtime += self.nav.traveltime
                 self.movingspace += self.nav.traveldist
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
@@ -322,20 +332,21 @@ class PEV(object):
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.nav.dropoff
-                self.state = "WAITLOAD1"
-                return "WAITLOAD1"
+                self.state = "WAITLOAD"
+                return "WAITLOAD"
             else:
                 return f"Navigating to {self.nav.dropoff}"
 
-        elif self.state == "WAITLOAD1":
+        elif self.state == "WAITLOAD":
             if simTime >= self.time:
-                ''' end wait and move to destination '''
+                # end wait and move to destination
                 wait = Wait(self.prevtime, self.pos)
+                wait.kind = "WaitLoad"
                 wait.end_time = self.time
                 wait.get_duration()
                 # self.idletime += wait.traveltime
                 assignFinishedTrip(finishedTrips, self.id, wait)
-                ''' transport to destination '''
+                # transport to destination
                 self.request.time = self.time  # update request start time to the current time
                 self.prevtime = self.time
                 self.time += self.request.traveltime
@@ -357,15 +368,16 @@ class PEV(object):
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.request.dropoff
-                self.state = "WAITLOAD2"
-                return "WAITLOAD2"
+                self.state = "WAITUNLOAD"
+                return "WAITUNLOAD"
             else:
                 return f"Transporting to {self.request.dropoff}."
 
-        elif self.state == "WAITLOAD2":
+        elif self.state == "WAITUNLOAD":
             if simTime >= self.time:
                 ''' end wait and become idle '''
                 wait = Wait(self.prevtime, self.pos)
+                wait.kind = "WaitUnload"
                 wait.end_time = self.time
                 wait.get_duration()
                 # self.idletime += wait.traveltime
@@ -378,6 +390,45 @@ class PEV(object):
                 return "IDLE"
             else:
                 return f"Waiting for dropoff at {self.pos}."
+
+        elif self.state == "REBALANCE":
+            if simTime >= self.time:
+                self.movingtime += self.nav.traveltime
+                self.movingspace += self.nav.traveldist
+                assignFinishedTrip(finishedTrips, self.id, self.nav)
+                self.request = Idle(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
+                self.state = "IDLE"
+                return "IDLE"
+            elif type(req) == Request:
+                self.updateLocation(req.time)
+                reb = self.nav
+                reb.cut_short = True
+                reb.osrm = get_osrm_output(reb.pickup, self.pos)
+                reb.end_time = req.time
+                reb.get_duration()
+                self.movingtime += reb.traveltime
+                self.movingspace += reb.traveldist
+                assignFinishedTrip(finishedTrips, self.id, reb)
+                # create navigation
+                self.request = req
+                nav = Navigation(req.time, self.pos, self.request.pickup)
+                self.nav = nav
+                self.prevtime = req.time
+                self.time = req.time + self.nav.traveltime
+                self.state = "NAV"
+                return "NAV"
+            else:
+                self.updateLocation(simTime)
+                return f"Currently at {self.pos} on the way to {self.nav.dropoff}."
+
+    def updateLocation(self, simTime):
+        ''' Update car location while rebalancing '''
+        elapsedTime = simTime - self.nav.time
+        newPos = find_leg_loc(self.nav.osrm, elapsedTime)
+        self.pos = newPos
+        return self.pos
 
 
 class RebalanceData():
@@ -836,9 +887,9 @@ def updateBusyCars(simTime, cars, logs):
         while simTime >= cars['busyCars'][0].time:
             # finish request
             car = heapq.heappop(cars['busyCars'])
-            print(car.state)
+            prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'], finishedRequests=logs['finishedRequests'])
-            print(resp)
+            print(f"{prevState} -> {resp}")
             heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))  # debug purposes
 
@@ -849,9 +900,9 @@ def updateBusyCars(simTime, cars, logs):
         while simTime >= cars['navCars'][0].time:
             # end navigation
             car = heapq.heappop(cars['navCars'])
-            print(car.state)
+            prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
-            print(resp)
+            print(f"{prevState} -> {resp}")
             heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))
 
@@ -862,20 +913,41 @@ def updateBusyCars(simTime, cars, logs):
         while simTime >= cars['waitCars'][0].time:
             # end waiting
             car = heapq.heappop(cars['waitCars'])
-            print(car.state)
+            prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
-            print(resp)
+            print(f"{prevState} -> {resp}")
             if resp == "TRANSPORT":
                 heapq.heappush(cars['busyCars'], car)
             elif resp == "IDLE":
-                cars['freeCars'].append(car)
+                rebalance_after_request = False
+                if rebalance_after_request is False:
+                    cars['freeCars'].append(car)
+                else:
+                    start_point = car.pos
+                    endpos = gaussian_randomizer(start_point, 5, True)
+                    end_point = find_snap_coordinates(get_snap_output(endpos))
+                    req = Rebalance(simTime, start_point, end_point)
+                    car.update(simTime, logs['finishedTrips'], idleTrips=logs['idleTrips'], req=req)
+                    heapq.heappush(cars['rebalancingCars'], car)
             updatedCars.append(str(car.id))
 
             if len(cars['waitCars']) == 0:
                 break
+    if len(cars['rebalancingCars']) > 0:
+        while simTime >= cars['rebalancingCars'][0].time:
+            car = heapq.heappop(cars['rebalancingCars'])
+            prevState = car.state
+            resp = car.update(simTime, logs['finishedTrips'])
+            print(f"{prevState} -> {resp}")
+            if resp == "IDLE":
+                cars['freeCars'].append(car)
+            updatedCars.append(str(car.id))
+
+            if len(cars['rebalancingCars']) == 0:
+                break
 
     if len(updatedCars) > 0:
-        return "Updated the following cars: {}.".format(updatedCars)
+        return f"Updated the following cars: {updatedCars}."
     else:
         return "No cars to update."
 
@@ -1028,7 +1100,7 @@ def getCarData(totalCars, finishedTrips):
                 tripJson["type"] = "Idle"
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             elif type(trip) == Wait:
-                tripJson["type"] = "Wait"
+                tripJson["type"] = trip.kind
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             else:
                 tripJson["steps_polyline"] = parse_for_visualizer_steps(trip.osrm)
@@ -1037,6 +1109,7 @@ def getCarData(totalCars, finishedTrips):
                 tripJson["end_point"] = trip.dropoff
                 if type(trip) == Rebalance:
                     tripJson["type"] = "Rebalance"
+                    tripJson["cut_short"] = trip.cut_short
                 elif type(trip) == Navigation:
                     tripJson["type"] = "Navigation"
                 else:

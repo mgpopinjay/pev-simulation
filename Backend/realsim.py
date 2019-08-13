@@ -38,6 +38,7 @@ def loadVariables():
     return json.load(open(os.path.dirname(curpath)+"/Backend/Inputs/"+filename))
 
 def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, startHr, endHr, fuzzing, maxDist):
+    print("Populating requests")
     if mapName == "Boston":
         if randomRatio:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, randomRatio, startHr, endHr, 3.2, True)
@@ -88,6 +89,7 @@ def map2PEVCoords(mapName):
 
 
 def populatePEVs(numCars, totalCars, freeCars, coords, weights):
+    print("Populating PEVs")
     spawnPoints = []
     for s in coords:
         spawnPoints.append(util.find_snap_coordinates(util.get_snap_output(s)))
@@ -98,6 +100,24 @@ def populatePEVs(numCars, totalCars, freeCars, coords, weights):
         totalCars[i] = car
 
     return freeCars
+
+
+def rebalancePEVs(simTime, cars, finishedTrips, idleTrips):
+    updatedCars = []
+    while len(cars['freeCars']) > 0 and len(cars['rebalancingCars']) < 10:
+        car = cars['freeCars'].pop(0)
+        start_point = car.pos
+        # rebalance to completely random location
+        endpos = util.gaussian_randomizer(start_point, 2, True)
+        end_point = util.find_snap_coordinates(util.get_snap_output(endpos))
+        req = util.Rebalance(simTime, start_point, end_point)
+        car.update(simTime, finishedTrips, idleTrips=idleTrips, req=req)
+        heapq.heappush(cars['rebalancingCars'], car)
+        updatedCars.append(str(car.id))
+    if len(updatedCars) > 0:
+        return f"Updated the following cars: {updatedCars}."
+    else:
+        return "No cars to update."
 
 
 def runSim():
@@ -188,9 +208,10 @@ def runSim():
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests})
+        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests, 'idleTrips': idleTrips})
         updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips, 'idleTrips': idleTrips})
-        # rebalanceCars()
+        if len(requests) > 0:
+            rebalancePEVs(simTime, cars, finishedTrips, idleTrips)
         simTime += TIMESTEP
         if simTime > simEndTime and len(requests) == 0 and len(cars['busyCars']) == 0 and len(cars['waitCars']) == 0 and len(cars['navCars']) == 0:
             simRunning = False
