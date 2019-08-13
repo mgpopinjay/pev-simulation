@@ -419,6 +419,13 @@ function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, assignt
                 iconSize: [15, 15],
             });
             break;
+        case 'Rebalance':
+            color = "#FF00FF"
+            icon = L.icon({
+                iconUrl: './img/magenta_circle.png',
+                iconSize: [15, 15],
+            });
+            break;
         case 'Passenger':
             color = "#F0F000"
             icon = L.icon({
