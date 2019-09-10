@@ -60,21 +60,23 @@ FUTURE IDEAS:
 """
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
-
+'''
+Replace the API url with your IP address or the address of the OSRM server you're using
+'''
 LOCAL = True
 # API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
 # API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.170.37:9002/' if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = 'http://18.20.190.85:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
     '''
-    get OSRM route finding output
+    Get OSRM route from start point to end point
     '''
     samp1 = 'route/v1/bicycle/'
-#    samp1 = 'route/v1/driving/'
+    # samp1 = 'route/v1/driving/'
     samp2 = '?alternatives=false&steps=true&geometries=polyline&overview=simplified'
-#    samp2 = ''
+    # samp2 = ''
     samp1 = samp1 + str(start[0]) + ',' + str(start[1]) + ';'
     samp2 = str(end[0]) + ',' + str(end[1]) + samp2
     sample = API_BASE + samp1+samp2
@@ -84,10 +86,10 @@ def get_osrm_output(start, end):
 
 def get_snap_output(point):
     '''
-    get OSRM nearest street position output
+    Get OSRM position nearest to point
     '''
     samp1 = 'nearest/v1/bicycle/'
-#    samp1 = 'nearest/v1/driving/'
+    # samp1 = 'nearest/v1/driving/'
     samp2 = '?number=1'
     samp1 = samp1 + str(point[0]) + ',' + str(point[1])
     sample = API_BASE + samp1 + samp2
@@ -97,7 +99,7 @@ def get_snap_output(point):
 
 def find_snap_coordinates(s):
     '''
-    find the closest snapped coordinate from an OSRM nearest output
+    Find the closest snapped coordinate from an OSRM position
     '''
     data = json.loads(s)
     coord = data["waypoints"][0]["location"]
@@ -128,7 +130,7 @@ def find_total_distance(s):
 
 def find_leg_loc(x, elapsed):
     '''
-    Find the location of the leg of the trip we are on
+    Find the location of the leg of the trip we are on based on seconds elapsed
     '''
     # print x
     time = 0.0
@@ -164,13 +166,12 @@ class Request(object):
         self.pickup = pickup
         self.dropoff = dropoff
         self.pickuptime = 0
-        self.assigntime = 0  # jank fix to know how much of waittime comes from unavailability rather than travel times
+        self.assigntime = 0
         self.osrm = get_osrm_output(self.pickup, self.dropoff)
         self.traveltime = round(find_total_duration(self.osrm))
         self.traveldist = find_total_distance(self.osrm)
         self.kind = kind
 
-    ''' compare methods for heap '''
     def __eq__(self, other):
         return self.original_time == other.original_time
 
@@ -190,12 +191,10 @@ class Request(object):
         return self.original_time >= other.original_time
 
     def __repr__(self):
-        ''' represent method for stuff '''
-        return '[time: '+str(self.time)+', pickup: '+str(self.pickup)+', dropoff: '+str(self.dropoff)+']'
+        return f'[type: {type.self}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}]'
 
     def __str__(self):
-        ''' to string funciton for printing '''
-        return 'Print Method: time: '+str(self.time)+', pickup: '+str(self.pickup)+', dropoff: '+str(self.dropoff)
+        return f'Print Method: type: {type.self}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}'
 
 
 class Navigation(Request):
@@ -207,15 +206,12 @@ class Navigation(Request):
 class Rebalance(Request):
 
     def __init__(self, time, start, end, cut_short=False):
-        '''
-        cut_short = whether this rebalancing trip was cut short to pickup a passenger
-        '''
         Request.__init__(self, time, start, end)
-        self.cut_short = cut_short
+        self.cut_short = cut_short  # whether this rebalancing trip was cut short to pickup a passenger
         self.end_time = self.time + self.traveltime
 
     def get_duration(self):
-        self.traveltime = self.end_time-self.time
+        self.traveltime = self.end_time - self.time
 
 
 class Idle(Request):
@@ -230,7 +226,7 @@ class Idle(Request):
         self.end_time = None
 
     def get_duration(self):
-        self.traveltime = self.end_time-self.time
+        self.traveltime = self.end_time - self.time
 
 
 class Wait(Idle):
@@ -243,7 +239,7 @@ class Recharge(Request):
 
     def __init__(self, time, start, end, charge_time):
         Request.__init__(self, time, start, end)
-        self.idle = Idle(self.time+self.traveltime, start)
+        self.idle = Idle(self.time + self.traveltime, start)
         self.charge_time = charge_time
 
 
@@ -265,7 +261,6 @@ class PEV(object):
         self.idletime = 0
         self.nav = None
 
-        ''' compare methods for heap '''
     def __eq__(self, other):
         return self.time == other.time
 
@@ -273,8 +268,7 @@ class PEV(object):
         return self.time != other.time
 
     def __lt__(self, other):
-        # Debug purposes for when idle cars end up in the wrong lists
-        try:
+        try:  # For debug purposes when idle cars end up in the wrong lists
             return self.time < other.time
         except TypeError:
             logging.critical("PEV time comparison error")
@@ -289,7 +283,7 @@ class PEV(object):
     def __ge__(self, other):
         return self.time >= other.time
 
-    def update(self, simTime, finishedTrips, idleTrips=None, finishedRequests=None, req=None):
+    def update(self, simTime, finishedTrips, finishedRequests=None, req=None):
         if self.state == "IDLE":
             if type(req) == Request:
                 # end idle and add to history
@@ -297,7 +291,6 @@ class PEV(object):
                 idle.end_time = req.time
                 idle.get_duration()
                 self.idletime += idle.traveltime
-                idleTrips.append(idle)
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 # create navigation and move to pickup
                 self.request = req
@@ -313,7 +306,6 @@ class PEV(object):
                 idle.end_time = req.time
                 idle.get_duration()
                 self.idletime += idle.traveltime
-                idleTrips.append(idle)
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 self.nav = req
                 self.prevtime = req.time
@@ -330,8 +322,8 @@ class PEV(object):
                 self.movingspace += self.nav.traveldist
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
-                # customers take 1-15 seconds to arrive and board PEV
-                waitLoad = random.randint(1, 16)
+                # triangular distribution for loading
+                waitLoad = np.random.triangular(1,3,4)
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.nav.dropoff
@@ -366,8 +358,8 @@ class PEV(object):
                 self.utiltime += self.request.traveltime
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
-                # customers take 1-15 seconds to unload PEV
-                waitLoad = random.randint(1, 16)
+                # triangular distribution for unload time
+                waitLoad = np.random.triangular(1,3,6)
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.request.dropoff
@@ -713,7 +705,7 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_en
         if dist(start_point, dest) < max_dist:
             req = Request(time, start_point, dest, "taxi", kind)
         else:
-            logging.debug("Trip greater than max dist")
+            logging.info("Trip greater than max dist")
 
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             trips.append(req)
@@ -806,7 +798,7 @@ def generate_youbike_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing
         for row in spamreader:
             data.append(row)
     current_count = 0
-    logging.debug("Generating YouBike trips:")
+    logging.info("Generating YouBike trips:")
     for row in data[1:]:
         pretime = row[0]
         time = int(pretime[-8:-6])*60*60+int(pretime[-5:-3])*60+int(pretime[-2:])
@@ -825,7 +817,7 @@ def generate_youbike_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing
         kind = "Passenger"
         req = None
         if current_count % 2500 == 0:
-            logging.debug(current_count)
+            logging.info(current_count)
         current_count += 1
         if rng <= ratio:
             kind = "Parcel"
@@ -893,7 +885,7 @@ def updateBusyCars(simTime, cars, logs):
             car = heapq.heappop(cars['busyCars'])
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'], finishedRequests=logs['finishedRequests'])
-            logging.debug(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
             heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))  # debug purposes
 
@@ -906,7 +898,7 @@ def updateBusyCars(simTime, cars, logs):
             car = heapq.heappop(cars['navCars'])
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
-            logging.debug(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
             heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))
 
@@ -919,7 +911,7 @@ def updateBusyCars(simTime, cars, logs):
             car = heapq.heappop(cars['waitCars'])
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
-            logging.debug(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
             if resp == "TRANSPORT":
                 heapq.heappush(cars['busyCars'], car)
             elif resp == "IDLE":
@@ -931,7 +923,7 @@ def updateBusyCars(simTime, cars, logs):
                     endpos = gaussian_randomizer(start_point, 5, True)
                     end_point = find_snap_coordinates(get_snap_output(endpos))
                     req = Rebalance(simTime, start_point, end_point)
-                    car.update(simTime, logs['finishedTrips'], idleTrips=logs['idleTrips'], req=req)
+                    car.update(simTime, logs['finishedTrips'], req=req)
                     heapq.heappush(cars['rebalancingCars'], car)
             updatedCars.append(str(car.id))
 
@@ -942,7 +934,7 @@ def updateBusyCars(simTime, cars, logs):
             car = heapq.heappop(cars['rebalancingCars'])
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
-            logging.debug(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
             if resp == "IDLE":
                 cars['freeCars'].append(car)
             updatedCars.append(str(car.id))
@@ -997,41 +989,41 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     '''
 
     # CALCULATE ANALYTICS
-    # logging.info("REBALANCE ON?: "+str(REBALANCE_ON)
-    # logging.info("RANDOM START?: "+str(RANDOM_START)
-    logging.info("Total Trips: {}".format(len(finishedRequests)))
+    # logging.warning("REBALANCE ON?: "+str(REBALANCE_ON)
+    # logging.warning("RANDOM START?: "+str(RANDOM_START)
+    logging.warning("Total Trips: {}".format(len(finishedRequests)))
     for origin in origins.keys():
-        logging.info(origin.upper()+" trips: {}".format(origins[origin]))
+        logging.warning(origin.upper()+" trips: {}".format(origins[origin]))
     # Avg time for PEV to travel to request
     avgReqPickup = round(statistics.mean(pickuptimes), 1)
-    logging.info("Average Request Pickup Time: {}".format(avgReqPickup))
+    logging.warning("Average Request Pickup Time: {}".format(avgReqPickup))
     # Avg time for PEV to be assigned to request
     avgReqAssign = round(statistics.mean(assigntimes), 1)
-    logging.info("Average Request Push Time: {}".format(avgReqAssign))
+    logging.warning("Average Request Push Time: {}".format(avgReqAssign))
     # Avg travel time of each request from origin to destination
     avgReqTravel = round(statistics.mean(traveltimes), 1)
-    logging.info("Average Request Travel Time: {}".format(avgReqTravel))
+    logging.warning("Average Request Travel Time: {}".format(avgReqTravel))
     # Avg time moving with passenger
     avgCarTravel = round(statistics.mean(utiltimes), 1)
-    logging.info("Average Car Utilization Time: {}".format(avgCarTravel))
+    logging.warning("Average Car Utilization Time: {}".format(avgCarTravel))
     # Avg time moving without passenger
     avgCarNavigate = round(statistics.mean(navtimes), 1)
-    logging.info("Average Car Navigation Time: {}".format(avgCarNavigate))
+    logging.warning("Average Car Navigation Time: {}".format(avgCarNavigate))
     # Avg time spent moving
     avgCarMove = round(statistics.mean(movingtimes), 1)
-    logging.info("Average Car Moving Time: {}".format(avgCarMove))
+    logging.warning("Average Car Moving Time: {}".format(avgCarMove))
     # Percent of moving time with passenger
     percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
-    logging.info("Average Car Utilization Percentage: {}".format(percentTravelOverMove))
+    logging.warning("Average Car Utilization Percentage: {}".format(percentTravelOverMove))
     # Avg time spent idle
     avgCarIdle = round(statistics.mean(idletimes), 1)
-    logging.info("Average Car Idle Time: {}".format(avgCarIdle))
+    logging.warning("Average Car Idle Time: {}".format(avgCarIdle))
     # Percent of total time spent idle
     percentIdleOverTotal = round(avgCarIdle/(avgCarIdle+avgCarMove)*100, 1)
-    logging.info("Average Car Idle Percentage: {}".format(percentIdleOverTotal))
+    logging.warning("Average Car Idle Percentage: {}".format(percentIdleOverTotal))
     # Percent of total time spent moving
     percentMoveOverTotal = round(avgCarMove/(avgCarMove+avgCarIdle)*100, 1)
-    logging.info("Average Car Movement Percentage: {}".format(percentMoveOverTotal))
+    logging.warning("Average Car Movement Percentage: {}".format(percentMoveOverTotal))
 
     # waitDist is the distribution of waittimes in 5 min intervals
     waitDist = [0 for i in range(math.ceil(waittimes[-1]/60/5))]
@@ -1042,22 +1034,22 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     # Waittime analytics
     # Avg wait time
     avgReqWait = statistics.mean(waittimes)
-    logging.info("Average Wait Time: {}".format(avgReqWait))
+    logging.warning("Average Wait Time: {}".format(avgReqWait))
     # Request wait time 50th percentile
     waitTime50p = waittimes[len(waittimes)//2]
-    logging.info("50th Percentile Wait Time: {}".format(waitTime50p))
+    logging.warning("50th Percentile Wait Time: {}".format(waitTime50p))
     # Request wait time 75th percentile
     waitTime75p = waittimes[len(waittimes)*3//4]
-    logging.info("75th Percentile Wait Time: {}".format(waitTime75p))
+    logging.warning("75th Percentile Wait Time: {}".format(waitTime75p))
     # Request wait time distribution by 5 minute bins
-    logging.info("Distribution of Wait Times by 5 min: {}".format(waitDist))
+    logging.warning("Distribution of Wait Times by 5 min: {}".format(waitDist))
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
-    logging.info("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
-    logging.info("TIME OF REBALANCE TRIPS: \n"+str(rebaltimes))
-    logging.info("LENGTH OF REBALANCE TRIPS: \n"+str(rebaltraveltimes))
+    logging.warning("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
+    logging.warning("TIME OF REBALANCE TRIPS: \n"+str(rebaltimes))
+    logging.warning("LENGTH OF REBALANCE TRIPS: \n"+str(rebaltraveltimes))
     r_avg = reduce(lambda x,y:x+y, rebaltraveltimes)/len(rebaltraveltimes)
-    logging.info("AVERAGE LENGTH OF REBALANCE TRIP: "+str(r_avg))
+    logging.warning("AVERAGE LENGTH OF REBALANCE TRIP: "+str(r_avg))
     '''
 
     simOutputs = {

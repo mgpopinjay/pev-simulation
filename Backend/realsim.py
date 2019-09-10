@@ -32,6 +32,9 @@ TODO LIST:
 """
 
 def loadVariables():
+    '''
+    Load the simulation variables from file
+    '''
     curpath = os.path.dirname(os.path.abspath(__file__))
     sim_id = json.load(open(os.path.dirname(curpath) + "/Backend/id_counter.txt"))
     filename = "sim_inputs_"+str(sim_id)+".json"
@@ -40,7 +43,10 @@ def loadVariables():
     return json.load(open(os.path.dirname(curpath)+"/Backend/Inputs/"+filename))
 
 def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, startHr, endHr, fuzzing, maxDist):
-    logging.info("Populating requests")
+    '''
+    Populate request list by sampling datasets
+    '''
+    logging.warning("Populating requests")
     if mapName == "Boston":
         if randomRatio:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, randomRatio, startHr, endHr, 3.2, True)
@@ -62,7 +68,11 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, start
     return requests
 
 def map2PEVCoords(mapName):
-    ''' temporary until coordinate selection is implemented in frontend '''
+    '''
+    Take city name as input and returns a list of spawn point coordinates
+    Temporary solution until coordinate selection is implemented in frontend
+    Weights will be used to place more cars at popular hubs
+    '''
     if mapName == "Boston":
         coords = [
             [-71.093196, 42.358296],
@@ -91,12 +101,15 @@ def map2PEVCoords(mapName):
 
 
 def populatePEVs(numCars, totalCars, freeCars, coords, weights):
-    logging.info("Populating PEVs")
+    '''
+    Populate list of free cars with PEVs at each spawn point
+    '''
+    logging.warning("Populating PEVs")
     spawnPoints = []
     for s in coords:
         spawnPoints.append(util.find_snap_coordinates(util.get_snap_output(s)))
     for i in range(numCars):
-        p = spawnPoints[i % len(spawnPoints)]
+        p = spawnPoints[i % len(spawnPoints)]  # Picks spawn points for cars in a round robin order, in future will consider weights
         car = util.PEV(i, p)
         freeCars.append(car)
         totalCars[i] = car
@@ -104,16 +117,20 @@ def populatePEVs(numCars, totalCars, freeCars, coords, weights):
     return freeCars
 
 
-def rebalancePEVs(simTime, cars, finishedTrips, idleTrips):
+def rebalancePEVs(simTime, cars, finishedTrips):
+    '''
+    Pick cars from free cars to rebalance to a new location
+    Currently picks randomly and has a random location
+    Will be replaced with a smarter rebalancing algorithm
+    '''
     updatedCars = []
     while len(cars['freeCars']) > 0 and len(cars['rebalancingCars']) < 10:
         car = cars['freeCars'].pop(0)
         start_point = car.pos
-        # rebalance to completely random location
-        endpos = util.gaussian_randomizer(start_point, 2, True)
+        endpos = util.gaussian_randomizer(start_point, 2, True)  # Pick random location to rebalance to, will be changed
         end_point = util.find_snap_coordinates(util.get_snap_output(endpos))
         req = util.Rebalance(simTime, start_point, end_point)
-        car.update(simTime, finishedTrips, idleTrips=idleTrips, req=req)
+        car.update(simTime, finishedTrips, req=req)  # Change PEV state to REBALANCE
         heapq.heappush(cars['rebalancingCars'], car)
         updatedCars.append(str(car.id))
     if len(updatedCars) > 0:
@@ -123,7 +140,7 @@ def rebalancePEVs(simTime, cars, finishedTrips, idleTrips):
 
 
 def runSim():
-    logging.info("Running simulation...")
+    logging.warning("Running simulation...")
     variables = loadVariables()
 
     """
@@ -140,11 +157,10 @@ def runSim():
     START_HR    = variables["Start_Hour"] # end hour of the simulation
     END_HR      = variables["End_Hour"] # start hour of the simulation
 
-    logging.info("Number of cars: " + str(NUMCARS))
-    logging.info("Code: " + str(CODE))
+    logging.warning("Number of cars: " + str(NUMCARS))
+    logging.warning("Code: " + str(CODE))
 
     TIMESTEP = 1  # seconds per time step
-    NUMDATA = 1  # number of spreadsheets of data used
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
     RANDOM_START = SPAWN
@@ -155,9 +171,6 @@ def runSim():
     REBALANCE_ON = False  # whether to rebalance
     K = 20  # number of clusters for rebalancing
     ALPHA = .1  # proportion of free cars that perform rebalancing
-    PRINT_ANALYTICS = True  # whether to print final analytics
-    DISABLE_SPECIFICS = []
-    ENABLE_SPECIFICS = []
     FUZZING_ON = False  # used to spread out job spawns
     FIXED_RANDOM_SEED = True
     SPAWN_POINT = []
@@ -168,8 +181,6 @@ def runSim():
     simRunning = True
     requests = []
     finishedRequests = []
-    rebalanceTrips = []  # ?
-    idleTrips = []
     finishedTrips = {}
     totalCars = {}
     cars = {
@@ -182,60 +193,50 @@ def runSim():
     assignType = "closestCar"
 
     centers = [[121.54140119, 25.05149155],
-                [121.52009872, 25.06688664],
-                [121.56683844, 25.03978176],
-                [121.53784721, 25.02401502],
-                [121.49422853, 25.13004852],
-                [121.5115367, 25.03671236],
-                [121.568989, 25.07818477],
-                [121.60457594, 25.05676364],
-                [121.55205896, 24.99518549],
-                [121.5234123, 25.1056183]]
-    weights = [0.15079885392385392, 0.086375777000777,
-                0.23488636363636364, 0.1948246891996892,
-                0.026354895104895106, 0.11934683372183372,
-                0.05184294871794872, 0.042272727272727274,
-                0.025182595182595184, 0.06811431623931624]
+               [121.52009872, 25.06688664],
+               [121.56683844, 25.03978176],
+               [121.53784721, 25.02401502],
+               [121.49422853, 25.13004852],
+               [121.51153670, 25.03671236],
+               [121.56898900, 25.07818477],
+               [121.60457594, 25.05676364],
+               [121.55205896, 24.99518549],
+               [121.52341230, 25.10561830]]
+    weights = [0.150798853923853920, 0.086375777000777000,
+               0.234886363636363640, 0.194824689199689200,
+               0.026354895104895106, 0.119346833721833720,
+               0.051842948717948720, 0.042272727272727274,
+               0.025182595182595184, 0.068114316239316240]
     RData = util.RebalanceData(centers, weights)
 
     systemStartTime = time.time()
-    logging.info("Sim Start")
-    simTime = START_HR * 3600  # Set simulator to start time in secs
-    simEndTime = END_HR * 3600  # Time for simulator to end
+    logging.warning("Sim Start")
+    simTime = START_HR * 3600  # Set simulator time to start time in secs
+    simEndTime = END_HR * 3600
 
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
-    c, w = map2PEVCoords(MAPSELECT)
+    c, w = map2PEVCoords(MAPSELECT)  # Temporary solution for spawn point input
     populatePEVs(NUMCARS, totalCars, cars['freeCars'], c, w)
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests, 'idleTrips': idleTrips})
-        updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips, 'idleTrips': idleTrips})
+        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests})
+        updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips})
         if len(requests) > 0:
-            rebalancePEVs(simTime, cars, finishedTrips, idleTrips)
+            rebalancePEVs(simTime, cars, finishedTrips)
         simTime += TIMESTEP
         if simTime > simEndTime and len(requests) == 0 and len(cars['busyCars']) == 0 and len(cars['waitCars']) == 0 and len(cars['navCars']) == 0:
             simRunning = False
 
-    # while len(requests) > 0:
-    #     # updateRebalancingCars()
-    #     updateBusyCars(busyCars, freeCars, simTime, finishedTrips, finishedRequests)
-    #     reqTime = requests[0].time
-    #     if reqTime > simTime:
-    #         simTime += 1
-    #         continue
-    #     assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
-    #     # rebalanceCars()
-
-    logging.info("Sim Done")
+    logging.warning("Sim Done")
     systemEndTime = time.time()
     systemDelta = systemEndTime - systemStartTime
-    logging.info("Sim Runtime: {}".format(systemDelta))
-    logging.info("Assignment Type: {}".format(assignType))
-    logging.info("Bike Ratio: {}".format(BIKE_DATA))
-    logging.info("Taxi Ratio: {}".format(TAXI_DATA))
-    logging.info("Random Ratio: {}".format(RANDOM_DATA))
+    logging.warning("Sim Runtime: {}".format(systemDelta))
+    logging.warning("Assignment Type: {}".format(assignType))
+    logging.warning("Bike Ratio: {}".format(BIKE_DATA))
+    logging.warning("Taxi Ratio: {}".format(TAXI_DATA))
+    logging.warning("Random Ratio: {}".format(RANDOM_DATA))
 
     """
     Create results JSON
@@ -265,8 +266,8 @@ def runSim():
     if MADE_FILE:
         filename = "sim_results_"+str(CODE)+".JSON"
         util.send_to_visualizer(finalData, filename)
-        logging.info("Made file")
-    logging.info("DONE")
+        logging.warning("Made file")
+    logging.warning("DONE")
     return finalData
 
 
