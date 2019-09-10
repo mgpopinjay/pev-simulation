@@ -24,19 +24,21 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
             minCarIndexF, minCarF = min(enumerate(cars['freeCars']), key=lambda pair: util.dist(pair[1].pos, req.pickup))
         if len(cars['rebalancingCars']) > 0:
             minCarIndexR, minCarR = min(enumerate(cars['rebalancingCars']), key=lambda pair: util.dist(pair[1].pos, req.pickup))
-        if minCarIndexF and minCarIndexR:
+        if minCarIndexF is not None and minCarIndexR is not None:
             if util.dist(minCarF.pos, req.pickup) <= util.dist(minCarR.pos, req.pickup):
                 minCar = minCarF
                 del cars['freeCars'][minCarIndexF]
             else:
                 minCar = minCarR
                 del cars['rebalancingCars'][minCarIndexR]
-        elif minCarIndexF:
+        elif minCarIndexF is not None:
             minCar = minCarF
             del cars['freeCars'][minCarIndexF]
-        elif minCarIndexR:
+        elif minCarIndexR is not None:
             minCar = minCarR
             del cars['rebalancingCars'][minCarIndexR]
+        else:
+            logging.warning("minCar is None!")
         prevState = minCar.state
         resp = minCar.update(simTime, logs['finishedTrips'], req=req)
         logging.info(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")
