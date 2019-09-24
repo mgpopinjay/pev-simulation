@@ -61,12 +61,13 @@ FUTURE IDEAS:
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 '''
-Replace the API url with your IP address or the address of the OSRM server you're using
+Replace the API url with your IP address in ip.txt or the address of the OSRM server you're using
 '''
 LOCAL = True
-# API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
-# API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.190.85:9002/' if LOCAL else 'https://router.project-osrm.org/'
+with open('Backend/ip.txt', 'r') as f:
+    ip = f.readline()
+    print(ip)
+API_BASE = f'http://{ip}:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
 def get_osrm_output(start, end):
@@ -387,16 +388,7 @@ class PEV(object):
                 return f"Waiting for dropoff at {self.pos}."
 
         elif self.state == "REBALANCE":
-            if simTime >= self.time:
-                self.movingtime += self.nav.traveltime
-                self.movingspace += self.nav.traveldist
-                assignFinishedTrip(finishedTrips, self.id, self.nav)
-                self.request = Idle(self.time, self.pos)
-                self.prevtime = self.time
-                self.time = None
-                self.state = "IDLE"
-                return "IDLE"
-            elif type(req) == Request:
+            if type(req) == Request:
                 self.updateLocation(req.time)
                 reb = self.nav
                 reb.cut_short = True
@@ -414,6 +406,15 @@ class PEV(object):
                 self.time = req.time + self.nav.traveltime
                 self.state = "NAV"
                 return "NAV"
+            elif simTime >= self.time:
+                self.movingtime += self.nav.traveltime
+                self.movingspace += self.nav.traveldist
+                assignFinishedTrip(finishedTrips, self.id, self.nav)
+                self.request = Idle(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
+                self.state = "IDLE"
+                return "IDLE"
             else:
                 self.updateLocation(simTime)
                 return f"Currently at {self.pos} on the way to {self.nav.dropoff}."
