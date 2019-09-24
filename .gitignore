@@ -95,3 +95,6 @@ Backend/Results/**
 Backend/Inputs/
 
 Backend/test\.py
+
+# Local IP Config File
+Backend/ip.txt
