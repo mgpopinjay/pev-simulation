@@ -66,7 +66,6 @@ Replace the API url with your IP address in ip.txt or the address of the OSRM se
 LOCAL = True
 with open('Backend/ip.txt', 'r') as f:
     ip = f.readline()
-    print(ip)
 API_BASE = f'http://{ip}:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
 
@@ -192,13 +191,19 @@ class Request(object):
         return self.original_time >= other.original_time
 
     def __repr__(self):
-        return f'[type: {type.self}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}]'
+        return f'[type: {type(self)}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}]'
 
     def __str__(self):
-        return f'Print Method: type: {type.self}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}'
+        return f'Print Method: type: {type(self)}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}'
 
 
 class Navigation(Request):
+
+    def __init__(self, time, start, end):
+        Request.__init__(self, time, start, end)
+
+
+class NavToCharge(Request):
 
     def __init__(self, time, start, end):
         Request.__init__(self, time, start, end)
@@ -236,12 +241,10 @@ class Wait(Idle):
         Idle.__init__(self, start_time, loc)
 
 
-class Recharge(Request):
+class Recharge(Idle):
 
-    def __init__(self, time, start, end, charge_time):
-        Request.__init__(self, time, start, end)
-        self.idle = Idle(self.time + self.traveltime, start)
-        self.charge_time = charge_time
+    def __init__(self, start_time, loc):
+        Idle.__init__(self, start_time, loc)
 
 
 class PEV(object):
@@ -261,6 +264,7 @@ class PEV(object):
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
+        self.power = 25 * 1609.344  # added by me 25 miles is 40234 meters
 
     def __eq__(self, other):
         return self.time == other.time
@@ -284,9 +288,23 @@ class PEV(object):
     def __ge__(self, other):
         return self.time >= other.time
 
-    def update(self, simTime, finishedTrips, finishedRequests=None, req=None):
+    def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
         if self.state == "IDLE":
-            if type(req) == Request:
+            if navToCharge:
+                idle = self.request
+                idle.end_time = simTime
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                # find and navigate to closest charging station
+                ycor, xcor = find_closest_charging_station(self.pos)
+                nav = NavToCharge(simTime, self.pos, [str(ycor), str(xcor)])
+                self.nav = nav
+                self.prevtime = simTime
+                self.time = simTime + self.nav.traveltime
+                self.state = "NAVTOCHARGE"  # now navigating to charging place
+                return "NAVTOCHARGE"
+            elif type(req) == Request:
                 # end idle and add to history
                 idle = self.request
                 idle.end_time = req.time
@@ -322,6 +340,7 @@ class PEV(object):
                 self.movingtime += self.nav.traveltime
                 self.movingspace += self.nav.traveldist
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
+                self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 # triangular distribution for loading
                 waitLoad = np.random.triangular(1,3,4)
@@ -357,6 +376,7 @@ class PEV(object):
                 self.movingtime += self.request.traveltime
                 self.movingspace += self.nav.traveldist
                 self.utiltime += self.request.traveltime
+                self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
                 # triangular distribution for unload time
@@ -386,6 +406,39 @@ class PEV(object):
                 return "IDLE"
             else:
                 return f"Waiting for dropoff at {self.pos}."
+
+        elif self.state == "NAVTOCHARGE":
+            if simTime >= self.time:
+                ''' end navigating to recharge and become recharging '''
+                self.movingtime += self.nav.traveltime
+                self.movingspace += self.nav.traveldist
+                self.utiltime += self.nav.traveltime
+                self.power -= self.nav.traveldist
+                assignFinishedTrip(finishedTrips, self.id, self.nav)
+                self.prevtime = self.time
+                self.time += round(((25-self.power/1609.344)*60*60)/25) #adds time proportional to 25 - distance left assuming charging at 25 mi/hr)
+                self.pos = self.nav.dropoff
+                self.state = "RECHARGE"
+                return "RECHARGE"
+            else:
+                return f"NavToCharge at {self.pos}."
+
+        elif self.state == "RECHARGE":
+            if simTime >= self.time:
+                ''' end recharging(waiting) and become idle '''
+                recharge = Recharge(self.prevtime, self.pos)
+                recharge.end_time = self.time
+                recharge.get_duration()
+                assignFinishedTrip(finishedTrips, self.id, recharge)
+
+                ''' become idle '''
+                self.request = Idle(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
+                self.state = "IDLE"
+                return "IDLE"
+            else:
+                return f"Recharge at {self.pos}."
 
         elif self.state == "REBALANCE":
             if type(req) == Request:
@@ -847,10 +900,30 @@ def find_closest_station(loc):
     for station in hubstations.keys():
         pos = hubstations[station]
         dis = dist(loc, pos)
-        if des < min_dist:
+        if dis < min_dist:
             min_dist = dis
             min_stat = station
-    return hubstations[station]
+    return hubstations[min_stat]
+
+
+def find_closest_charging_station(loc):
+    '''
+    Find charging station closest to loc
+    '''
+
+    chargingStations = [[-71.0655, 42.3550], [-71.0856, 42.3625], [-71.0551, 42.3519], [-71.0903, 42.3397]]
+    # boston commons, kendall square, south station, metro northeastern
+    tempmin = 10000.0
+    ycor = 0
+    xcor = 0
+
+    for i in range(len(chargingStations)):  # finds closest charging station
+        distance = dist(chargingStations[i], loc)
+        if distance < tempmin:
+            tempmin = distance
+            ycor = chargingStations[i][0]
+            xcor = chargingStations[i][1]
+    return ycor, xcor
 
 
 def max_stat_dist():
@@ -875,7 +948,8 @@ def assignFinishedTrip(lst, iden, trip):
         lst[iden] = [trip]
     return lst
 
-def updateBusyCars(simTime, cars, logs):
+
+def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
     '''
     Check if
     '''
@@ -917,6 +991,9 @@ def updateBusyCars(simTime, cars, logs):
                 heapq.heappush(cars['busyCars'], car)
             elif resp == "IDLE":
                 rebalance_after_request = False
+                if (CHARGING_ON and car.power <= CHARGE_LIMIT * 1609.344):  # added by me
+                    resp = car.update(simTime, logs['finishedTrips'], True)
+                    heapq.heappush(cars['navToChargeCars'], car)  # now busy
                 if rebalance_after_request is False:
                     cars['freeCars'].append(car)
                 else:
@@ -930,6 +1007,29 @@ def updateBusyCars(simTime, cars, logs):
 
             if len(cars['waitCars']) == 0:
                 break
+
+    if len(cars['navToChargeCars']) > 0:
+        while simTime >= cars['navToChargeCars'][0].time:
+            # end navigation
+            car = heapq.heappop(cars['navToChargeCars'])
+            resp = car.update(simTime, logs['finishedTrips'])
+            logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            heapq.heappush(cars['chargingCars'], car)
+            updatedCars.append(str(car.id))
+
+            if len(cars['navToChargeCars']) == 0:
+                break
+
+    if len(cars['chargingCars']) > 0:
+        while simTime >= cars['chargingCars'][0].time:
+            # end charging
+            car = heapq.heappop(cars['chargingCars'])
+            car.power = 25 * 1609.34
+            resp = car.update(simTime, logs['finishedTrips'])
+            logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            heapq.heappush(cars['freeCars'], car)
+            updatedCars.append(str(car.id))
+
     if len(cars['rebalancingCars']) > 0:
         while simTime >= cars['rebalancingCars'][0].time:
             car = heapq.heappop(cars['rebalancingCars'])
@@ -1093,7 +1193,10 @@ def getCarData(totalCars, finishedTrips):
             tripJson["id"] = i
             tripJson["pickuptime"] = 0
             tripJson["assigntime"] = 0
-            if type(trip) == Idle:
+            if type(trip) == Recharge:
+                tripJson["type"] = "Recharge"
+                tripJson["start_point"] = trip.osrm
+            elif type(trip) == Idle:
                 tripJson["type"] = "Idle"
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             elif type(trip) == Wait:
@@ -1104,7 +1207,9 @@ def getCarData(totalCars, finishedTrips):
                 tripJson["overview_polyline"] = parse_for_visualizer_whole(trip.osrm)
                 tripJson["start_point"] = trip.pickup
                 tripJson["end_point"] = trip.dropoff
-                if type(trip) == Rebalance:
+                if type(trip) == NavToCharge:
+                    tripJson["type"] = "NavToCharge"
+                elif type(trip) == Rebalance:
                     tripJson["type"] = "Rebalance"
                     tripJson["cut_short"] = trip.cut_short
                 elif type(trip) == Navigation:
