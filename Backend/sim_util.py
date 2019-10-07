@@ -1014,7 +1014,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     avgCarMove = round(statistics.mean(movingtimes), 1)
     logging.warning(f"Average Car Moving Time: {avgCarMove}")
     # Percent of daytime with passenger
-    percentTravelOverDay = round(avgCarTravel/((endHr-startHr)*3600), 1)
+    percentTravelOverDay = round(avgCarTravel/((endHr-startHr)*3600)*100, 1)
     logging.warning(f"Average Time Utilization Percentage: {percentTravelOverDay}")
     # Percent of moving time with passenger
     percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
