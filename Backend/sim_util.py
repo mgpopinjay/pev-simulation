@@ -343,7 +343,7 @@ class PEV(object):
                 self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 # triangular distribution for loading
-                waitLoad = np.random.triangular(1,3,4)
+                waitLoad = int(np.random.triangular(1,3,4))
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.nav.dropoff
@@ -380,7 +380,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
                 # triangular distribution for unload time
-                waitLoad = np.random.triangular(1,3,6)
+                waitLoad = int(np.random.triangular(1,3,6))
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.request.dropoff
@@ -954,6 +954,28 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
     Check if
     '''
     updatedCars = []  # debug purposes
+    REBALANCING = False
+    if len(cars['freeCars']) > 0:
+        deleteFromFree = []
+        for i in range(len(cars['freeCars'])):
+            car = cars['freeCars'][i]
+            if (CHARGING_ON and car.power <= CHARGE_LIMIT * 1609.344):  # added by me
+                prevState = car.state
+                resp = car.update(simTime, logs['finishedTrips'], True)
+                logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+                heapq.heappush(cars['navToChargeCars'], car)  # now busy
+                deleteFromFree.append(i)
+            elif REBALANCING:
+                start_point = car.pos
+                endpos = gaussian_randomizer(start_point, 5, True)
+                end_point = find_snap_coordinates(get_snap_output(endpos))
+                req = Rebalance(simTime, start_point, end_point)
+                car.update(simTime, logs['finishedTrips'], req=req)
+                heapq.heappush(cars['rebalancingCars'], car)
+                deleteFromFree.append(i)
+        for i in deleteFromFree[::-1]:
+            del cars['freeCars'][i]
+
     if len(cars['busyCars']) > 0:
         while simTime >= cars['busyCars'][0].time:
             # finish request
@@ -990,19 +1012,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
             if resp == "TRANSPORT":
                 heapq.heappush(cars['busyCars'], car)
             elif resp == "IDLE":
-                rebalance_after_request = False
-                if (CHARGING_ON and car.power <= CHARGE_LIMIT * 1609.344):  # added by me
-                    resp = car.update(simTime, logs['finishedTrips'], True)
-                    heapq.heappush(cars['navToChargeCars'], car)  # now busy
-                if rebalance_after_request is False:
-                    cars['freeCars'].append(car)
-                else:
-                    start_point = car.pos
-                    endpos = gaussian_randomizer(start_point, 5, True)
-                    end_point = find_snap_coordinates(get_snap_output(endpos))
-                    req = Rebalance(simTime, start_point, end_point)
-                    car.update(simTime, logs['finishedTrips'], req=req)
-                    heapq.heappush(cars['rebalancingCars'], car)
+                cars['freeCars'].append(car)
             updatedCars.append(str(car.id))
 
             if len(cars['waitCars']) == 0:
