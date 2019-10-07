@@ -997,34 +997,37 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         logging.warning(origin.upper()+" trips: {}".format(origins[origin]))
     # Avg time for PEV to travel to request
     avgReqPickup = round(statistics.mean(pickuptimes), 1)
-    logging.warning("Average Request Pickup Time: {}".format(avgReqPickup))
+    logging.warning(f"Average Request Pickup Time: {avgReqPickup}")
     # Avg time for PEV to be assigned to request
     avgReqAssign = round(statistics.mean(assigntimes), 1)
-    logging.warning("Average Request Push Time: {}".format(avgReqAssign))
+    logging.warning(f"Average Request Push Time: {avgReqAssign}")
     # Avg travel time of each request from origin to destination
     avgReqTravel = round(statistics.mean(traveltimes), 1)
-    logging.warning("Average Request Travel Time: {}".format(avgReqTravel))
+    logging.warning(f"Average Request Travel Time: {avgReqTravel}")
     # Avg time moving with passenger
     avgCarTravel = round(statistics.mean(utiltimes), 1)
-    logging.warning("Average Car Utilization Time: {}".format(avgCarTravel))
+    logging.warning(f"Average Car Utilization Time: {avgCarTravel}")
     # Avg time moving without passenger
     avgCarNavigate = round(statistics.mean(navtimes), 1)
-    logging.warning("Average Car Navigation Time: {}".format(avgCarNavigate))
+    logging.warning(f"Average Car Navigation Time: {avgCarNavigate}")
     # Avg time spent moving
     avgCarMove = round(statistics.mean(movingtimes), 1)
-    logging.warning("Average Car Moving Time: {}".format(avgCarMove))
+    logging.warning(f"Average Car Moving Time: {avgCarMove}")
+    # Percent of daytime with passenger
+    percentTravelOverDay = round(avgCarTravel/((endHr-startHr)*3600), 1)
+    logging.warning(f"Average Time Utilization Percentage: {percentTravelOverDay}")
     # Percent of moving time with passenger
     percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
-    logging.warning("Average Car Utilization Percentage: {}".format(percentTravelOverMove))
+    logging.warning(f"Average Car Utilization Percentage: {percentTravelOverMove}")
     # Avg time spent idle
     avgCarIdle = round(statistics.mean(idletimes), 1)
-    logging.warning("Average Car Idle Time: {}".format(avgCarIdle))
+    logging.warning(f"Average Car Idle Time: {avgCarIdle}")
     # Percent of total time spent idle
     percentIdleOverTotal = round(avgCarIdle/(avgCarIdle+avgCarMove)*100, 1)
-    logging.warning("Average Car Idle Percentage: {}".format(percentIdleOverTotal))
+    logging.warning(f"Average Car Idle Percentage: {percentIdleOverTotal}")
     # Percent of total time spent moving
     percentMoveOverTotal = round(avgCarMove/(avgCarMove+avgCarIdle)*100, 1)
-    logging.warning("Average Car Movement Percentage: {}".format(percentMoveOverTotal))
+    logging.warning(f"Average Car Movement Percentage: {percentMoveOverTotal}")
 
     # waitDist is the distribution of waittimes in 5 min intervals
     waitDist = [0 for i in range(math.ceil(waittimes[-1]/60/5))]
@@ -1035,15 +1038,15 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     # Waittime analytics
     # Avg wait time
     avgReqWait = statistics.mean(waittimes)
-    logging.warning("Average Wait Time: {}".format(avgReqWait))
+    logging.warning(f"Average Wait Time: {avgReqWait}")
     # Request wait time 50th percentile
     waitTime50p = waittimes[len(waittimes)//2]
-    logging.warning("50th Percentile Wait Time: {}".format(waitTime50p))
+    logging.warning(f"50th Percentile Wait Time: {waitTime50p}")
     # Request wait time 75th percentile
     waitTime75p = waittimes[len(waittimes)*3//4]
-    logging.warning("75th Percentile Wait Time: {}".format(waitTime75p))
+    logging.warning(f"75th Percentile Wait Time: {waitTime75p}")
     # Request wait time distribution by 5 minute bins
-    logging.warning("Distribution of Wait Times by 5 min: {}".format(waitDist))
+    logging.warning(f"Distribution of Wait Times by 5 min: {waitDist}")
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
     logging.warning("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
