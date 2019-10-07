@@ -277,7 +277,7 @@ class PEV(object):
             return self.time < other.time
         except TypeError:
             logging.critical("PEV time comparison error")
-            logging.critical(f"{self.state}, {self.id}, {self.request}, {self.nav}, {other.state}, {other.id}, {other.request}, {other.nav}")
+            logging.critical(f"{self.state}, {self.id}, {self.time}, {self.request}, {self.nav}, {other.state}, {other.id}, {other.time}, {other.request}, {other.nav}")
 
     def __le__(self, other):
         return self.time <= other.time
@@ -417,6 +417,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 self.prevtime = self.time
                 self.time += round(((25-self.power/1609.344)*60*60)/25) #adds time proportional to 25 - distance left assuming charging at 25 mi/hr)
+                print("recharging", self.id, self.time)
                 self.pos = self.nav.dropoff
                 self.state = "RECHARGE"
                 return "RECHARGE"
@@ -1039,8 +1040,11 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
-            heapq.heappush(cars['freeCars'], car)
+            cars['freeCars'].append(car)
             updatedCars.append(str(car.id))
+
+            if len(cars['chargingCars']) == 0:
+                break
 
     if len(cars['rebalancingCars']) > 0:
         while simTime >= cars['rebalancingCars'][0].time:
