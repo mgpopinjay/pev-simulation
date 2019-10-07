@@ -324,7 +324,7 @@ class PEV(object):
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 # triangular distribution for loading
-                waitLoad = np.random.triangular(1,3,4)
+                waitLoad = int(np.random.triangular(1,3,4))
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.nav.dropoff
@@ -360,7 +360,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
                 # triangular distribution for unload time
-                waitLoad = np.random.triangular(1,3,6)
+                waitLoad = int(np.random.triangular(1,3,6))
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.request.dropoff
