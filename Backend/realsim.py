@@ -153,11 +153,11 @@ def runSim():
     CODE        = variables["Code"]  # RNG code
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
     BIKE_DATA = variables["Bike_Freq"]  # percentage of hubway data trips to be used
-    TAXI_DATA   = variables["Taxi_Freq"] # percentage of taxi data
+    TAXI_DATA   = variables["Taxi_Freq"]  # percentage of taxi data
     MAX_DIST    = variables["Max_Dist"] * 1609.34
     SPAWN       = variables["Spawn_Point"]
-    START_HR    = variables["Start_Hour"] # end hour of the simulation
-    END_HR      = variables["End_Hour"] # start hour of the simulation
+    START_HR    = variables["Start_Hour"]  # end hour of the simulation
+    END_HR      = variables["End_Hour"]  # start hour of the simulation
 
     logging.warning("Number of cars: " + str(NUMCARS))
     logging.warning("Code: " + str(CODE))

@@ -416,7 +416,8 @@ class PEV(object):
                 self.power -= self.nav.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 self.prevtime = self.time
-                self.time += round(((25-self.power/1609.344)*60*60)/25) #adds time proportional to 25 - distance left assuming charging at 25 mi/hr)
+                # Adds time proportional to 25 - distance left assuming charging at 25 mi/hr)
+                self.time += round(((25-self.power/1609.344)*60*60)/25)
                 print("recharging", self.id, self.time)
                 self.pos = self.nav.dropoff
                 self.state = "RECHARGE"
@@ -912,18 +913,25 @@ def find_closest_charging_station(loc):
     Find charging station closest to loc
     '''
 
-    chargingStations = [[-71.0655, 42.3550], [-71.0856, 42.3625], [-71.0551, 42.3519], [-71.0903, 42.3397]]
-    # boston commons, kendall square, south station, metro northeastern
-    tempmin = 10000.0
+    # These stations are defined in a list within realsim.py, but was recreated
+    # here instead of using the realsim.py one. I'm unsure what the intended
+    # functionality was, but I am leaving this list here for now.
+    charging_stations = [
+        [-71.0655, 42.3550],  # Boston Commons
+        [-71.0856, 42.3625],  # Kendall Square
+        [-71.0551, 42.3519],  # South Station
+        [-71.0903, 42.3397]   # Northeastern Station
+    ]
+
+    temp_min = 10000.0
     ycor = 0
     xcor = 0
-
-    for i in range(len(chargingStations)):  # finds closest charging station
-        distance = dist(chargingStations[i], loc)
-        if distance < tempmin:
-            tempmin = distance
-            ycor = chargingStations[i][0]
-            xcor = chargingStations[i][1]
+    for i in range(len(charging_stations)):  # finds closest charging station
+        distance = dist(charging_stations[i], loc)
+        if distance < temp_min:
+            temp_min = distance
+            ycor = charging_stations[i][0]
+            xcor = charging_stations[i][1]
     return ycor, xcor
 
 
@@ -960,7 +968,8 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
         deleteFromFree = []
         for i in range(len(cars['freeCars'])):
             car = cars['freeCars'][i]
-            if (CHARGING_ON and car.power <= CHARGE_LIMIT * 1609.344):  # added by me
+            if CHARGING_ON and car.power <= CHARGE_LIMIT * 1609.344:
+                # send car to charging station
                 prevState = car.state
                 resp = car.update(simTime, logs['finishedTrips'], True)
                 logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
@@ -1021,7 +1030,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
 
     if len(cars['navToChargeCars']) > 0:
         while simTime >= cars['navToChargeCars'][0].time:
-            # end navigation
+            # end navigation to charging station
             car = heapq.heappop(cars['navToChargeCars'])
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
