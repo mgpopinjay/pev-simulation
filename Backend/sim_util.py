@@ -837,6 +837,60 @@ def generate_youbike_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing
             trips.append(req)
     return trips
 
+def generate_train_requests(max_dist, frequency, starthrs, endhrs, fuzzing_enabled):
+    rider_estimate = 0.00001370577366 # 2000 riders per day will request a PEV to take them to or away from a stop at 100%
+    '''
+    Use train data to generate trips
+    '''
+    trips = []
+    sData = [] # MBTA_GTFS/stops.txt
+    gData = [] # gated_station_entries_2018.csv
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    with open(curpath+'/MBTA_GTFS/stops.txt', 'rU') as file:
+        spamreader = csv.reader(file, delimiter=',')
+        for row in spamreader:
+            sData.append(row)
+    with open(curpath+'/gated_station_entries_2018.csv', 'rU') as file:
+        spamreader = csv.reader(file, delimiter=',')
+        for row in spamreader:
+            gData.append(row)
+    current_count = 0
+    kind = "Passenger"
+    for gRow in gData[1:]:
+        pretime = gRow[3]
+        time = int(pretime[-4:-2])*60*60+int(pretime[-2:])*60
+        if time <= starthrs * 60 * 60:
+            continue
+        if time >= endhrs * 60 * 60:
+            continue
+        rand_freq = random.uniform(0, 200)
+        if rand_freq >= frequency * rider_estimate * 100:
+            continue
+        for sRow in sData[1:]:
+            if(gRow[1] == sRow[0]):
+                runtime = time - random.randint(-1, 14)
+                endpos = [sRow[7].strip(' '), sRow[6].strip(' ')]
+                start_point = endpos
+                dest = endpos
+                coin_flip = random.randint(0,1) # half of the entries will be made departures
+                if(coin_flip != True):
+                    # Arrival
+                    while start_point == dest:
+                        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 3.2, fuzzing_enabled)))
+                        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 0.8, fuzzing_enabled)))
+                    runtime -= find_total_duration(get_osrm_output(start_point, dest)) # adjusts request time to that person arrives to train station during correct gated_station_entry time period
+                else:
+                    # Departure
+                    while start_point == dest:
+                        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 0.8, fuzzing_enabled)))
+                        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 3.2, fuzzing_enabled)))
+                if(dist(start_point, dest) <= max_dist):
+                    req = Request(runtime, start_point, dest, "train", kind)
+                else:
+                    print("train long trip")
+                if req is not None and json.loads(req.osrm)["code"] == "Ok":
+                    trips.append(req)
+    return trips;
 
 def find_closest_station(loc):
     '''
