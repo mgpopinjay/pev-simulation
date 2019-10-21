@@ -61,9 +61,7 @@ FUTURE IDEAS:
 """
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
-'''
-Replace the API url with your IP address in ip.txt or the address of the OSRM server you're using
-'''
+
 LOCAL = True
 IP_PORT = None
 
@@ -75,6 +73,7 @@ if LOCAL:
     s.close()
 
 API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.project-osrm.org/'
+
 
 def get_osrm_output(start, end):
     '''
