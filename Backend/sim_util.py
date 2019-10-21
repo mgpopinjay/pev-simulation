@@ -10,6 +10,7 @@ import os
 import heapq
 import statistics
 import logging
+import socket
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 """
@@ -64,10 +65,16 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 Replace the API url with your IP address or the address of the OSRM server you're using
 '''
 LOCAL = True
-# API_BASE = 'http://10.0.6.70:9002/' if LOCAL else 'https://router.project-osrm.org/'
-# API_BASE = 'http://18.20.141.184:9002/' if LOCAL else 'https://router.project-osrm.org/'
-API_BASE = 'http://18.20.190.85:9002/' if LOCAL else 'https://router.project-osrm.org/'
+IP_PORT = None
 
+# Extract the IP address of `LOCAL` is on
+if LOCAL:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    IP_PORT = s.getsockname()[0]
+    s.close()
+
+API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.project-osrm.org/'
 
 def get_osrm_output(start, end):
     '''
@@ -191,10 +198,10 @@ class Request(object):
         return self.original_time >= other.original_time
 
     def __repr__(self):
-        return f'[type: {type.self}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}]'
+        return f'[type: {type(self)}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}]'
 
     def __str__(self):
-        return f'Print Method: type: {type.self}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}'
+        return f'Print Method: type: {type(self)}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}'
 
 
 class Navigation(Request):
@@ -272,7 +279,7 @@ class PEV(object):
             return self.time < other.time
         except TypeError:
             logging.critical("PEV time comparison error")
-            logging.critical(f"{self.state}, {self.id}, {self.req}, {self.nav}, {other.state}, {other.id}, {other.req}, {other.nav}")
+            logging.critical(f"{self.state}, {self.id}, {self.request}, {self.nav}, {other.state}, {other.id}, {other.request}, {other.nav}")
 
     def __le__(self, other):
         return self.time <= other.time
@@ -387,16 +394,7 @@ class PEV(object):
                 return f"Waiting for dropoff at {self.pos}."
 
         elif self.state == "REBALANCE":
-            if simTime >= self.time:
-                self.movingtime += self.nav.traveltime
-                self.movingspace += self.nav.traveldist
-                assignFinishedTrip(finishedTrips, self.id, self.nav)
-                self.request = Idle(self.time, self.pos)
-                self.prevtime = self.time
-                self.time = None
-                self.state = "IDLE"
-                return "IDLE"
-            elif type(req) == Request:
+            if type(req) == Request:
                 self.updateLocation(req.time)
                 reb = self.nav
                 reb.cut_short = True
@@ -414,6 +412,15 @@ class PEV(object):
                 self.time = req.time + self.nav.traveltime
                 self.state = "NAV"
                 return "NAV"
+            elif simTime >= self.time:
+                self.movingtime += self.nav.traveltime
+                self.movingspace += self.nav.traveldist
+                assignFinishedTrip(finishedTrips, self.id, self.nav)
+                self.request = Idle(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
+                self.state = "IDLE"
+                return "IDLE"
             else:
                 self.updateLocation(simTime)
                 return f"Currently at {self.pos} on the way to {self.nav.dropoff}."
