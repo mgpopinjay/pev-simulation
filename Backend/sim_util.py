@@ -68,6 +68,7 @@ with open('Backend/ip.txt', 'r') as f:
     ip = f.readline()
 API_BASE = f'http://{ip}:9002/' if LOCAL else 'https://router.project-osrm.org/'
 
+hubstations = {}
 
 def get_osrm_output(start, end):
     '''
@@ -728,6 +729,36 @@ def generate_japan_trips(month, day, year):
             stationdid = row[
 '''
 
+def generate_PEV_spawns(mapName):
+    '''
+    Input: name of city
+    Output 1: list of coordinates of spawn points in (lon,lat)
+    Output 2: list of weights between 0-1, chance to spawn
+    '''
+    LAT = 2
+    LON = 3
+    EXPOSED = 5
+    SPACE = 6
+    coords = []
+    dockSpace = []
+    spaceTotal = 0
+    data = []
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    if mapName == "Taipei":
+        return [121.502746, 25.031213], [1]
+    with open(curpath+'/Data/Hubway_Stations_as_of_July_2017.csv', 'rU') as file:
+        spamreader = csv.reader(file, delimiter=',', quotechar='|')
+        for row in spamreader:
+            data.append(row)
+    print(data)
+    for row in data[1:]:
+        if row[EXPOSED] == '1':
+            coords.append((row[LON], row[LAT]))
+            dockSpace.append(int(row[SPACE]))
+            spaceTotal += int(row[SPACE])
+    weights = [s / spaceTotal for s in dockSpace]
+    return coords, weights
+
 def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
     '''
     '''
@@ -766,24 +797,6 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_en
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             trips.append(req)
     return trips
-
-
-hubstations = {}  # global variable for Hubway stations dictionary
-#[0]tripduration
-#[1]starttime
-#[2]stoptime
-#[3]start station id
-#[4]start station name
-#[5]start station latitude
-#[6]start station longitude
-#[7]end station id
-#[8]end station name
-#[9]end station latitude
-#[10]end station longitude
-#[11]bikeid
-#[12]usertype
-#[13]birth year
-#[14]gender
 
 def generate_hubway_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
     '''
