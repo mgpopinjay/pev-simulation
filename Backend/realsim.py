@@ -72,38 +72,6 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, train
     heapq.heapify(requests)  # sort requests by start time
     return requests
 
-def map2PEVCoords(mapName):
-    '''
-    Take city name as input and returns a list of spawn point coordinates
-    Temporary solution until coordinate selection is implemented in frontend
-    Weights will be used to place more cars at popular hubs
-    '''
-    if mapName == "Boston":
-        coords = [
-            [-71.093196, 42.358296],
-            [-71.088376, 42.362249],
-            [-71.085130, 42.362500],
-            [-71.108264, 42.350325],
-            [-71.097831, 42.344706],
-            [-71.088076, 42.347284],
-            [-71.086029, 42.344000],
-            [-71.072874, 42.355593],
-            [-71.070359, 42.352096],
-            [-71.066270, 42.351172],
-            [-71.062733, 42.352414],
-            [-71.063130, 42.354835],
-            [-71.100281, 42.363463],
-        ]
-        weights = []
-
-    elif mapName == "Taipei":
-        coords = [
-            [121.502746, 25.031213]
-        ]
-        weights = []
-
-    return coords, weights
-
 
 def populatePEVs(numCars, totalCars, freeCars, coords, weights):
     '''
@@ -114,8 +82,8 @@ def populatePEVs(numCars, totalCars, freeCars, coords, weights):
     for s in coords:
         spawnPoints.append(util.find_snap_coordinates(util.get_snap_output(s)))
     for i in range(numCars):
-        p = spawnPoints[i % len(spawnPoints)]  # Picks spawn points for cars in a round robin order, in future will consider weights
-        car = util.PEV(i, p)
+        p = np.random.choice(len(spawnPoints), p=weights)  # picks a random spawn point based on their weights
+        car = util.PEV(i, spawnPoints[p])
         freeCars.append(car)
         totalCars[i] = car
 
@@ -225,7 +193,9 @@ def runSim():
 
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
-    c, w = map2PEVCoords(MAPSELECT)  # Temporary solution for spawn point input
+    c, w = util.generate_PEV_spawns(MAPSELECT)
+    print(c)
+    print(w)
     populatePEVs(NUMCARS, totalCars, cars['freeCars'], c, w)
 
     while simRunning:
