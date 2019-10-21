@@ -37,6 +37,11 @@ var taxi_triphr = {
     "Taipei": 0
 }
 
+var train_triphr = {
+	"Boston": 2000 / 24, // total number of people = 145,923,904
+	"Taipei": 0
+}
+
 ///////////////////////////////////////////////////////////
 ////////////////////                 //////////////////////
 ////////////////////  Slider inputs  //////////////////////
@@ -48,6 +53,7 @@ var slider_fleetSize = 20;
 var slider_bike = 20;
 var slider_random = 20;
 var slider_taxi = 20;
+var slider_train = 20;
 var slider_maxDist = 5;
 // var slider_hrs = 3;
 var slider_startHrs = 6;
@@ -155,6 +161,22 @@ $(function() {
     $("#parcelAmount").val($("#sliderParcelAmount").slider("value") + " /hr");
 });
 
+$(function() {
+	$("#slidertrain").slider({
+		value: 20,
+		min: 0,
+		max: 100,
+		step: 10,
+		slide: function(event, ui) {
+			let trips = Math.round(ui.value / 100 * train_triphr[mapList[mapID]] * timeLength)
+			$("#traindata").val(ui.value + " %" + " (" + trips + " trips)");
+			slider_train = ui.value;
+		}
+	});
+	$("#traindata").val($("#slidertrain").slider("value") + " %" + " (" + Math.round(.2 * train_triphr[mapList[mapID]] * timeLength) + " trips)");
+});
+
+// $(function() {
 // $(function() {
 //     $("#sliderhrs").slider({
 //         value: 3,
@@ -186,6 +208,7 @@ $(function() {
             $("#bikedata").val(slider_bike + " %" + " (" + Math.round(slider_bike / 100 * bike_triphr[mapList[mapID]] * timeLength) + " trips)");
             $("#randomdata").val(slider_random + " %" + " (" + Math.round(slider_random / 100 * 60 * timeLength) + " trips)");
             $("#taxidata").val(slider_taxi + " %" + " (" + Math.round(slider_taxi / 100 * taxi_triphr[mapList[mapID]] * timeLength) + " trips)");
+						$("#traindata").val(slider_train + " %" + " (" + Math.round(slider_train / 100 * train_triphr[mapList[mapID]] * timeLength) + " trips)");
         }
     });
     $("#hours").val($("#slider-time").slider("values", 0) +
@@ -236,6 +259,7 @@ function fleet_sim() {
     var bike_freq = slider_bike;
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
+		var train_freq = slider_train;
     var max_dist = slider_maxDist;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
@@ -252,6 +276,7 @@ function fleet_sim() {
         bike: bike_freq,
         random: random_freq,
         taxi: taxi_freq,
+				train: train_freq,
         max_dist: max_dist,
         code: code,
         mapselect: mapSelect,
@@ -294,8 +319,8 @@ function createTrips(data) {
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
-        <td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random}</td>
-        <td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}</td>
+				<td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random+data['outputs']['TRIPS'].train}</td>
+				<td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}  /  ${data['outputs']['TRIPS'].train}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
         <td id="trial-${TRIAL}-pickup">0 min</td>
         <td id="trial-${TRIAL}-assign">0 min</td>

@@ -53,6 +53,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             randomFreq = int(args["random"])
             bikeFreq = int(args["bike"])
             taxiFreq = int(args["taxi"])
+            trainFreq = int(args["train"])
             startHrs = int(args["starthrs"])
             endHrs = int(args["endhrs"])
             mapSelect = args["mapselect"]
@@ -65,6 +66,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "Bike_Freq": bikeFreq,
                 "Random_Freq": randomFreq,
                 "Taxi_Freq": taxiFreq,
+                "Train_Freq": trainFreq,
                 "Max_Dist": maxDist,
                 "Spawn_Point": 0,
                 "Start_Hour": startHrs,
