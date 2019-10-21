@@ -42,7 +42,7 @@ def loadVariables():
         infile.write(str(sim_id + 1))
     return json.load(open(os.path.dirname(curpath)+"/Backend/Inputs/"+filename))
 
-def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, startHr, endHr, fuzzing, maxDist):
+def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, trainRatio, startHr, endHr, fuzzing, maxDist):
     '''
     Populate request list by sampling datasets
     '''
@@ -55,6 +55,8 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, start
         if bikeRatio:
             res = util.generate_hubway_trips(maxDist, 0, bikeRatio, startHr, endHr, fuzzing)
             requests += res[0]
+        if trainRatio:
+            requests += util.generate_train_requests(maxDist, trainRatio, startHr, endHr, True)
 
     elif mapName == "Taipei":
         if randomRatio:
@@ -152,6 +154,7 @@ def runSim():
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
     BIKE_DATA = variables["Bike_Freq"]  # percentage of hubway data trips to be used
     TAXI_DATA   = variables["Taxi_Freq"] # percentage of taxi data
+    TRAIN_DATA  = variables["Train_Freq"] # percentage of train data
     MAX_DIST    = variables["Max_Dist"] * 1609.34
     SPAWN       = variables["Spawn_Point"]
     START_HR    = variables["Start_Hour"] # end hour of the simulation
@@ -214,7 +217,7 @@ def runSim():
     simTime = START_HR * 3600  # Set simulator time to start time in secs
     simEndTime = END_HR * 3600
 
-    populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
+    populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
     c, w = map2PEVCoords(MAPSELECT)  # Temporary solution for spawn point input
     populatePEVs(NUMCARS, totalCars, cars['freeCars'], c, w)
@@ -236,6 +239,7 @@ def runSim():
     logging.warning("Assignment Type: {}".format(assignType))
     logging.warning("Bike Ratio: {}".format(BIKE_DATA))
     logging.warning("Taxi Ratio: {}".format(TAXI_DATA))
+    logging.warning("Train Ratio: {}".format(TRAIN_DATA))
     logging.warning("Random Ratio: {}".format(RANDOM_DATA))
 
     """
@@ -251,6 +255,7 @@ def runSim():
         "SPAWN_POINT": SPAWN_POINT,
         "REBALANCE_ON": REBALANCE_ON,
         "TAXI_DATA": TAXI_DATA,
+        "TRAIN_DATA": TRAIN_DATA,
         "BIKE_DATA": BIKE_DATA,
         "RANDOM_DATA": RANDOM_DATA,
         "START_HR": START_HR,
