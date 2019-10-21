@@ -62,7 +62,7 @@ FUTURE IDEAS:
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 '''
-Replace the API url with your IP address or the address of the OSRM server you're using
+Replace the API url with your IP address in ip.txt or the address of the OSRM server you're using
 '''
 LOCAL = True
 IP_PORT = None
@@ -330,7 +330,7 @@ class PEV(object):
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 # triangular distribution for loading
-                waitLoad = np.random.triangular(1,3,4)
+                waitLoad = int(np.random.triangular(1,3,4))
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.nav.dropoff
@@ -366,7 +366,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
                 # triangular distribution for unload time
-                waitLoad = np.random.triangular(1,3,6)
+                waitLoad = int(np.random.triangular(1,3,6))
                 self.prevtime = self.time
                 self.time += waitLoad
                 self.pos = self.request.dropoff
@@ -843,6 +843,60 @@ def generate_youbike_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing
             trips.append(req)
     return trips
 
+def generate_train_requests(max_dist, frequency, starthrs, endhrs, fuzzing_enabled):
+    rider_estimate = 0.00001370577366 # 2000 riders per day will request a PEV to take them to or away from a stop at 100%
+    '''
+    Use train data to generate trips
+    '''
+    trips = []
+    sData = [] # MBTA_GTFS/stops.txt
+    gData = [] # gated_station_entries_2018.csv
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    with open(curpath+'/MBTA_GTFS/stops.txt', 'rU') as file:
+        spamreader = csv.reader(file, delimiter=',')
+        for row in spamreader:
+            sData.append(row)
+    with open(curpath+'/gated_station_entries_2018.csv', 'rU') as file:
+        spamreader = csv.reader(file, delimiter=',')
+        for row in spamreader:
+            gData.append(row)
+    current_count = 0
+    kind = "Passenger"
+    for gRow in gData[1:]:
+        pretime = gRow[3]
+        time = int(pretime[-4:-2])*60*60+int(pretime[-2:])*60
+        if time <= starthrs * 60 * 60:
+            continue
+        if time >= endhrs * 60 * 60:
+            continue
+        rand_freq = random.uniform(0, 200)
+        if rand_freq >= frequency * rider_estimate * 100:
+            continue
+        for sRow in sData[1:]:
+            if(gRow[1] == sRow[0]):
+                runtime = time - random.randint(-1, 14)
+                endpos = [sRow[7].strip(' '), sRow[6].strip(' ')]
+                start_point = endpos
+                dest = endpos
+                coin_flip = random.randint(0,1) # half of the entries will be made departures
+                if(coin_flip != True):
+                    # Arrival
+                    while start_point == dest:
+                        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 3.2, fuzzing_enabled)))
+                        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 0.8, fuzzing_enabled)))
+                    runtime -= find_total_duration(get_osrm_output(start_point, dest)) # adjusts request time to that person arrives to train station during correct gated_station_entry time period
+                else:
+                    # Departure
+                    while start_point == dest:
+                        start_point = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 0.8, fuzzing_enabled)))
+                        dest = find_snap_coordinates(get_snap_output(gaussian_randomizer(endpos, 3.2, fuzzing_enabled)))
+                if(dist(start_point, dest) <= max_dist):
+                    req = Request(runtime, start_point, dest, "train", kind)
+                else:
+                    print("train long trip")
+                if req is not None and json.loads(req.osrm)["code"] == "Ok":
+                    trips.append(req)
+    return trips;
 
 def find_closest_station(loc):
     '''
@@ -1003,34 +1057,37 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         logging.warning(origin.upper()+" trips: {}".format(origins[origin]))
     # Avg time for PEV to travel to request
     avgReqPickup = round(statistics.mean(pickuptimes), 1)
-    logging.warning("Average Request Pickup Time: {}".format(avgReqPickup))
+    logging.warning(f"Average Request Pickup Time: {avgReqPickup}")
     # Avg time for PEV to be assigned to request
     avgReqAssign = round(statistics.mean(assigntimes), 1)
-    logging.warning("Average Request Push Time: {}".format(avgReqAssign))
+    logging.warning(f"Average Request Push Time: {avgReqAssign}")
     # Avg travel time of each request from origin to destination
     avgReqTravel = round(statistics.mean(traveltimes), 1)
-    logging.warning("Average Request Travel Time: {}".format(avgReqTravel))
+    logging.warning(f"Average Request Travel Time: {avgReqTravel}")
     # Avg time moving with passenger
     avgCarTravel = round(statistics.mean(utiltimes), 1)
-    logging.warning("Average Car Utilization Time: {}".format(avgCarTravel))
+    logging.warning(f"Average Car Utilization Time: {avgCarTravel}")
     # Avg time moving without passenger
     avgCarNavigate = round(statistics.mean(navtimes), 1)
-    logging.warning("Average Car Navigation Time: {}".format(avgCarNavigate))
+    logging.warning(f"Average Car Navigation Time: {avgCarNavigate}")
     # Avg time spent moving
     avgCarMove = round(statistics.mean(movingtimes), 1)
-    logging.warning("Average Car Moving Time: {}".format(avgCarMove))
+    logging.warning(f"Average Car Moving Time: {avgCarMove}")
+    # Percent of daytime with passenger
+    percentTravelOverDay = round(avgCarTravel/((endHr-startHr)*3600)*100, 1)
+    logging.warning(f"Average Time Utilization Percentage: {percentTravelOverDay}")
     # Percent of moving time with passenger
     percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
-    logging.warning("Average Car Utilization Percentage: {}".format(percentTravelOverMove))
+    logging.warning(f"Average Car Utilization Percentage: {percentTravelOverMove}")
     # Avg time spent idle
     avgCarIdle = round(statistics.mean(idletimes), 1)
-    logging.warning("Average Car Idle Time: {}".format(avgCarIdle))
+    logging.warning(f"Average Car Idle Time: {avgCarIdle}")
     # Percent of total time spent idle
     percentIdleOverTotal = round(avgCarIdle/(avgCarIdle+avgCarMove)*100, 1)
-    logging.warning("Average Car Idle Percentage: {}".format(percentIdleOverTotal))
+    logging.warning(f"Average Car Idle Percentage: {percentIdleOverTotal}")
     # Percent of total time spent moving
     percentMoveOverTotal = round(avgCarMove/(avgCarMove+avgCarIdle)*100, 1)
-    logging.warning("Average Car Movement Percentage: {}".format(percentMoveOverTotal))
+    logging.warning(f"Average Car Movement Percentage: {percentMoveOverTotal}")
 
     # waitDist is the distribution of waittimes in 5 min intervals
     waitDist = [0 for i in range(math.ceil(waittimes[-1]/60/5))]
@@ -1041,15 +1098,15 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     # Waittime analytics
     # Avg wait time
     avgReqWait = statistics.mean(waittimes)
-    logging.warning("Average Wait Time: {}".format(avgReqWait))
+    logging.warning(f"Average Wait Time: {avgReqWait}")
     # Request wait time 50th percentile
     waitTime50p = waittimes[len(waittimes)//2]
-    logging.warning("50th Percentile Wait Time: {}".format(waitTime50p))
+    logging.warning(f"50th Percentile Wait Time: {waitTime50p}")
     # Request wait time 75th percentile
     waitTime75p = waittimes[len(waittimes)*3//4]
-    logging.warning("75th Percentile Wait Time: {}".format(waitTime75p))
+    logging.warning(f"75th Percentile Wait Time: {waitTime75p}")
     # Request wait time distribution by 5 minute bins
-    logging.warning("Distribution of Wait Times by 5 min: {}".format(waitDist))
+    logging.warning(f"Distribution of Wait Times by 5 min: {waitDist}")
 
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
     logging.warning("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
