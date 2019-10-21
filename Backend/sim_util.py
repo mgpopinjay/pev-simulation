@@ -284,11 +284,7 @@ class PEV(object):
             return self.time < other.time
         except TypeError:
             logging.critical("PEV time comparison error")
-<<<<<<< HEAD
-            logging.critical(f"{self.state}, {self.id}, {self.request}, {self.nav}, {other.state}, {other.id}, {other.request}, {other.nav}")
-=======
             logging.critical(f"{self.state}, {self.id}, {self.time}, {self.request}, {self.nav}, {other.state}, {other.id}, {other.time}, {other.request}, {other.nav}")
->>>>>>> b993f0e2ccb1bc27a7a07ee8c992e42f22712880
 
     def __le__(self, other):
         return self.time <= other.time
