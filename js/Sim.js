@@ -373,6 +373,13 @@ function timeStep() {
                 trip['start_point'],
                 trip['duration'],
             )
+        }
+        else if (trip['type'] == "Recharge") {
+            // EDIT TO NEW FUNCTION FOR RECHARGE VISUAL
+            idleCar(
+                trip['start_point'],
+                trip['duration'],
+            )
         } else {
             startTrip(
                 trip['start_point'],
@@ -438,6 +445,14 @@ function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, assignt
     let reqMark;
     switch (type) {
         case 'Navigation':
+            color = "#B2B2B2"
+            icon = L.icon({
+                iconUrl: './img/gray_circle.png',
+                iconSize: [15, 15],
+            });
+            break;
+        case 'NavToCharge':
+            // EDIT TO NEW COLOR
             color = "#B2B2B2"
             icon = L.icon({
                 iconUrl: './img/gray_circle.png',

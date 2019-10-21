@@ -31,6 +31,8 @@ TODO LIST:
 - Speed up by preprocessing hubway data in exterior file
 """
 
+chargingStations = [[-71.0655, 42.3550], [-71.0856, 42.3625], [-71.0551, 42.3519], [-71.0903, 42.3397]]
+
 def loadVariables():
     '''
     Load the simulation variables from file
@@ -149,16 +151,16 @@ def runSim():
     TUNING VARIABLES
     """
     MAPSELECT   = variables["MapSelect"]
-    NUMCARS     = variables["Fleet_Size"]  # number of vehicles
-    CODE        = variables["Code"]  # RNG code
+    NUMCARS     = variables["Fleet_Size"]   # number of vehicles
+    CODE        = variables["Code"]         # RNG code
     RANDOM_DATA = variables["Random_Freq"]  # percentage of random trips to be generated
-    BIKE_DATA = variables["Bike_Freq"]  # percentage of hubway data trips to be used
-    TAXI_DATA   = variables["Taxi_Freq"] # percentage of taxi data
-    TRAIN_DATA  = variables["Train_Freq"] # percentage of train data
+    BIKE_DATA   = variables["Bike_Freq"]    # percentage of hubway data trips to be used
+    TAXI_DATA   = variables["Taxi_Freq"]    # percentage of taxi data
+    TRAIN_DATA  = variables["Train_Freq"]   # percentage of train data
     MAX_DIST    = variables["Max_Dist"] * 1609.34
     SPAWN       = variables["Spawn_Point"]
-    START_HR    = variables["Start_Hour"] # end hour of the simulation
-    END_HR      = variables["End_Hour"] # start hour of the simulation
+    START_HR    = variables["Start_Hour"]   # end hour of the simulation
+    END_HR      = variables["End_Hour"]     # start hour of the simulation
 
     logging.warning("Number of cars: " + str(NUMCARS))
     logging.warning("Code: " + str(CODE))
@@ -167,10 +169,11 @@ def runSim():
     KIND_RATIO = 70  # percent of trips that are passengers
     MADE_FILE = True  # make the visualizer JSON
     RANDOM_START = SPAWN
-    CHARGING = False  # whether or not to use recharging model
+    CHARGING_ON = True  # whether or not to use recharging model
     CHARGE_DISTANCE = MAX_DIST+util.max_stat_dist()
     CHARGE_RANGE = 15000.0
     CHARGE_TIME = 30
+    CHARGE_LIMIT = 5
     REBALANCE_ON = False  # whether to rebalance
     K = 20  # number of clusters for rebalancing
     ALPHA = .1  # proportion of free cars that perform rebalancing
@@ -191,7 +194,9 @@ def runSim():
         'navCars': [],
         'waitCars': [],
         'busyCars': [],
-        'rebalancingCars': []
+        'rebalancingCars': [],
+        'navToChargeCars': [],
+        'chargingCars': []
     }
     assignType = "closestCar"
 
@@ -224,7 +229,7 @@ def runSim():
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests})
+        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests}, CHARGING_ON, CHARGE_LIMIT)
         updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips})
         if len(requests) > 0:
             rebalancePEVs(simTime, cars, finishedTrips)
