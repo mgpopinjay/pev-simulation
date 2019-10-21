@@ -1,6 +1,7 @@
 import heapq
 from . import sim_util as util
 import logging
+import random
 logging.basicConfig(level=logging.INFO, format='%(%(levelname)s - %(message)s')
 
 def assignRequest(simTime, timeStep, cars, requests, logs):
@@ -20,10 +21,15 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
         Fix this overcomplicated code by using remove instead of del
         However remove causes issues where cars are in the wrong states and/or lists
         '''
+        ncars_consider = 1
+
         if len(cars['freeCars']) > 0:
-            minCarIndexF, minCarF = min(enumerate(cars['freeCars']), key=lambda pair: util.dist(pair[1].pos, req.pickup))
+            minCarLs = sorted(list(enumerate(cars['freeCars'])), key=lambda pair: util.dist(pair[1].pos, req.pickup))[:ncars_consider]
+            minCarIndexF, minCarF = random.choice(minCarLs)
         if len(cars['rebalancingCars']) > 0:
-            minCarIndexR, minCarR = min(enumerate(cars['rebalancingCars']), key=lambda pair: util.dist(pair[1].pos, req.pickup))
+            minCarLs = sorted(list(enumerate(cars['rebalancingCars'])), key=lambda pair: util.dist(pair[1].pos, req.pickup))[:ncars_consider]
+            minCarIndexR, minCarR = random.choice(minCarLs)
+ 
         if minCarIndexF is not None and minCarIndexR is not None:
             if util.dist(minCarF.pos, req.pickup) <= util.dist(minCarR.pos, req.pickup):
                 minCar = minCarF
@@ -39,6 +45,7 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
             del cars['rebalancingCars'][minCarIndexR]
         else:
             logging.warning("minCar is None!")
+        
         prevState = minCar.state
         resp = minCar.update(simTime, logs['finishedTrips'], req=req)
         logging.info(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")

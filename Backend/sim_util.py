@@ -10,6 +10,7 @@ import os
 import heapq
 import statistics
 import logging
+import socket
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 """
@@ -60,13 +61,18 @@ FUTURE IDEAS:
 """
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
-'''
-Replace the API url with your IP address in ip.txt or the address of the OSRM server you're using
-'''
+
 LOCAL = True
-with open('Backend/ip.txt', 'r') as f:
-    ip = f.readline()
-API_BASE = f'http://{ip}:9002/' if LOCAL else 'https://router.project-osrm.org/'
+IP_PORT = None
+
+# Extract the IP address of `LOCAL` is on
+if LOCAL:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    IP_PORT = s.getsockname()[0]
+    s.close()
+
+API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.project-osrm.org/'
 
 hubstations = {}
 

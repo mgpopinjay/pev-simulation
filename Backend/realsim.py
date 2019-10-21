@@ -49,6 +49,7 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, train
     Populate request list by sampling datasets
     '''
     logging.warning("Populating requests")
+
     if mapName == "Boston":
         if randomRatio:
             requests += util.generate_random_requests(["-71.05888", "42.360082"], 50, randomRatio, startHr, endHr, 3.2, True)
