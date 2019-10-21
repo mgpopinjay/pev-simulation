@@ -208,6 +208,17 @@ body {
     font-weight: 600
 }
 
+div.info.legend.leaflet-control {
+    margin: 10px;
+    color: white;
+    text-align: right;
+}
+
+div.info.legend.leaflet-control i {
+    padding: 3px;
+    width: 80px;
+}
+
 
 /* RESULTS */
 
