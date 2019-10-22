@@ -59,6 +59,13 @@ FUTURE IDEAS:
 """
 
 """
+TRAIN REQUEST LOGIC:
+- gated_station_entries_2018.csv: has 145,923,904 entries to train stations in total. Each line represents the number of people who entered a single train station during a 15 minute time interval.
+- the generate_train_requests function goes through each entry and assigns a 1.370577366E-3 percentage chance multiplied by the user input of it being made a request
+- then it assigns a 50% chance of it being made an arrival request or a departure request
+"""
+
+"""
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 
@@ -937,7 +944,7 @@ def generate_train_requests(max_dist, frequency, starthrs, endhrs, fuzzing_enabl
             continue
         if time >= endhrs * 60 * 60:
             continue
-        rand_freq = random.uniform(0, 200)
+        rand_freq = random.uniform(0, 100)
         if rand_freq >= frequency * rider_estimate * 100:
             continue
         for sRow in sData[1:]:
