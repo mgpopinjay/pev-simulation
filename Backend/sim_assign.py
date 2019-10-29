@@ -1,81 +1,76 @@
 import heapq
 from . import sim_util as util
+import logging
+import random
+logging.basicConfig(level=logging.INFO, format='%(%(levelname)s - %(message)s')
 
-def assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips):
-    tempFreeCars = rebalancingCars + freeCars
+def assignRequest(simTime, timeStep, cars, requests, logs):
+    '''
+    Current implementation to assign requests
+    Picks the nearest car for each request
+    Will be superceded by a smarter algorithm
+    '''
+    for car in cars['rebalancingCars']:  # Update position of rebalancing cars before calculating min distance
+        car.updateLocation(simTime)
+    tempFreeCars = len(cars['rebalancingCars']) + len(cars['freeCars'])
     req = heapq.heappop(requests)
+    minCar, minCarIndexF, minCarF, minCarIndexR, minCarR = (None, None, None, None, None)
+    if tempFreeCars > 0:
+        '''
+        Loop through free and rebalancing cars to find the car closest to the pickup location
+        Fix this overcomplicated code by using remove instead of del
+        However remove causes issues where cars are in the wrong states and/or lists
+        '''
+        ncars_consider = 1
 
-    if len(tempFreeCars) > 0:
-        # loop through free_cars to find the car with minimum linear distance to pickup
-        minCarIndex, minCar = min(enumerate(freeCars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
-        del freeCars[minCarIndex]
-        idl = minCar.end_idle(req)
-        idleTrips.append(idl)
-        util.assignFinishedTrip(finishedTrips, minCar, idl)
-        heapq.heappush(busyCars, minCar)  # move car to busy list
+        if len(cars['freeCars']) > 0:
+            minCarLs = sorted(list(enumerate(cars['freeCars'])), key=lambda pair: util.dist(pair[1].pos, req.pickup))[:ncars_consider]
+            minCarIndexF, minCarF = random.choice(minCarLs)
+        if len(cars['rebalancingCars']) > 0:
+            minCarLs = sorted(list(enumerate(cars['rebalancingCars'])), key=lambda pair: util.dist(pair[1].pos, req.pickup))[:ncars_consider]
+            minCarIndexR, minCarR = random.choice(minCarLs)
+ 
+        if minCarIndexF is not None and minCarIndexR is not None:
+            if util.dist(minCarF.pos, req.pickup) <= util.dist(minCarR.pos, req.pickup):
+                minCar = minCarF
+                del cars['freeCars'][minCarIndexF]
+            else:
+                minCar = minCarR
+                del cars['rebalancingCars'][minCarIndexR]
+        elif minCarIndexF is not None:
+            minCar = minCarF
+            del cars['freeCars'][minCarIndexF]
+        elif minCarIndexR is not None:
+            minCar = minCarR
+            del cars['rebalancingCars'][minCarIndexR]
+        else:
+            logging.warning("minCar is None!")
+        
+        prevState = minCar.state
+        resp = minCar.update(simTime, logs['finishedTrips'], req=req)
+        logging.info(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")
+        heapq.heappush(cars['navCars'], minCar)  # move car to busy list
         return "Assigned request to car: {}".format(minCar.id)
 
-    else:  # there are no free cars
-        # Try implementing system where pushed back requests are not equal
-        req.pushtime += 1.0  # increment time by 1 second
-        req.time += 1.0  # move the request time forward until a car is free to claim it
+    else:  # If there are no available cars, push back their request time by a second/specified time step
+        req.assigntime += timeStep
+        req.time += timeStep
         heapq.heappush(requests, req)
         return "Pushed back request"
 
-def updateRequests(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips):
+def updateRequests(simTime, timeStep, cars, requests, logs):
+    '''
+    Wrapper function for assignRequest
+    '''
     count = 0
     while len(requests) > 0:
         req = requests[0]
         if req.time <= simTime:
-            assignRequest(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips)
+            assignRequest(simTime, timeStep, cars, requests, logs)
             count += 1
         else:
             break
     return "Assigned {} requests".format(count)
 
-def shortestTrip(reqQueue, freeCars):
-    shortestTrips = []
-    for req in reqQueue:
-        minCarIndex, minCar = min(enumerate(freeCars), key=lambda pair: util.dist(pair[1].pos, req.pickup))
-        d = util.dist(minCar.pos, req.pickup)
-        shortestTrips.append([d, minCarIndex])
-    minReqIndex, minData = min(enumerate(shortestTrips), key=lambda lst: lst[0])
-    return minReqIndex, minData[1]
 
-def updateRequests2(freeCars, rebalancingCars, busyCars, simTime, requests, finishedTrips, idleTrips):
-    interval = 30  # Delay in seconds
-    if len(requests) == 0:
-        return "No requests remaining"
-    count = 0
-    reqQueue = []
-    req = requests[0]
-    if req.time + interval <= simTime:  # Wait for [interval] second window
-        if len(freeCars) > 0:  # Check for available cars
-            # Get all requests within 5 second window, up to num of free cars
-            # len(reqQueue) is always <= len(freeCars)
-            while len(requests) > 0 and len(reqQueue) < len(freeCars):
-                req = heapq.heappop(requests)
-                if req.time <= simTime:  # Move request to queue
-                    reqQueue.append(req)
-                else:  # Put back into requests and end while loop
-                    heapq.heappush(requests, req)
-                    break
-            while len(reqQueue) > 0:
-                minReqIndex, minCarIndex = shortestTrip(reqQueue, freeCars)
-                req = reqQueue.pop(minReqIndex)
-                req.time = simTime
-                req.pushtime = simTime - req.original_time
-                minCar = freeCars.pop(minCarIndex)
-                idl = minCar.end_idle(req)
-                idleTrips.append(idl)
-                util.assignFinishedTrip(finishedTrips, minCar, idl)
-                heapq.heappush(busyCars, minCar)
-                count += 1
-            return "Assigned {} requests".format(count)
-        else:
-            return "Waiting for free cars to update requests"
-    else:
-        return "Waiting for {} seconds to update requests".format(round(req.time + interval - simTime, 1))
-
-
-assignMethods = {"greedy": updateRequests, "interval": updateRequests2}
+assignMethods = {"closestCar": updateRequests}

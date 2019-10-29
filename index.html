@@ -78,6 +78,9 @@
      </tr>
    </table>
 </div> -->
+    <p id="debugclock" style="color:white">0</p>
+    <p id="debugtripcount" style="color:white">0</p>
+    <!-- <p id="debugspeed" style="color:white">600</p> -->
     <div id="controls">
         <div id="title-outer">
             <h1 style="font-style:italic">PEV SimApp V4</h1>
@@ -117,7 +120,7 @@
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Number of PEVs</span>
-                        <i class="fa fa-rocket"></i>Fleet Size:
+                        <i class="fa fa-rocket"></i> Fleet Size:
                     </label>
                     <input type="text" id="fleet">
                 </p>
@@ -130,7 +133,7 @@
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Maximum length of each trip</span>
-                        <i class="fas fa-road"></i>Max Distance
+                        <i class="fas fa-road"></i> Max Distance
                     </label>
                     <input type="text" id="maxdist">
                 </p>
@@ -141,7 +144,7 @@
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">2012 Taxi data</span>
-                        <i class="fas fa-taxi"></i>Taxi Data
+                        <i class="fas fa-taxi"></i> Taxi Data
                     </label>
                     <input type="text" id="taxidata">
                 </p>
@@ -149,15 +152,23 @@
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext" style="width:240px">2012 Hubway data from http://hubwaydatachallenge.org/trip-history-data/</span>
-                        <i class="fas fa-bicycle"></i>Hubway Data
+                        <i class="fas fa-bicycle"></i> Bike Data
                     </label>
-                    <input type="text" id="hubwaydata">
+                    <input type="text" id="bikedata">
                 </p>
-                <div id="sliderhubway" style="margin-top: -10px"></div>
+                <div id="sliderbike" style="margin-top: -10px"></div>
+                <p class="slider-label">
+                    <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">MBTA data from https://github.com/mbta/gtfs-documentation/</span>
+                        <i class="fas fa-train"></i> Train Data
+                    </label>
+                    <input type="text" id="traindata">
+                </p>
+								<div id="slidertrain" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Randomly generated jobs</span>
-                        <i class="fas fa-globe"></i>Random Data
+                        <i class="fas fa-globe"></i> Random Data
                     </label>
                     <input type="text" id="randomdata">
                 </p>
@@ -168,12 +179,12 @@
                 </p>
                 <div id="sliderhrs" style="margin-top: -10px"></div> -->
                 <p class="slider-label">
-                    <label class="label-text" style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
+                    <label class="label-text" style="font-weight:600"> <i class="fas fa-clock"></i> Sim Length</label>
                     <input type="text" id="hours">
                 </p>
                 <div id="slider-time" style="margin-top: -10px"></div>
                 <p class="slider-label">
-                    <label class="label-text" style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i>Sim Speed</label>
+                    <label class="label-text" style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i> Sim Speed</label>
                     <input type="text" id="simspeed">
                 </p>
                 <div id="sliderspeed" style="margin-top: -10px"></div>
@@ -184,8 +195,8 @@
         <!-- <input class="button func" value="Upload O/D Data" onclick=""> -->
         <!-- <input class="button func" value="Street Modification" onclick=""> -->
         <!-- <input class="button func" value="Re-Start"> -->
-        <input class="button func" value="Simulate" onclick="fleet_sim()">
-        <input class="button func" value="Change Map" style="margin-top: 5px" onclick="changeMap()">
+        <input class="button func" class="btn  btn-xs" style="font-weight:600; margin-top: 25px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Simulate" onclick="fleet_sim()">
+        <input class="button func" value="Change Map" class="btn  btn-xs" style="font-weight:600; margin-top: 10px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" onclick="changeMap()">
         <!-- <input class="button func" value="Test Sim" onclick="test_fleet_sim()"> -->
     </div>
     </div>
@@ -196,17 +207,17 @@
             <td>Trial</td>
             <td>PEVs</td>
             <td>Trips</td>
-            <td>Bike / Taxi / Random</td>
+            <td>Bike / Taxi / Random / Train</td>
             <td>Trips/Hr</td>
-            <td>Pickup Time</td>
-            <td>Assignment Time</td>
+            <!-- <td>Pickup Time</td>
+            <td>Assignment Time</td> -->
             <td>Avg Wait Time</td>
             <td>50th % Wait Time</td>
             <td>75th % Wait Time</td>
-            <td>Avg Empty Trips</td>
+           <!--  <td>Avg Empty Trips</td>
             <td>Avg Job Trips</td>
-            <td>Movement Utilization</td>
-            <td>Time Utilization</td>
+            <td>Movement Utilization</td> -->
+            <td>Utilization</td>
         </thead>
         <tbody>
         </tbody>
@@ -540,6 +551,7 @@
         return a.map(function(d, i) { return { x: i, y: Math.max(0, d) }; });
     }
     </script>
+
     </script>
     <div id="txt"></div>
 </body>
