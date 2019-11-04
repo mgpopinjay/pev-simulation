@@ -138,6 +138,7 @@ def find_total_distance(s):
 def find_leg_loc(x, elapsed):
     '''
     Find the location of the leg of the trip we are on based on seconds elapsed
+    ERROR POINT Pev traveling at 500+ kph, Need to analyze output to see if working as intended
     '''
     # print x
     time = 0.0
@@ -472,7 +473,7 @@ class PEV(object):
                 self.movingtime += self.nav.traveltime
                 self.movingspace += self.nav.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
-                self.request = Idle(self.time, self.pos)
+                self.request = Idle(self.time, self.nav.dropoff)  # Potential source of error for location
                 self.prevtime = self.time
                 self.time = None
                 self.state = "IDLE"
