@@ -71,7 +71,7 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, train
     return requests
 
 
-def populatePEVs(numCars, totalCars, freeCars, coords, weights):
+def populatePEVs(simTime, numCars, totalCars, freeCars, coords, weights):
     '''
     Populate list of free cars with PEVs at each spawn point
     '''
@@ -81,7 +81,7 @@ def populatePEVs(numCars, totalCars, freeCars, coords, weights):
         spawnPoints.append(util.find_snap_coordinates(util.get_snap_output(s)))
     for i in range(numCars):
         p = np.random.choice(len(spawnPoints), p=weights)  # picks a random spawn point based on their weights
-        car = util.PEV(i, spawnPoints[p])
+        car = util.PEV(i, spawnPoints[p], simTime)
         freeCars.append(car)
         totalCars[i] = car
 
@@ -194,7 +194,7 @@ def runSim():
     c, w = util.generate_PEV_spawns(MAPSELECT)
     print(c)
     print(w)
-    populatePEVs(NUMCARS, totalCars, cars['freeCars'], c, w)
+    populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], c, w)
 
     while simRunning:
         # updateRebalancingCars()

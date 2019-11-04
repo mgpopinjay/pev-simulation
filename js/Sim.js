@@ -338,17 +338,12 @@ function createTrips(data) {
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
-				<td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random+data['outputs']['TRIPS'].train}</td>
-				<td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}  /  ${data['outputs']['TRIPS'].train}</td>
+		<td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random+data['outputs']['TRIPS'].train}</td>
+		<td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}  /  ${data['outputs']['TRIPS'].train}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
-        <td id="trial-${TRIAL}-pickup">0 min</td>
-        <td id="trial-${TRIAL}-assign">0 min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME AVERAGE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 50th PERCENTILE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 75th PERCENTILE']/60)*100)/100} min</td>
-        <td>${Math.ceil((data['outputs']['AVERAGE CAR NAVIGATION']/60)*100)/100} min</td>
-        <td>${Math.ceil((data['outputs']['AVERAGE CAR UTILIZATION']/60)*100)/100} min</td>
-        <td>${data['outputs']['AVERAGE CAR UTILIZATION PERCENTAGE']}%</td>
         <td>${data['outputs']['AVERAGE CAR MOVEMENT PERCENTAGE']}%</td>
       </tr>`);
     pickUpTimes = [];
@@ -496,28 +491,28 @@ function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, assignt
             color = "#B2B2B2";
             icon = L.icon({
                 iconUrl: './img/gray_circle.png',
-                iconSize: [15, 15],
+                iconSize: [12, 12],
             });
             break;
         case 'NavToCharge':
             color = "#B80000";
             icon = L.icon({
                 iconUrl: './img/gray_circle.png',
-                iconSize: [15, 15],
+                iconSize: [12, 12],
             });
             break;
         case 'Rebalance':
             color = "#FF00FF";
             icon = L.icon({
                 iconUrl: './img/magenta_circle.png',
-                iconSize: [15, 15],
+                iconSize: [12, 12],
             });
             break;
         case 'Passenger':
             color = "#F0F000";
             icon = L.icon({
                 iconUrl: './img/yellow_circle.png',
-                iconSize: [15, 15],
+                iconSize: [12, 12],
             });
             reqIcon = L.icon({ iconUrl: './img/child.png', iconSize: [20, 20] });
             heatLayer = L.heatLayer([
@@ -529,7 +524,7 @@ function startTrip(start_loc, end_loc, start_time, end_time, pickuptime, assignt
             color = "#FF8000";
             icon = L.icon({
                 iconUrl: './img/orange_circle.png',
-                iconSize: [15, 15],
+                iconSize: [12, 12],
             });
             reqIcon = L.icon({ iconUrl: './img/parcel.png', iconSize: [20, 20] });
             heatLayer = L.heatLayer([
@@ -706,7 +701,6 @@ function changeMap() {
     $('#summary > tbody').empty();
     d3.selectAll("#graphs > *").remove();
 
-    placeChargingStations();
     addLegend();
     //lineGraph("assign-graph", 20, 50, 270, 150, "Assignment Times");
 
@@ -716,7 +710,6 @@ function changeMap() {
 
 $(document).ready(function() {
     setMap(0);
-    placeChargingStations();
     addLegend();
     //lineGraph("assign-graph", 20, 50, 270, 150, "Assignment Times");
 
