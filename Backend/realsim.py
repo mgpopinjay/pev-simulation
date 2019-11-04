@@ -191,10 +191,12 @@ def runSim():
 
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
-    c, w = util.generate_PEV_spawns(MAPSELECT)
+    c, w = util.generate_PEV_spawns(MAPSELECT, 0.25)
+    # c, w = util.generate_PEV_spawns(MAPSELECT, STATION_FILTER)  # to add when front end slider is implemented
     print(c)
     print(w)
     populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], c, w)
+    util.CHARGING_STATIONS = c
 
     while simRunning:
         # updateRebalancingCars()

@@ -738,33 +738,6 @@ def generate_japan_trips(month, day, year):
 '''
 
 
-# def getChargingStationData(mapName, sample_percent=1):
-#     '''
-#     Parses BlueBikes hubway station csv and returns a list of tuples mapping EXPOSED
-#     stations with coords in ((LON, LAT), dockspace) format.
-#     '''
-#     if not CHARGING_STATIONS:
-#         LAT = 2
-#         LON = 3
-#         EXPOSED = 5
-#         SPACE = 6
-#         data = []
-#         stations = []
-#         curpath = os.path.dirname(os.path.abspath(__file__))
-#         if mapName == "Taipei":
-#             return {(121.502746, 25.031213): -1}
-#         with open(curpath + '/Data/Hubway_Stations_as_of_July_2017.csv', 'rU') as file:
-#             spamreader = csv.reader(file, delimiter=',', quotechar='|')
-#             for row in spamreader:
-#                 data.append(row)
-#         for row in data[1:]:
-#             if row[EXPOSED] == '1':
-#                 stations.append(((row[LON], row[LAT]), int(row[SPACE])))
-#         random.shuffle(stations)
-#         CHARGING_STATIONS = stations[:sample_percent*len(stations)]
-#     return CHARGING_STATIONS
-
-
 def generate_PEV_spawns(mapName, sample_percent=1):
     '''
     Input: name of city, station sample percentage
@@ -777,7 +750,6 @@ def generate_PEV_spawns(mapName, sample_percent=1):
     SPACE = 6
     coords = []
     dockSpace = []
-    spaceTotal = 0
     data = []
     curpath = os.path.dirname(os.path.abspath(__file__))
     if mapName == "Taipei":
@@ -791,9 +763,16 @@ def generate_PEV_spawns(mapName, sample_percent=1):
         if row[EXPOSED] == '1':
             coords.append((row[LON], row[LAT]))
             dockSpace.append(int(row[SPACE]))
-            spaceTotal += int(row[SPACE])
+
+    # Zips coords, dockspaces together, shuffles the order, and returns a
+    # percentage of the total sample and their corresponding weights.
+    z = list(zip(coords, dockSpace))
+    random.shuffle(z)
+    z = z[:int(sample_percent*len(z))]
+    coords[:], dockSpace[:] = zip(*z)
+    spaceTotal = sum(dockSpace)
     weights = [s / spaceTotal for s in dockSpace]
-    
+
     return coords, weights
 
 
