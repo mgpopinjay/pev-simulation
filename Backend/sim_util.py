@@ -75,6 +75,7 @@ if LOCAL:
 API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.project-osrm.org/'
 
 hubstations = {}
+CHARGING_STATIONS = []
 
 def get_osrm_output(start, end):
     '''
@@ -735,9 +736,37 @@ def generate_japan_trips(month, day, year):
             stationdid = row[
 '''
 
-def generate_PEV_spawns(mapName):
+
+# def getChargingStationData(mapName, sample_percent=1):
+#     '''
+#     Parses BlueBikes hubway station csv and returns a list of tuples mapping EXPOSED
+#     stations with coords in ((LON, LAT), dockspace) format.
+#     '''
+#     if not CHARGING_STATIONS:
+#         LAT = 2
+#         LON = 3
+#         EXPOSED = 5
+#         SPACE = 6
+#         data = []
+#         stations = []
+#         curpath = os.path.dirname(os.path.abspath(__file__))
+#         if mapName == "Taipei":
+#             return {(121.502746, 25.031213): -1}
+#         with open(curpath + '/Data/Hubway_Stations_as_of_July_2017.csv', 'rU') as file:
+#             spamreader = csv.reader(file, delimiter=',', quotechar='|')
+#             for row in spamreader:
+#                 data.append(row)
+#         for row in data[1:]:
+#             if row[EXPOSED] == '1':
+#                 stations.append(((row[LON], row[LAT]), int(row[SPACE])))
+#         random.shuffle(stations)
+#         CHARGING_STATIONS = stations[:sample_percent*len(stations)]
+#     return CHARGING_STATIONS
+
+
+def generate_PEV_spawns(mapName, sample_percent=1):
     '''
-    Input: name of city
+    Input: name of city, station sample percentage
     Output 1: list of coordinates of spawn points in (lon,lat)
     Output 2: list of weights between 0-1, chance to spawn
     '''
@@ -763,7 +792,9 @@ def generate_PEV_spawns(mapName):
             dockSpace.append(int(row[SPACE]))
             spaceTotal += int(row[SPACE])
     weights = [s / spaceTotal for s in dockSpace]
+    
     return coords, weights
+
 
 def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
     '''
@@ -803,6 +834,7 @@ def generate_taxi_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_en
         if req is not None and json.loads(req.osrm)["code"] == "Ok":
             trips.append(req)
     return trips
+
 
 def generate_hubway_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing_enabled):
     '''
@@ -911,6 +943,7 @@ def generate_youbike_trips(max_dist, ratio, frequency, starthrs, endhrs, fuzzing
             trips.append(req)
     return trips
 
+
 def generate_train_requests(max_dist, frequency, starthrs, endhrs, fuzzing_enabled):
     rider_estimate = 0.00001370577366 # 2000 riders per day will request a PEV to take them to or away from a stop at 100%
     '''
@@ -966,6 +999,7 @@ def generate_train_requests(max_dist, frequency, starthrs, endhrs, fuzzing_enabl
                     trips.append(req)
     return trips;
 
+
 def find_closest_station(loc):
     '''
     Find station closest to loc
@@ -986,25 +1020,15 @@ def find_closest_charging_station(loc):
     Find charging station closest to loc
     '''
 
-    # These stations are defined in a list within realsim.py, but was recreated
-    # here instead of using the realsim.py one. I'm unsure what the intended
-    # functionality was, but I am leaving this list here for now.
-    charging_stations = [
-        [-71.0655, 42.3550],  # Boston Commons
-        [-71.0856, 42.3625],  # Kendall Square
-        [-71.0551, 42.3519],  # South Station
-        [-71.0903, 42.3397]   # Northeastern Station
-    ]
-
     temp_min = 10000.0
     ycor = 0
     xcor = 0
-    for i in range(len(charging_stations)):  # finds closest charging station
-        distance = dist(charging_stations[i], loc)
+    for i in range(len(CHARGING_STATIONS)):
+        distance = dist(CHARGING_STATIONS[i], loc)
         if distance < temp_min:
             temp_min = distance
-            ycor = charging_stations[i][0]
-            xcor = charging_stations[i][1]
+            ycor = CHARGING_STATIONS[i][0]
+            xcor = CHARGING_STATIONS[i][1]
     return ycor, xcor
 
 
