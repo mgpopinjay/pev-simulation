@@ -31,8 +31,6 @@ TODO LIST:
 - Speed up by preprocessing hubway data in exterior file
 """
 
-chargingStations = [[-71.0655, 42.3550], [-71.0856, 42.3625], [-71.0551, 42.3519], [-71.0903, 42.3397]]
-
 def loadVariables():
     '''
     Load the simulation variables from file
@@ -238,11 +236,13 @@ def runSim():
         "END_HR": END_HR
     }
     simOutputs = util.analyzeResults(finishedRequests, cars['freeCars'], systemDelta, START_HR, END_HR)
+    # simStations = util.chargingStations
 
     finalData = {}
     finalData["fleet"] = carData
     finalData["inputs"] = simInputs
     finalData["outputs"] = simOutputs
+    finalData["stations"] = c
 
     if MADE_FILE:
         filename = "sim_results_"+str(CODE)+".JSON"
