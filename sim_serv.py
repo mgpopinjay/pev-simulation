@@ -64,7 +64,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "MapSelect": mapSelect,
                 "Rebalancing_Vehicles": parcFreq,
                 "Fleet_Size": fleet_size,
-                "stations": stations,
+                "Stations": stations,
                 "Bike_Freq": bikeFreq,
                 "Random_Freq": randomFreq,
                 "Taxi_Freq": taxiFreq,
