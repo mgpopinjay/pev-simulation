@@ -31,8 +31,6 @@ TODO LIST:
 - Speed up by preprocessing hubway data in exterior file
 """
 
-chargingStations = [[-71.0655, 42.3550], [-71.0856, 42.3625], [-71.0551, 42.3519], [-71.0903, 42.3397]]
-
 def loadVariables():
     '''
     Load the simulation variables from file
@@ -130,6 +128,7 @@ def runSim():
     SPAWN       = variables["Spawn_Point"]
     START_HR    = variables["Start_Hour"]   # end hour of the simulation
     END_HR      = variables["End_Hour"]     # start hour of the simulation
+    STATION_PER = variables["Stations"]     # percentage of stations to filter
 
     logging.warning("Number of cars: " + str(NUMCARS))
     logging.warning("Code: " + str(CODE))
@@ -193,10 +192,12 @@ def runSim():
 
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
     # initiateRebalance()
-    c, w = util.generate_PEV_spawns(MAPSELECT)
+    # c, w = util.generate_PEV_spawns(MAPSELECT, 0.25)
+    c, w = util.generate_PEV_spawns(MAPSELECT, STATION_PER/100)  # to add when front end slider is implemented
     print(c)
     print(w)
     populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], c, w)
+    util.CHARGING_STATIONS = c
 
     while simRunning:
         # updateRebalancingCars()
@@ -238,11 +239,13 @@ def runSim():
         "END_HR": END_HR
     }
     simOutputs = util.analyzeResults(finishedRequests, cars['freeCars'], systemDelta, START_HR, END_HR)
+    # simStations = util.chargingStations
 
     finalData = {}
     finalData["fleet"] = carData
     finalData["inputs"] = simInputs
     finalData["outputs"] = simOutputs
+    finalData["stations"] = c
 
     if MADE_FILE:
         filename = "sim_results_"+str(CODE)+".JSON"

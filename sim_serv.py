@@ -48,6 +48,8 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             args = json.loads(data.decode('utf-8'))
             fleet_size = int(args["size"])
             code = args["code"]
+            stations = int(args["stations"])
+            jobDrop = int(args["job_drop"])
             maxDist = int(args["max_dist"])
             parcFreq = int(args["parcels"])
             randomFreq = int(args["random"])
@@ -63,6 +65,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "MapSelect": mapSelect,
                 "Rebalancing_Vehicles": parcFreq,
                 "Fleet_Size": fleet_size,
+                "Stations": stations,
                 "Bike_Freq": bikeFreq,
                 "Random_Freq": randomFreq,
                 "Taxi_Freq": taxiFreq,
