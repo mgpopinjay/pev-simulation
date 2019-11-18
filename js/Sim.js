@@ -39,8 +39,8 @@ var taxi_triphr = {
 };
 
 var train_triphr = {
-	"Boston": 2000 / 24, // total number of people = 145,923,904
-	"Taipei": 0
+    "Boston": 2000 / 24, // total number of people = 145,923,904
+    "Taipei": 0
 };
 
 ///////////////////////////////////////////////////////////
@@ -52,6 +52,7 @@ var train_triphr = {
 var slider_rebalanceSize = 20;
 var slider_fleetSize = 20;
 var slider_chargingStations = 20;
+var slider_jobDrop = 10;
 var slider_bike = 20;
 var slider_random = 20;
 var slider_taxi = 20;
@@ -90,6 +91,20 @@ $(function() {
 	      }
 	  });
 	  $("#charging").val($("#sliderChargingStations").slider("value") + " %" + " (" + Math.round(.2 * STATIONS) + " stations)");
+});
+
+$(function() {
+    $("#sliderJobDrop").slider({
+        value: 10,
+        min: 5,
+        max: 30,
+        step: 1,
+        slide: function(event, ui) {
+            $("#dropping").val(ui.value + " ");
+            slider_jobDrop = ui.value;
+	      }
+	  });
+	  $("#dropping").val($("#sliderJobDrop").slider("value"));
 });
 
 $(function() {
@@ -180,18 +195,18 @@ $(function() {
 });
 
 $(function() {
-	$("#slidertrain").slider({
-		value: 20,
-		min: 0,
-		max: 100,
-		step: 10,
-		slide: function(event, ui) {
-			let trips = Math.round(ui.value / 100 * train_triphr[mapList[mapID]] * timeLength);
-			$("#traindata").val(ui.value + " %" + " (" + trips + " trips)");
-			slider_train = ui.value;
-		}
-	});
-	$("#traindata").val($("#slidertrain").slider("value") + " %" + " (" + Math.round(.2 * train_triphr[mapList[mapID]] * timeLength) + " trips)");
+    $("#slidertrain").slider({
+        value: 20,
+        min: 0,
+        max: 100,
+        step: 10,
+        slide: function(event, ui) {
+            let trips = Math.round(ui.value / 100 * train_triphr[mapList[mapID]] * timeLength);
+            $("#traindata").val(ui.value + " %" + " (" + trips + " trips)");
+            slider_train = ui.value;
+        }
+    });
+    $("#traindata").val($("#slidertrain").slider("value") + " %" + " (" + Math.round(.2 * train_triphr[mapList[mapID]] * timeLength) + " trips)");
 });
 
 // $(function() {
@@ -275,10 +290,11 @@ function T_on() {
 function fleet_sim() {
     var fleet_size = slider_fleetSize;
     var charging_stations = slider_chargingStations;
+    var job_drop = slider_jobDrop;
     var bike_freq = slider_bike;
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
-		var train_freq = slider_train;
+    var train_freq = slider_train;
     var max_dist = slider_maxDist;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
@@ -292,11 +308,12 @@ function fleet_sim() {
         endhrs: endhrs,
         size: fleet_size,
         stations: charging_stations,
+        job_drop: job_drop,
         parcels: rebalanceSize,
         bike: bike_freq,
         random: random_freq,
         taxi: taxi_freq,
-				train: train_freq,
+        train: train_freq,
         max_dist: max_dist,
         code: code,
         mapselect: mapSelect,

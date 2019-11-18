@@ -49,6 +49,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             fleet_size = int(args["size"])
             code = args["code"]
             stations = int(args["stations"])
+            jobDrop = int(args["job_drop"])
             maxDist = int(args["max_dist"])
             parcFreq = int(args["parcels"])
             randomFreq = int(args["random"])
@@ -65,6 +66,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "Rebalancing_Vehicles": parcFreq,
                 "Fleet_Size": fleet_size,
                 "stations": stations,
+                "Job_Drop": jobDrop,
                 "Bike_Freq": bikeFreq,
                 "Random_Freq": randomFreq,
                 "Taxi_Freq": taxiFreq,
