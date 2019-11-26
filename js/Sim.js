@@ -100,11 +100,11 @@ $(function() {
         max: 30,
         step: 1,
         slide: function(event, ui) {
-            $("#dropping").val(ui.value + " ");
+            $("#dropping").val(ui.value + " min");
             slider_jobDrop = ui.value;
 	      }
 	  });
-	  $("#dropping").val($("#sliderJobDrop").slider("value"));
+	  $("#dropping").val($("#sliderJobDrop").slider("value") + " min");
 });
 
 $(function() {
@@ -374,6 +374,9 @@ function createTrips(data) {
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
+        <td>${Math.ceil((data['inputs']['STATIONS']/100)*271)}</td>
+        <td>${data['inputs']['JOB_DROP']} min</td>
+        <td>${Math.ceil(data['inputs']['MAX_DIST']/1609.34)} mi</td>
         <td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random+data['outputs']['TRIPS'].train}</td>
         <td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}  /  ${data['outputs']['TRIPS'].train}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>

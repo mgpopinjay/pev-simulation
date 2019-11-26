@@ -124,6 +124,8 @@ def runSim():
     BIKE_DATA   = variables["Bike_Freq"]    # percentage of hubway data trips to be used
     TAXI_DATA   = variables["Taxi_Freq"]    # percentage of taxi data
     TRAIN_DATA  = variables["Train_Freq"]   # percentage of train data
+    STATIONS    = variables["Stations"]     # number of charging stations
+    JOB_DROP    = variables["Job_Drop"]     # minutes users will wait for pev before dropping job
     MAX_DIST    = variables["Max_Dist"] * 1609.34
     SPAWN       = variables["Spawn_Point"]
     START_HR    = variables["Start_Hour"]   # end hour of the simulation
@@ -227,6 +229,8 @@ def runSim():
         "MAPSELECT": MAPSELECT,
         "NUMCARS": NUMCARS,
         "MAX_DIST": MAX_DIST,
+        "STATIONS": STATIONS,
+        "JOB_DROP": JOB_DROP,
         "KIND_RATIO": KIND_RATIO,
         "RANDOM_START": RANDOM_START,
         "SPAWN_POINT": SPAWN_POINT,
