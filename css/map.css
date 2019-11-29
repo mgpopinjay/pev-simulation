@@ -153,6 +153,59 @@ body {
     padding-left: 0px; //add this
 }
 
+.switch {
+	  position: relative;
+	  display: inline-block;
+	  width: 60px;
+	  height: 15px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+		border-radius: 10px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 11px;
+    width: 11px;
+    left: 4px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+		border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #ff66cc;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #ff66cc;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(41px);
+    -ms-transform: translateX(41px);
+    transform: translateX(41px);
+}
+
 .button.traffic {
     color: #ff66cc;
     background: transparent;
