@@ -69,6 +69,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "Fleet_Size": fleet_size,
                 "Job_Drop": jobDrop,
                 "Stations": stations,
+                "Job_Drop": jobDrop,
                 "Bike_Freq": bikeFreq,
                 "Random_Freq": randomFreq,
                 "Taxi_Freq": taxiFreq,
