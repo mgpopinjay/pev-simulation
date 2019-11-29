@@ -46,7 +46,7 @@
     </link>
 </head>
 
-<body style="font-family: 'Open Sans', sans-serif">
+<body style="font-family: 'Open Sans', sans-serif" onload="rebalance();">
     <div id="map-canvas">
     </div>
     <!--   File Loading Menu   -->
@@ -139,14 +139,6 @@
                 </p>
 	              <div id="sliderChargingStations" style="margin-top: -10px; height:5px"></div>
                 <p class="slider-label">
-	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">When to drop jobs</span>
-                        <i class="fas fa-tasks"></i> Job Dropping
-                    </label>
-                    <input type="text" id="dropping">
-                </p>
-	              <div id="sliderJobDrop" style="margin-top: -10px; height:5px"></div>
-                <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Maximum length of each trip</span>
                         <i class="fas fa-road"></i> Max Distance
@@ -154,6 +146,32 @@
                     <input type="text" id="maxdist">
                 </p>
                 <div id="slidermax" class="ui-slider" style="margin-top: -10px"></div>
+                <!-- <p class="slider-label">
+	                  <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">Toggle Fuzzing</span>
+                        <i class="fas fa-cloud"></i> Fuzzing
+                    </label>
+                    <input type="text" id="fuzzing">
+                </p>
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleFuzzing" name="fuzz" onclick="fuzz();"/>
+                        <span class="slider"/>
+                    </label>
+								</div> -->
+                <p class="slider-label">
+	                  <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">Toggle Rebalancing</span>
+                        <i class="fas fa-balance-scale"></i> Rebalancing
+                    </label>
+                    <input type="text" id="rebalance">
+                </p>
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleRebalancing" name="rebalance" onclick="rebalance();"/>
+                        <span class="slider"/>
+                    </label>
+                </div>
             </div>
             <div class="control-section">
                 <div class="control-label">Demand</div>
@@ -204,6 +222,14 @@
                     <input type="text" id="simspeed">
                 </p>
                 <div id="sliderspeed" style="margin-top: -10px"></div>
+                <p class="slider-label">
+	                  <label class="label-text" style="font-weight:600">
+                        <span class="tooltiptext">When to drop jobs</span>
+                        <i class="fas fa-tasks"></i> Job Dropping
+                    </label>
+                    <input type="text" id="dropping">
+                </p>
+	              <div id="sliderJobDrop" style="margin-top: -10px; height:5px"></div>
             </div>
         </div>
         <!-- <input class="button traffic" value="Train On" onclick="T_on()"> -->
