@@ -96,20 +96,6 @@ $(function() {
 });
 
 $(function() {
-    $("#sliderJobDrop").slider({
-        value: 10,
-        min: 5,
-        max: 30,
-        step: 1,
-        slide: function(event, ui) {
-            $("#dropping").val(ui.value + " min");
-            slider_jobDrop = ui.value;
-	      }
-	  });
-	  $("#dropping").val($("#sliderJobDrop").slider("value") + " min");
-});
-
-$(function() {
     $("#sliderRebalance").slider({
         value: 20,
         min: 0,
@@ -218,11 +204,11 @@ $(function() {
         max: 30,
         step: 1,
         slide: function(event, ui) {
-            $("#dropping").val(ui.value + " ");
+            $("#dropping").val(ui.value + " min");
             slider_jobDrop = ui.value;
 	      }
 	  });
-	  $("#dropping").val($("#sliderJobDrop").slider("value"));
+	  $("#dropping").val($("#sliderJobDrop").slider("value") + " min");
 });
 
 function fuzz() {
