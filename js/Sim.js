@@ -58,6 +58,8 @@ var slider_random = 20;
 var slider_taxi = 20;
 var slider_train = 20;
 var slider_maxDist = 5;
+var toggle_fuzz = 0;
+var toggle_rebalance = 0;
 // var slider_hrs = 3;
 var slider_startHrs = 6;
 var slider_endHrs = 18;
@@ -209,6 +211,44 @@ $(function() {
     $("#traindata").val($("#slidertrain").slider("value") + " %" + " (" + Math.round(.2 * train_triphr[mapList[mapID]] * timeLength) + " trips)");
 });
 
+$(function() {
+    $("#sliderJobDrop").slider({
+        value: 10,
+        min: 5,
+        max: 30,
+        step: 1,
+        slide: function(event, ui) {
+            $("#dropping").val(ui.value + " ");
+            slider_jobDrop = ui.value;
+	      }
+	  });
+	  $("#dropping").val($("#sliderJobDrop").slider("value"));
+});
+
+function fuzz() {
+    var fuzzStatus = document.getElementById("toggleFuzzing").checked;
+	  if(fuzzStatus) {
+        $("#fuzzing").val("On");
+	      toggle_fuzz = 1;
+	  }
+	  else {
+        $("#fuzzing").val("Off");
+        toggle_fuzz = 0;
+	  }
+}
+
+function rebalance() {
+    var rebalanceStatus = document.getElementById("toggleRebalancing").checked;
+	  if(rebalanceStatus) {
+        $("#rebalance").val("On");
+	      toggle_rebalance = 1;
+	  }
+	  else {
+        $("#rebalance").val("Off");
+        toggle_rebalance = 0;
+	  }
+}
+
 // $(function() {
 // $(function() {
 //     $("#sliderhrs").slider({
@@ -295,6 +335,8 @@ function fleet_sim() {
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
     var train_freq = slider_train;
+	 //var fuzzing_toggle = toggle_fuzz;
+	  var rebalance_toggle = toggle_rebalance;
     var max_dist = slider_maxDist;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
@@ -314,6 +356,8 @@ function fleet_sim() {
         random: random_freq,
         taxi: taxi_freq,
         train: train_freq,
+	      //fuzzing: fuzzing_toggle,
+        rebalance_toggle: rebalance_toggle,
         max_dist: max_dist,
         code: code,
         mapselect: mapSelect,

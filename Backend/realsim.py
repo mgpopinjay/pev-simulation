@@ -144,7 +144,7 @@ def runSim():
     CHARGE_RANGE = 15000.0
     CHARGE_TIME = 30
     CHARGE_LIMIT = 5
-    REBALANCE_ON = False  # whether to rebalance
+    REBALANCE_ON = variables["Rebalance_Toggle"]  # whether to rebalance
     K = 20  # number of clusters for rebalancing
     ALPHA = .1  # proportion of free cars that perform rebalancing
     FUZZING_ON = False  # used to spread out job spawns
@@ -205,7 +205,7 @@ def runSim():
         # updateRebalancingCars()
         util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests}, CHARGING_ON, CHARGE_LIMIT)
         updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips})
-        if len(requests) > 0:
+        if len(requests) > 0 and REBALANCE_ON:
             rebalancePEVs(simTime, cars, finishedTrips)
         simTime += TIMESTEP
         if simTime > simEndTime and len(requests) == 0 and len(cars['busyCars']) == 0 and len(cars['waitCars']) == 0 and len(cars['navCars']) == 0:
