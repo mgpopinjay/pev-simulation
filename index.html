@@ -46,7 +46,7 @@
     </link>
 </head>
 
-<body style="font-family: 'Open Sans', sans-serif" onload="rebalance();">
+<body style="font-family: 'Open Sans', sans-serif" onload="fuzz()">
     <div id="map-canvas">
     </div>
     <!--   File Loading Menu   -->
@@ -146,9 +146,9 @@
                     <input type="text" id="maxdist">
                 </p>
                 <div id="slidermax" class="ui-slider" style="margin-top: -10px"></div>
-                <!-- <p class="slider-label">
+                <p class="slider-label">
 	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Toggle Fuzzing</span>
+                        <span class="tooltiptext">Use exact coordinates from data or approximate</span>
                         <i class="fas fa-cloud"></i> Fuzzing
                     </label>
                     <input type="text" id="fuzzing">
@@ -158,10 +158,10 @@
                         <input type="checkbox" id="toggleFuzzing" name="fuzz" onclick="fuzz();"/>
                         <span class="slider"/>
                     </label>
-								</div> -->
+                </div>
                 <p class="slider-label">
 	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Toggle Rebalancing</span>
+                        <span class="tooltiptext">Have PEVs move to favorable positions</span>
                         <i class="fas fa-balance-scale"></i> Rebalancing
                     </label>
                     <input type="text" id="rebalance">
@@ -249,11 +249,13 @@
             <td>Trial</td>
             <td>PEVs</td>
             <td>Charging Stations</td>
-            <td>Job Dropping Threshold</td>
             <td>Max Distance</td>
+            <td>Fuzzing</td>
+            <td>Rebalancing</td>
             <td>Trips</td>
-            <td>Bike / Taxi / Random / Train</td>
+            <td>Taxi / Bike / Train / Random</td>
             <td>Trips/Hr</td>
+            <td>Job Dropping Threshold</td>
             <!-- <td>Pickup Time</td>
             <td>Assignment Time</td> -->
             <td>Avg Wait Time</td>

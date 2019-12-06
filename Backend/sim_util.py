@@ -1159,6 +1159,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "taxi": 0,
         "bike": 0,
         "random": 0,
+        "train": 0,
     }
     for req in finishedRequests:
         pickuptimes.append(req.pickuptime)
