@@ -426,8 +426,9 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
                 self.prevtime = self.time
                 # Adds time proportional to 25 - distance left assuming charging at 25 mi/hr)
-                self.time += round(((25-self.power/1609.344)*60*60)/25)
-                print("recharging", self.id, self.time)
+                time_to_charge = round((25 - (self.power / 1609.344)) * 60 * 60 / 25)
+                self.time += time_to_charge
+                print("recharging", self.id, self.time, time_to_charge)
                 self.pos = self.nav.dropoff
                 self.state = "RECHARGE"
                 return "RECHARGE"
