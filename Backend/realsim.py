@@ -147,9 +147,19 @@ def runSim():
     REBALANCE_ON = variables["Rebalance_Toggle"]  # whether to rebalance
     K = 20  # number of clusters for rebalancing
     ALPHA = .1  # proportion of free cars that perform rebalancing
-    FUZZING_ON = False  # used to spread out job spawns
+    FUZZ_ON = variables["Fuzz_Toggle"]  # used to spread out job spawns
     FIXED_RANDOM_SEED = True
     SPAWN_POINT = []
+
+    """
+    For table printing
+    """
+    FUZZ = "Off"
+    REBALANCE = "Off"
+    if FUZZ_ON:
+           FUZZ = "On"
+    if REBALANCE_ON:
+           REBALANCE = "On"
 
     """
     THE SIMULATOR
@@ -192,7 +202,7 @@ def runSim():
     simTime = START_HR * 3600  # Set simulator time to start time in secs
     simEndTime = END_HR * 3600
 
-    populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZING_ON, MAX_DIST)
+    populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZ_ON, MAX_DIST)
     # initiateRebalance()
     # c, w = util.generate_PEV_spawns(MAPSELECT, 0.25)
     c, w = util.generate_PEV_spawns(MAPSELECT, STATION_PER/100)  # to add when front end slider is implemented
@@ -229,12 +239,13 @@ def runSim():
         "MAPSELECT": MAPSELECT,
         "NUMCARS": NUMCARS,
         "MAX_DIST": MAX_DIST,
+        "FUZZ_TOGGLE": FUZZ,
+        "REBALANCE_TOGGLE": REBALANCE,
         "STATIONS": STATIONS,
         "JOB_DROP": JOB_DROP,
         "KIND_RATIO": KIND_RATIO,
         "RANDOM_START": RANDOM_START,
         "SPAWN_POINT": SPAWN_POINT,
-        "REBALANCE_ON": REBALANCE_ON,
         "TAXI_DATA": TAXI_DATA,
         "TRAIN_DATA": TRAIN_DATA,
         "BIKE_DATA": BIKE_DATA,
