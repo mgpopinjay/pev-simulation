@@ -56,7 +56,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             bikeFreq = int(args["bike"])
             taxiFreq = int(args["taxi"])
             trainFreq = int(args["train"])
-            #fuzzing = int(args["fuzzing"])
+            fuzzing = int(args["fuzzing"])
             rebalance_toggle = int(args["rebalance_toggle"])
             startHrs = int(args["starthrs"])
             endHrs = int(args["endhrs"])
@@ -74,7 +74,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "Random_Freq": randomFreq,
                 "Taxi_Freq": taxiFreq,
                 "Train_Freq": trainFreq,
-                #"Fuzzing_Toggle": fuzzing,
+                "Fuzz_Toggle": fuzzing,
                 "Rebalance_Toggle": rebalance_toggle,
                 "Max_Dist": maxDist,
                 "Spawn_Point": 0,

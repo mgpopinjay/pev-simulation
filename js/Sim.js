@@ -212,6 +212,11 @@ $(function() {
 });
 
 function fuzz() {
+	  var first = true;
+	  if(first) { 
+        rebalance();
+	      first = false;
+    }
     var fuzzStatus = document.getElementById("toggleFuzzing").checked;
 	  if(fuzzStatus) {
         $("#fuzzing").val("On");
@@ -321,7 +326,7 @@ function fleet_sim() {
     var random_freq = slider_random;
     var taxi_freq = slider_taxi;
     var train_freq = slider_train;
-	 //var fuzzing_toggle = toggle_fuzz;
+	  var fuzzing_toggle = toggle_fuzz;
 	  var rebalance_toggle = toggle_rebalance;
     var max_dist = slider_maxDist;
     // var publicTransit_size = slider_publicTransit;
@@ -342,7 +347,7 @@ function fleet_sim() {
         random: random_freq,
         taxi: taxi_freq,
         train: train_freq,
-	      //fuzzing: fuzzing_toggle,
+	      fuzzing: fuzzing_toggle,
         rebalance_toggle: rebalance_toggle,
         max_dist: max_dist,
         code: code,
@@ -405,11 +410,13 @@ function createTrips(data) {
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
         <td>${Math.ceil((data['inputs']['STATIONS']/100)*271)}</td>
-        <td>${data['inputs']['JOB_DROP']} min</td>
         <td>${Math.ceil(data['inputs']['MAX_DIST']/1609.34)} mi</td>
-        <td>${data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].random+data['outputs']['TRIPS'].train}</td>
-        <td>${data['outputs']['TRIPS'].bike}  / ${data['outputs']['TRIPS'].taxi}  /  ${data['outputs']['TRIPS'].random}  /  ${data['outputs']['TRIPS'].train}</td>
+        <td>${data['inputs']['FUZZ_TOGGLE']}</td>
+        <td>${data['inputs']['REBALANCE_TOGGLE']}</td>
+        <td>${data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].train+data['outputs']['TRIPS'].random}</td>
+        <td>${data['outputs']['TRIPS'].taxi}  / ${data['outputs']['TRIPS'].bike}  /  ${data['outputs']['TRIPS'].train}  /  ${data['outputs']['TRIPS'].random}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
+        <td>${data['inputs']['JOB_DROP']} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME AVERAGE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 50th PERCENTILE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 75th PERCENTILE']/60)*100)/100} min</td>
