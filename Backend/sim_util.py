@@ -63,16 +63,19 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 
 LOCAL = True
-IP_PORT = None
+LOCAL_IP_ADDRESS = None
+REMOTE_IP_ADDRESS = '143.107.108.165'
+IP_PORT = 9003
 
 # Extract the IP address of `LOCAL` is on
 if LOCAL:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
-    IP_PORT = s.getsockname()[0]
+    LOCAL_IP_ADDRESS = s.getsockname()[0]
     s.close()
+    IP_PORT = 9002
 
-API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = f'http://{LOCAL_IP_ADDRESS if LOCAL else REMOTE_IP_ADDRESS}:{IP_PORT}/'
 
 hubstations = {}
 CHARGING_STATIONS = []
