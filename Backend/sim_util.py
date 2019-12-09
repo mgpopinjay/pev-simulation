@@ -76,6 +76,7 @@ API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.proje
 
 hubstations = {}
 CHARGING_STATIONS = []
+MILES_TO_METERS = 1609.334
 
 def get_osrm_output(start, end):
     '''
@@ -273,7 +274,8 @@ class PEV(object):
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
-        self.power = 25 * 1609.344  # added by me 25 miles is 40234 meters
+        PEV_RANGE_MILES = 25
+        self.power = PEV_RANGE_MILES * MILES_TO_METERS
 
     def __eq__(self, other):
         return self.time == other.time
