@@ -1,5 +1,6 @@
 "use strict";
 var map;
+var stationGroup = L.layerGroup();
 var mapID = 0;
 var mapList = ["Boston", "Taipei"];
 var mapSettings = {
@@ -84,15 +85,14 @@ $(function() {
     $("#sliderChargingStations").slider({
         value: 20,
         min: 0,
-        max: 100,
-        step: 10,
+        max: 271,
+        step: 1,
         slide: function(event, ui) {
-            let stations = Math.round(ui.value / 100 * STATIONS);
-            $("#charging").val(ui.value + " %" + " (" + stations + " stations)");
+            $("#charging").val(ui.value + " ");
             slider_chargingStations = ui.value;
 	      }
 	  });
-	  $("#charging").val($("#sliderChargingStations").slider("value") + " %" + " (" + Math.round(.2 * STATIONS) + " stations)");
+	  $("#charging").val($("#sliderChargingStations").slider("value"));
 });
 
 $(function() {
@@ -385,9 +385,12 @@ function createStations(data) {
        iconUrl: './img/charge.png',
        iconSize: [18, 18],
     });
+	  stationGroup.clearLayers();
     for (let i = 0; i < station_coords.length; i++) {
-        let stationMarker = L.marker([station_coords[i][LAT], station_coords[i][LON]], { icon: icon, opacity: 0.5 }).addTo(map);
+        let stationMarker = L.marker([station_coords[i][LAT], station_coords[i][LON]], { icon: icon, opacity: 0.5 });
+	      stationGroup.addLayer(stationMarker);
     }
+    map.addLayer(stationGroup);
 }
 
 /**
@@ -409,7 +412,7 @@ function createTrips(data) {
       <tr id="summary-${TRIAL}">
         <td>${TRIAL}</td>
         <td>${FLEET_SIZE}</td>
-        <td>${Math.ceil((data['inputs']['STATIONS']/100)*271)}</td>
+        <td>${Math.ceil((data['inputs']['STATIONS']))}</td>
         <td>${Math.ceil(data['inputs']['MAX_DIST']/1609.34)} mi</td>
         <td>${data['inputs']['FUZZ_TOGGLE']}</td>
         <td>${data['inputs']['REBALANCE_TOGGLE']}</td>
