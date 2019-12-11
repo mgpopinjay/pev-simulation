@@ -1,5 +1,6 @@
 "use strict";
 var map;
+var stationGroup = L.layerGroup();
 var mapID = 0;
 var mapList = ["Boston", "Taipei"];
 var mapSettings = {
@@ -385,9 +386,12 @@ function createStations(data) {
        iconUrl: './img/charge.png',
        iconSize: [18, 18],
     });
+	  stationGroup.clearLayers();
     for (let i = 0; i < station_coords.length; i++) {
-        let stationMarker = L.marker([station_coords[i][LAT], station_coords[i][LON]], { icon: icon, opacity: 0.5 }).addTo(map);
+        let stationMarker = L.marker([station_coords[i][LAT], station_coords[i][LON]], { icon: icon, opacity: 0.5 });
+	      stationGroup.addLayer(stationMarker);
     }
+    map.addLayer(stationGroup);
 }
 
 /**
