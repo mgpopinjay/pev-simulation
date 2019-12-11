@@ -86,6 +86,11 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             sim_id = json.load(open("Backend/id_counter.txt"))
             filename = "sim_inputs_"+str(sim_id)+".json"
 
+            # create Input and Results folders for storing files if non-existant
+            os.makedirs("Backend/Inputs/", mode=0o777, exist_ok=True)
+            os.makedirs("Backend/Results/", mode=0o777, exist_ok=True)
+    
+
             # find path to Variables folder to write to
             curpath = os.path.dirname(os.path.abspath(__file__))
             new_path = curpath+"/Backend/Inputs/"+filename

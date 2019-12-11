@@ -64,8 +64,8 @@ UTILITIES AND CLASSES FOR THE SIMULATOR
 
 LOCAL = False
 LOCAL_IP_ADDRESS = None
-REMOTE_IP_ADDRESS = '143.107.108.165'
-IP_PORT = 9000
+REMOTE_IP_ADDRESS = '18.27.78.188'
+IP_PORT = '9002'
 
 # Extract the IP address of `LOCAL` is on
 if LOCAL:
@@ -80,6 +80,15 @@ API_BASE = f'http://{LOCAL_IP_ADDRESS if LOCAL else REMOTE_IP_ADDRESS}:{IP_PORT}
 hubstations = {}
 CHARGING_STATIONS = []
 MILES_TO_METERS = 1609.334
+
+
+# def makeFolder(folder)
+#     try: 
+#         if not os.path.exists(folder):
+#             os.makedir(folder)
+#     except OSError:
+#         print('Error: Creating folder' + folder)
+
 
 def get_osrm_output(start, end):
     '''
