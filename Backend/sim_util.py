@@ -82,14 +82,6 @@ CHARGING_STATIONS = []
 MILES_TO_METERS = 1609.334
 
 
-# def makeFolder(folder)
-#     try: 
-#         if not os.path.exists(folder):
-#             os.makedir(folder)
-#     except OSError:
-#         print('Error: Creating folder' + folder)
-
-
 def get_osrm_output(start, end):
     '''
     Get OSRM route from start point to end point
