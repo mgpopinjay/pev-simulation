@@ -130,7 +130,6 @@ def runSim():
     SPAWN       = variables["Spawn_Point"]
     START_HR    = variables["Start_Hour"]   # end hour of the simulation
     END_HR      = variables["End_Hour"]     # start hour of the simulation
-    STATION_PER = variables["Stations"]     # percentage of stations to filter
 
     logging.warning("Number of cars: " + str(NUMCARS))
     logging.warning("Code: " + str(CODE))
@@ -205,7 +204,7 @@ def runSim():
     populateRequests(requests, MAPSELECT, RANDOM_DATA, TAXI_DATA, BIKE_DATA, TRAIN_DATA, START_HR, END_HR, FUZZ_ON, MAX_DIST)
     # initiateRebalance()
     # c, w = util.generate_PEV_spawns(MAPSELECT, 0.25)
-    c, w = util.generate_PEV_spawns(MAPSELECT, STATION_PER/100)  # to add when front end slider is implemented
+    c, w = util.generate_PEV_spawns(MAPSELECT, STATIONS/271) # to add when front end slider is implemented
     print(c)
     print(w)
     populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], c, w)
