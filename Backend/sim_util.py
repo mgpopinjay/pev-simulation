@@ -62,20 +62,24 @@ FUTURE IDEAS:
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 
-LOCAL = True
-IP_PORT = None
+LOCAL = False
+LOCAL_IP_ADDRESS = None
+REMOTE_IP_ADDRESS = '143.107.108.165'
+IP_PORT = 9000
 
 # Extract the IP address of `LOCAL` is on
 if LOCAL:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
-    IP_PORT = s.getsockname()[0]
+    LOCAL_IP_ADDRESS = s.getsockname()[0]
     s.close()
+    IP_PORT = 9002
 
-API_BASE = 'http://{}:9002/'.format(IP_PORT) if LOCAL else 'https://router.project-osrm.org/'
+API_BASE = f'http://{LOCAL_IP_ADDRESS if LOCAL else REMOTE_IP_ADDRESS}:{IP_PORT}/'
 
 hubstations = {}
 CHARGING_STATIONS = []
+MILES_TO_METERS = 1609.334
 
 def get_osrm_output(start, end):
     '''
@@ -273,7 +277,8 @@ class PEV(object):
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
-        self.power = 25 * 1609.344  # added by me 25 miles is 40234 meters
+        PEV_RANGE_MILES = 25
+        self.power = PEV_RANGE_MILES * MILES_TO_METERS
 
     def __eq__(self, other):
         return self.time == other.time
