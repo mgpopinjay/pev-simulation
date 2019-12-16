@@ -118,7 +118,7 @@
     </div> -->
         <div id="sliders" style="margin-left: -7px; margin-top: 40px">
             <div class="control-section">
-                <div class="control-label">Supply</div>
+                <div class="control-label">SUPPLY</div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Number of PEVs</span>
@@ -126,7 +126,7 @@
                     </label>
                     <input type="text" id="fleet">
                 </p>
-                <div id="sliderfleet" style="margin-top: -10px; height:5px"></div>
+                <div id="sliderfleet" class="ui-slider" style="margin-top: -10px"></div>
                 <!-- <p class="slider-label"> -->
                 <!-- <label style="font-weight:600"> <i class="fa fa-rocket"></i>Rebal PEVs:</label> -->
                 <!-- <input type="text" id="rebalance"> -->
@@ -139,7 +139,7 @@
                     </label>
                     <input type="text" id="charging">
                 </p>
-	              <div id="sliderChargingStations" style="margin-top: -10px; height:5px"></div>
+	              <div id="sliderChargingStations" class="ui-slider" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Defines maximum journey distance for the PEV to serve.</span>
@@ -176,7 +176,7 @@
                 </div>
             </div>
             <div class="control-section" style="margin-top: 10px">
-                <div class="control-label">Demand</div>
+                <div class="control-label">DEMAND</div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Source: 2012 Boston taxi data</span>
@@ -192,7 +192,7 @@
                     </label>
                     <input type="text" id="bikedata">
                 </p>
-                <div id="sliderbike" style="margin-top: -10px"></div>
+                <div id="sliderbike" class="ui-slider" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Last-mile journeys to/from tran stations. Source: sampled from MBTA data from https://github.com/mbta/gtfs-documentation/</span>
@@ -200,7 +200,7 @@
                     </label>
                     <input type="text" id="traindata">
                 </p>
-                <div id="slidertrain" style="margin-top: -10px"></div>
+                <div id="slidertrain" class="ui-slider" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Source: Randomly generated jobs</span>
@@ -208,7 +208,7 @@
                     </label>
                     <input type="text" id="randomdata">
                 </p>
-                <div id="sliderrandom" style="margin-top: -10px"></div>
+                <div id="sliderrandom" class="ui-slider" style="margin-top: -10px"></div>
                 <!-- <p class="slider-label">
                     <label style="font-weight:600"> <i class="fas fa-clock"></i>Sim Length</label>
                     <input type="text" id="simhrs">
@@ -220,12 +220,12 @@
                         <i class="fas fa-clock"></i> Sim Length</label>
                     <input type="text" id="hours">
                 </p>
-                <div id="slider-time" style="margin-top: -10px"></div>
+                <div id="slider-time" class="ui-slider" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600"> <i class="fas fa-arrows-alt-h"></i> Sim Speed</label>
                     <input type="text" id="simspeed">
                 </p>
-                <div id="sliderspeed" style="margin-top: -10px"></div>
+                <div id="sliderspeed" class="ui-slider" style="margin-top: -10px"></div>
                 <p class="slider-label">
 	                  <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Defines the passengers' maximum tolerance for waiting for a service</span>
@@ -233,7 +233,7 @@
                     </label>
                     <input type="text" id="dropping">
                 </p>
-	              <div id="sliderJobDrop" style="margin-top: -10px; height:5px"></div>
+	              <div id="sliderJobDrop" class="ui-slider" style="margin-top: -10px"></div>
             </div>
             <input class="button func" class="btn btn-xs" style="font-weight:600; margin-top: 35px; width: 261px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Simulate" onclick="fleet_sim()">
             
