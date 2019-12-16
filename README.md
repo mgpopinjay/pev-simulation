@@ -83,15 +83,19 @@ Check these Python packages installed: requests, simplejson
     python sim_serv.py
     navigate to http://localhost:8235
 
-#### RUN SERVER ON ML VM
+#### RUN SERVER ON Media Lab Virtual Machine (Ubuntu 16.04)
     #connect to the vm via terminal
-    ssh ptinn@media.mit.edu
+    ssh ptinn@osrm.media.mit.edu
+    password: ChangeThis!
     
     #use the shell file to launch both fron-end and back-end server
     sudo ./run_pev_sim.sh
     
     #exit the terminal view while keeping the server running
     logout
+    
+    #launch the app via browser 
+    http://pev-simulation.media.mit.edu:8000
     
     #to kill the front-end app process, if you need to manually reset the app
     sudo kill -9 `sudo lsof -t -i:8000`
