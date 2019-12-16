@@ -112,7 +112,7 @@ $(function() {
 $(function() {
     $("#slidermax").slider({
         value: 5,
-        min: 0,
+        min: 1,
         max: 5,
         step: 1,
         slide: function(event, ui) {
@@ -263,6 +263,7 @@ $(function() {
         range: true,
         min: 0,
         max: 24,
+        step: 1,
         values: [slider_startHrs, slider_endHrs],
         slide: function(event, ui) {
             $("#hours").val(ui.values[0] + ":00 - " + ui.values[1] + ":00");

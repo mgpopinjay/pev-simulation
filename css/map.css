@@ -38,7 +38,7 @@ body {
 /* CONTROL PANEL */
 
 .control-section {
-    font-size: 16px;
+    font-size: 12px;
     border: 0px solid white;
     border-radius: 5px;
     margin-top: 0px;
@@ -235,7 +235,7 @@ input:checked + .slider:before {
     border-color: white;
     border-collapse: collapse;
     width: 75%;
-    font-size: medium;
+    font-size: small;
 }
 
 #summary thead {
