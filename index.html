@@ -80,11 +80,13 @@
 </div> -->
     <p id="debugclock" style="opacity:0">0</p>
     <p id="debugtripcount" style="opacity:0">0</p>
+
     <!-- <p id="debugspeed" style="color:white">600</p> -->
     <div id="controls">
-        <div id="title-outer">
-            <h1 style="font-style:italic">PEV SimApp V4</h1>
+        <div id="title-outer" style="margin-top: 10px">
+            <h1 style="font-style:italic; font-weight:700">PEV SimApp Demo</h1> <p style="font-weight:100; margin-top: -2px; font-style:italic; font-size:1em; ">Beta V4  |  City Science @ MIT Media Lab</p>
         </div>
+
         <!--   <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p> -->
         <!-- </div> -->
         <!-- <div id="city-select"> -->
@@ -114,13 +116,13 @@
       <i class="fa fa-sellsy"></i> EMISSIONS
       <div id="emission_chart" style="margin-top: 18px"> </div>
     </div> -->
-        <div id="sliders">
+        <div id="sliders" style="margin-left: -7px; margin-top: 40px">
             <div class="control-section">
                 <div class="control-label">Supply</div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
                         <span class="tooltiptext">Number of PEVs</span>
-                        <i class="fa fa-rocket"></i> Fleet Size:
+                        <i class="fa fa-rocket"></i> Fleet Size
                     </label>
                     <input type="text" id="fleet">
                 </p>
@@ -132,76 +134,76 @@
                 <!-- <div id="sliderRebalance" style="margin-top: -10px"></div> -->
 	              <p class="slider-label">
 	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Number of charging stations</span>
-                        <i class="fas fa-bolt"></i> Charging Stations:
+                        <span class="tooltiptext">Defines the number of charging stations, using existing shared bike stations as proxy through random sampling.</span>
+                        <i class="fas fa-bolt"></i> Charging Stations
                     </label>
                     <input type="text" id="charging">
                 </p>
 	              <div id="sliderChargingStations" style="margin-top: -10px; height:5px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Maximum length of each trip</span>
-                        <i class="fas fa-road"></i> Max Distance
+                        <span class="tooltiptext">Defines maximum journey distance for the PEV to serve.</span>
+                        <i class="fas fa-road"></i> Max Job Distance
                     </label>
                     <input type="text" id="maxdist">
                 </p>
                 <div id="slidermax" class="ui-slider" style="margin-top: -10px"></div>
                 <p class="slider-label">
 	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Use exact coordinates from data or approximate</span>
+                        <span class="tooltiptext">OFF: Uses exact coordinates of shared bike stations as origin/destination | ON: Approximate a walkable locations nearby shared bike station as origin/destination.</span>
                         <i class="fas fa-cloud"></i> Fuzzing
                     </label>
                     <input type="text" id="fuzzing">
                 </p>
-                <div>
+                <div style="margin-top: -10px">
                     <label class="switch">
                         <input type="checkbox" id="toggleFuzzing" name="fuzz" onclick="fuzz();"/>
                         <span class="slider"/>
                     </label>
                 </div>
-                <p class="slider-label">
+                <p class="slider-label" style="margin-top: 5px">
 	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Have PEVs move to favorable positions</span>
-                        <i class="fas fa-balance-scale"></i> Rebalancing
+                        <span class="tooltiptext">Allows PEVs to move toward favorable positions (currently using randomized destinations without specific rebalancing heuristics</span>
+                        <i class="fas fa-balance-scale"></i> Fleet Rebalancing
                     </label>
                     <input type="text" id="rebalance">
                 </p>
-                <div>
+                <div style="margin-top: -10px">
                     <label class="switch">
                         <input type="checkbox" id="toggleRebalancing" name="rebalance" onclick="rebalance();"/>
                         <span class="slider"/>
                     </label>
                 </div>
             </div>
-            <div class="control-section">
+            <div class="control-section" style="margin-top: 10px">
                 <div class="control-label">Demand</div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">2012 Taxi data</span>
-                        <i class="fas fa-taxi"></i> Taxi Data
+                        <span class="tooltiptext">Source: 2012 Boston taxi data</span>
+                        <i class="fas fa-taxi"></i> Taxi Trips
                     </label>
                     <input type="text" id="taxidata">
                 </p>
                 <div id="slidertaxi" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext" style="width:240px">2012 Hubway data from http://hubwaydatachallenge.org/trip-history-data/</span>
-                        <i class="fas fa-bicycle"></i> Bike Data
+                        <span class="tooltiptext" style="width:240px">Source: 2018 Hubway(BlueBike) Data</span>
+                        <i class="fas fa-bicycle"></i> Shared Bike Trips
                     </label>
                     <input type="text" id="bikedata">
                 </p>
                 <div id="sliderbike" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">MBTA data from https://github.com/mbta/gtfs-documentation/</span>
-                        <i class="fas fa-train"></i> Train Data
+                        <span class="tooltiptext">Last-mile journeys to/from tran stations. Source: sampled from MBTA data from https://github.com/mbta/gtfs-documentation/</span>
+                        <i class="fas fa-train"></i> Train Station
                     </label>
                     <input type="text" id="traindata">
                 </p>
                 <div id="slidertrain" style="margin-top: -10px"></div>
                 <p class="slider-label">
                     <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">Randomly generated jobs</span>
+                        <span class="tooltiptext">Source: Randomly generated jobs</span>
                         <i class="fas fa-globe"></i> Random Data
                     </label>
                     <input type="text" id="randomdata">
@@ -213,7 +215,9 @@
                 </p>
                 <div id="sliderhrs" style="margin-top: -10px"></div> -->
                 <p class="slider-label">
-                    <label class="label-text" style="font-weight:600"> <i class="fas fa-clock"></i> Sim Length</label>
+                    <label class="label-text" style="font-weight:600"> 
+                        <span class="tooltiptext">Filters the O/D data above by time period</span>
+                        <i class="fas fa-clock"></i> Sim Length</label>
                     <input type="text" id="hours">
                 </p>
                 <div id="slider-time" style="margin-top: -10px"></div>
@@ -224,22 +228,25 @@
                 <div id="sliderspeed" style="margin-top: -10px"></div>
                 <p class="slider-label">
 	                  <label class="label-text" style="font-weight:600">
-                        <span class="tooltiptext">When to drop jobs</span>
-                        <i class="fas fa-tasks"></i> Job Dropping
+                        <span class="tooltiptext">Defines the passengers' maximum tolerance for waiting for a service</span>
+                        <i class="fas fa-tasks"></i> Max Wait Time 
                     </label>
                     <input type="text" id="dropping">
                 </p>
 	              <div id="sliderJobDrop" style="margin-top: -10px; height:5px"></div>
             </div>
+            <input class="button func" class="btn  btn-xs" style="font-weight:600; margin-top: 35px; width: 227px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Simulate" onclick="fleet_sim()">
+
+            <p id="debugclock" style="opacity:0">0</p>
+            <p id="debugtripcount" style="opacity:0">0</p>
+
         </div>
-        <!-- <input class="button traffic" value="Train On" onclick="T_on()"> -->
-        <!-- <input class="button traffic" value="Train Off" onclick="T_off()"> -->
-        <!-- <input class="button func" value="Upload O/D Data" onclick=""> -->
-        <!-- <input class="button func" value="Street Modification" onclick=""> -->
-        <!-- <input class="button func" value="Re-Start"> -->
-        <input class="button func" class="btn  btn-xs" style="font-weight:600; margin-top: 25px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Simulate" onclick="fleet_sim()">
-        <input class="button func" value="Change Map" class="btn  btn-xs" style="font-weight:600; margin-top: 10px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" onclick="changeMap()">
-        <!-- <input class="button func" value="Test Sim" onclick="test_fleet_sim()"> -->
+
+       
+
+        
+
+ <!--        <input class="button func" value="Change Map" class="btn  btn-xs" style="font-weight:600; margin-top: 10px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" onclick="changeMap()"> -->
     </div>
     </div>
     <div id="graphs">
@@ -249,13 +256,13 @@
             <td>Trial</td>
             <td>PEVs</td>
             <td>Charging Stations</td>
-            <td>Max Distance</td>
+            <td>Max Job Distance</td>
             <td>Fuzzing</td>
             <td>Rebalancing</td>
-            <td>Trips</td>
+            <td>Total Trips</td>
             <td>Taxi / Bike / Train / Random</td>
             <td>Trips/Hr</td>
-            <td>Job Dropping Threshold</td>
+            <td>Max Wait Time</td>
             <!-- <td>Pickup Time</td>
             <td>Assignment Time</td> -->
             <td>Avg Wait Time</td>

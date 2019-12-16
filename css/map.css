@@ -126,10 +126,10 @@ body {
 
 .slider-label .label-text .tooltiptext {
     visibility: hidden;
-    width: 120px;
+    width: 220px;
     background-color: black;
     color #fff;
-    text-align: center;
+    text-align: left;
     padding: 5px 5px;
     border-radius: 6px;
 
@@ -141,6 +141,7 @@ body {
 
 .label-text:hover .tooltiptext {
     visibility: visible;
+    text-align: left;
 }
 
 .ui-slider {
