@@ -1225,7 +1225,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     logging.warning(f"Average Car Moving Time: {avgCarMove}")
     # Percent of daytime with passenger
     percentTravelOverDay = round(avgCarTravel/((endHr-startHr)*3600)*100, 1)
-    logging.warning(f"Average Time Utilization Percentage: {percentTravelOverDay}")
+    logging.warning(f"Average Passenger/Parcel Utilization Percentage: {percentTravelOverDay}")
     # Percent of moving time with passenger
     percentTravelOverMove = round(avgCarTravel/avgCarMove*100, 1)
     logging.warning(f"Average Car Utilization Percentage: {percentTravelOverMove}")
@@ -1278,6 +1278,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "AVERAGE CAR NAVIGATION": str(avgCarNavigate),
         "AVERAGE CAR MOVINGTIME": str(avgCarMove),
         "AVERAGE CAR IDLETIME": str(avgCarIdle),
+        "AVERAGE PEOPLE/PARCEL UTILIZATION": str(percentTravelOverDay),
         "AVERAGE CAR UTILIZATION PERCENTAGE": str(percentTravelOverMove),
         "AVERAGE CAR MOVEMENT PERCENTAGE": str(percentMoveOverTotal),
         "AVERAGE CAR IDLE PERCENTAGE": str(percentIdleOverTotal),

@@ -424,6 +424,7 @@ function createTrips(data) {
         <td>${Math.ceil((data['outputs']['WAITTIME AVERAGE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 50th PERCENTILE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 75th PERCENTILE']/60)*100)/100} min</td>
+        <td>${data['outputs']['AVERAGE PEOPLE/PARCEL UTILIZATION']}%</td>
         <td>${data['outputs']['AVERAGE CAR MOVEMENT PERCENTAGE']}%</td>
       </tr>`);
     pickUpTimes = [];
