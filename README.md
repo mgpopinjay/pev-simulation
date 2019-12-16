@@ -1,7 +1,7 @@
 # pev-simulation
 PEV
 
-# PEV SimApp V3 Architecture
+# PEV SimApp V4 Architecture
 
 [Link to edit diagram on LucidChart](https://www.lucidchart.com/invitations/accept/e1dfca89-6a07-4b69-a5e7-98147b56fdfc)
 
@@ -79,7 +79,25 @@ After setting up the OSRM backend the first time, you only need to run the comma
 # Setup frontend & backend server
 Check these Python packages installed: requests, simplejson
 
-#### RUN SERVER
+#### RUN LOCAL SERVER
     python sim_serv.py
     navigate to http://localhost:8235
 
+#### RUN SERVER ON ML VM
+    #connect to the vm via terminal
+    ssh ptinn@media.mit.edu
+    
+    #use the shell file to launch both fron-end and back-end server
+    sudo ./run_pev_sim.sh
+    
+    #exit the terminal view while keeping the server running
+    logout
+    
+    #to kill the front-end app process, if you need to manually reset the app
+    sudo kill -9 `sudo lsof -t -i:8000`
+    
+    #to view logs
+    cat ~/osrm_out.log
+    cat ~/sim_serv.log
+    
+    
