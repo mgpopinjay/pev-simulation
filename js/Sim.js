@@ -51,7 +51,7 @@ var train_triphr = {
 ///////////////////////////////////////////////////////////
 
 var slider_rebalanceSize = 20;
-var slider_fleetSize = 20;
+var slider_fleetSize = 50;
 var slider_chargingStations = 20;
 var slider_jobDrop = 10;
 var slider_bike = 20;
@@ -62,17 +62,17 @@ var slider_maxDist = 5;
 var toggle_fuzz = 0;
 var toggle_rebalance = 0;
 // var slider_hrs = 3;
-var slider_startHrs = 6;
-var slider_endHrs = 18;
+var slider_startHrs = 7;
+var slider_endHrs = 10;
 
 var timeLength = slider_endHrs - slider_startHrs;
 
 $(function() {
     $("#sliderfleet").slider({
-        value: 20,
+        value: 50,
         min: 0,
         max: 2500,
-        step: 1,
+        step: 10,
         slide: function(event, ui) {
             $("#fleet").val(ui.value + " ");
             slider_fleetSize = ui.value;
@@ -86,7 +86,7 @@ $(function() {
         value: 20,
         min: 0,
         max: 271,
-        step: 1,
+        step: 10,
         slide: function(event, ui) {
             $("#charging").val(ui.value + " ");
             slider_chargingStations = ui.value;

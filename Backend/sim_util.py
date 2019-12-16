@@ -62,18 +62,18 @@ FUTURE IDEAS:
 UTILITIES AND CLASSES FOR THE SIMULATOR
 """
 
-LOCAL = False
-LOCAL_IP_ADDRESS = None
+LOCAL = True
+LOCAL_IP_ADDRESS = '127.0.0.1'
 REMOTE_IP_ADDRESS = '18.27.78.188'
 IP_PORT = '9002'
 
 # Extract the IP address of `LOCAL` is on
-if LOCAL:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    LOCAL_IP_ADDRESS = s.getsockname()[0]
-    s.close()
-    IP_PORT = 9002
+#if LOCAL:
+#    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#    s.connect(("8.8.8.8", 80))
+#    LOCAL_IP_ADDRESS = s.getsockname()[0]
+#    s.close()
+#    IP_PORT = 9002
 
 API_BASE = f'http://{LOCAL_IP_ADDRESS if LOCAL else REMOTE_IP_ADDRESS}:{IP_PORT}/'
 

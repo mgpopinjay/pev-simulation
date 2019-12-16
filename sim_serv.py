@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # server code courtesy of https://snipt.net/raw/f8ef141069c3e7ac7e0134c6b58c25bf/?nice
 # @rochacbruno
@@ -17,7 +17,7 @@ from Backend.realsim import runSim
 import os
 # import subprocess
 
-PORT = 9000
+PORT = 8000
 
 
 class ServerHandler(http.server.SimpleHTTPRequestHandler):
