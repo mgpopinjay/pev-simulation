@@ -51,6 +51,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             stations = int(args["stations"])
             jobDrop = int(args["job_drop"])
             maxDist = int(args["max_dist"])
+            battery = int(args["battery"])
             parcFreq = int(args["parcels"])
             randomFreq = int(args["random"])
             bikeFreq = int(args["bike"])
@@ -77,6 +78,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
                 "Fuzz_Toggle": fuzzing,
                 "Rebalance_Toggle": rebalance_toggle,
                 "Max_Dist": maxDist,
+                "Battery": battery,
                 "Spawn_Point": 0,
                 "Start_Hour": startHrs,
                 "End_Hour": endHrs,

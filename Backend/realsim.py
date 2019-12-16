@@ -127,6 +127,7 @@ def runSim():
     STATIONS    = variables["Stations"]     # number of charging stations
     JOB_DROP    = variables["Job_Drop"]     # minutes users will wait for pev before dropping job
     MAX_DIST    = variables["Max_Dist"] * 1609.34
+    BATTERY     = variables["Battery"]      # number of miles a pev can go on a single charge
     SPAWN       = variables["Spawn_Point"]
     START_HR    = variables["Start_Hour"]   # end hour of the simulation
     END_HR      = variables["End_Hour"]     # start hour of the simulation
@@ -238,6 +239,7 @@ def runSim():
         "MAPSELECT": MAPSELECT,
         "NUMCARS": NUMCARS,
         "MAX_DIST": MAX_DIST,
+        "BATTERY": BATTERY,
         "FUZZ_TOGGLE": FUZZ,
         "REBALANCE_TOGGLE": REBALANCE,
         "STATIONS": STATIONS,

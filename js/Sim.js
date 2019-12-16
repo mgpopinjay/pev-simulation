@@ -59,6 +59,7 @@ var slider_random = 20;
 var slider_taxi = 20;
 var slider_train = 20;
 var slider_maxDist = 5;
+var slider_battery = 10;
 var toggle_fuzz = 0;
 var toggle_rebalance = 0;
 // var slider_hrs = 3;
@@ -121,6 +122,20 @@ $(function() {
         }
     });
     $("#maxdist").val($("#slidermax").slider("value") + " mi");
+});
+
+$(function() {
+    $("#sliderbattery").slider({
+        value: 10,
+        min: 0,
+        max: 25,
+        step: 1,
+        slide: function(event, ui) {
+            $("#battery").val(ui.value + " mi");
+            slider_battery = ui.value;
+        }
+    });
+    $("#battery").val($("#sliderbattery").slider("value") + " mi");
 });
 
 $(function() {
@@ -329,6 +344,7 @@ function fleet_sim() {
 	  var fuzzing_toggle = toggle_fuzz;
 	  var rebalance_toggle = toggle_rebalance;
     var max_dist = slider_maxDist;
+    var battery = slider_battery;
     // var publicTransit_size = slider_publicTransit;
     var rebalanceSize = slider_rebalanceSize;
     var starthrs = slider_startHrs;
@@ -350,6 +366,7 @@ function fleet_sim() {
 	      fuzzing: fuzzing_toggle,
         rebalance_toggle: rebalance_toggle,
         max_dist: max_dist,
+        battery: battery,
         code: code,
         mapselect: mapSelect,
     };
@@ -414,6 +431,7 @@ function createTrips(data) {
         <td>${FLEET_SIZE}</td>
         <td>${Math.ceil((data['inputs']['STATIONS']))}</td>
         <td>${Math.ceil(data['inputs']['MAX_DIST']/1609.34)} mi</td>
+        <td>${Math.ceil((data['inputs']['BATTERY']))} mi</td>
         <td>${data['inputs']['FUZZ_TOGGLE']}</td>
         <td>${data['inputs']['REBALANCE_TOGGLE']}</td>
         <td>${data['outputs']['TRIPS'].taxi+data['outputs']['TRIPS'].bike+data['outputs']['TRIPS'].train+data['outputs']['TRIPS'].random}</td>
