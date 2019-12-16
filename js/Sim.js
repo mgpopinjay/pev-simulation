@@ -70,7 +70,7 @@ var timeLength = slider_endHrs - slider_startHrs;
 $(function() {
     $("#sliderfleet").slider({
         value: 50,
-        min: 0,
+        min: 10,
         max: 2500,
         step: 10,
         slide: function(event, ui) {
@@ -84,7 +84,7 @@ $(function() {
 $(function() {
     $("#sliderChargingStations").slider({
         value: 20,
-        min: 0,
+        min: 10,
         max: 271,
         step: 10,
         slide: function(event, ui) {
