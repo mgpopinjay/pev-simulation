@@ -373,9 +373,10 @@ function fleet_sim() {
     START = slider_startHrs * 3600; // start time in seconds
     TIME = START; // not actual time, but loops through the visualizer
     Progress(START);
-    $('#loader').removeClass('disabled');
+    $('#loadingProgress').removeClass('disabled');
+	  load();
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
-        $('#loader').addClass('disabled');
+        $('#loadingProgress').addClass('disabled');
         createStations(data);
         createTrips(data);
     }, 'json');

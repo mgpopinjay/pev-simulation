@@ -285,6 +285,12 @@
             </path>
         </svg>
     </div>
+    <div id="loadingProgress" class="disabled">
+      <label id="loadingText" class="label-text">Text</label>
+      <div id="loadingBarBackdrop">
+	      <div id="loadingBar"></div>
+      </div>
+    </div>
     <div id="progress"></div>
     <div id="myProgress">
         <div id="barBackdrop">
@@ -298,6 +304,27 @@
             <text text-anchor="end" x="100%" y="15" fill="white">12am</text>
         </svg>
     </div>
+    <!-- Loading Bar -->
+	  <script>
+    var loaded = 0;
+    function load() {
+        if (loaded == 0) {
+            loaded = 1;
+            var elem = document.getElementById("loadingBar");
+            var width = 0;
+            var id = setInterval(frame, 100);
+            function frame() {
+                if (width >= 100) {
+                    clearInterval(id);
+                    loaded = 0;
+                } else {
+                    width++;
+                    elem.style.width = width + "%";
+                }
+            }
+        }
+	  }
+    </script>
     <!-- center -->
     <script>
     function drawEmissionChart(emissions) {
