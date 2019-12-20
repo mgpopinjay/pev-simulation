@@ -1150,7 +1150,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
     else:
         return "No cars to update."
 
-def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
+def analyzeResults(logs, freeCars, systemDelta, startHr, endHr):
     pickuptimes = []
     assigntimes = []
     waittimes = []
@@ -1160,7 +1160,10 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "bike": 0,
         "random": 0,
     }
-    for req in finishedRequests:
+    reqCount = 0
+    dropCount = 0
+    for req in logs['finishedRequests']:
+        reqCount += 1
         pickuptimes.append(req.pickuptime)
         assigntimes.append(req.assigntime)
         waittimes.append(req.pickuptime + req.assigntime)
@@ -1169,6 +1172,9 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
             origins[req.origin] = origins[req.origin] + 1
         else:
             origins[req.origin] = 1
+    for req in logs['droppedRequests']:
+        reqCount += 1
+        dropCount += 1
 
     waittimes.sort()
 
@@ -1194,7 +1200,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     # CALCULATE ANALYTICS
     # logging.warning("REBALANCE ON?: "+str(REBALANCE_ON)
     # logging.warning("RANDOM START?: "+str(RANDOM_START)
-    logging.warning("Total Trips: {}".format(len(finishedRequests)))
+    logging.warning("Total Trips: {}".format(len(logs['finishedRequests'])))
     for origin in origins.keys():
         logging.warning(origin.upper()+" trips: {}".format(origins[origin]))
     # Avg time for PEV to travel to request
@@ -1249,7 +1255,9 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
     logging.warning(f"75th Percentile Wait Time: {waitTime75p}")
     # Request wait time distribution by 5 minute bins
     logging.warning(f"Distribution of Wait Times by 5 min: {waitDist}")
-
+    logging.warning(f"# Dropped Requests: {dropCount}")
+    dropPercent = round(dropCount / reqCount * 100, 1)
+    logging.warning(f"% Dropped Requests: {dropPercent}")
     ''' MORE REBALANCING ANALYTICS TODO: Fix this
     logging.warning("NUM REBALANCING TRIPS: "+str(len(rebalance_trips)))
     logging.warning("TIME OF REBALANCE TRIPS: \n"+str(rebaltimes))
@@ -1260,8 +1268,8 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
 
     simOutputs = {
         "TRIPS": origins,
-        "TRIPS_HR": round(len(finishedRequests)/(endHr-startHr), 1),
-        "TRIPS_DAY": len(finishedRequests)/(endHr-startHr)*24,
+        "TRIPS_HR": round(len(logs['finishedRequests'])/(endHr-startHr), 1),
+        "TRIPS_DAY": len(logs['finishedRequests'])/(endHr-startHr)*24,
         "SIM RUNTIME": str(systemDelta),
         "AVERAGE REQUEST PICKUPTIME": str(avgReqPickup),
         "AVERAGE REQUEST ASSIGNTIME": str(avgReqAssign),
@@ -1277,6 +1285,8 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "WAITTIME 50th PERCENTILE": str(waitTime50p),
         "WAITTIME 75th PERCENTILE": str(waitTime75p),
         "WAITTIME DISTRIBUTION": waitDist,
+        "DROPPED REQUESTS": dropCount,
+        "DROPPED REQUEST PERCENTAGE": dropPercent
     }
 
     return simOutputs

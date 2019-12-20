@@ -155,6 +155,7 @@ def runSim():
     simRunning = True
     requests = []
     finishedRequests = []
+    droppedRequests = []
     finishedTrips = {}
     totalCars = {}
     cars = {
@@ -202,7 +203,7 @@ def runSim():
     while simRunning:
         # updateRebalancingCars()
         util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests}, CHARGING_ON, CHARGE_LIMIT)
-        updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips})
+        updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips, 'droppedRequests': droppedRequests})
         if len(requests) > 0:
             rebalancePEVs(simTime, cars, finishedTrips)
         simTime += TIMESTEP
@@ -238,7 +239,7 @@ def runSim():
         "START_HR": START_HR,
         "END_HR": END_HR
     }
-    simOutputs = util.analyzeResults(finishedRequests, cars['freeCars'], systemDelta, START_HR, END_HR)
+    simOutputs = util.analyzeResults({'finishedRequests': finishedRequests, 'droppedRequests': droppedRequests}, cars['freeCars'], systemDelta, START_HR, END_HR)
     # simStations = util.chargingStations
 
     finalData = {}

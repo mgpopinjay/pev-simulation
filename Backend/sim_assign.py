@@ -29,7 +29,14 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
         if len(cars['rebalancingCars']) > 0:
             minCarLs = sorted(list(enumerate(cars['rebalancingCars'])), key=lambda pair: util.dist(pair[1].pos, req.pickup))[:ncars_consider]
             minCarIndexR, minCarR = random.choice(minCarLs)
- 
+
+        considered = []
+        if minCarIndexF is not None:
+            considered.append((minCarIndexF, minCarF))
+        if minCarIndexR is not None:
+            considered.append((minCarIndexR, minCarR))
+        if considered:
+
         if minCarIndexF is not None and minCarIndexR is not None:
             if util.dist(minCarF.pos, req.pickup) <= util.dist(minCarR.pos, req.pickup):
                 minCar = minCarF
@@ -45,18 +52,22 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
             del cars['rebalancingCars'][minCarIndexR]
         else:
             logging.warning("minCar is None!")
-        
+
         prevState = minCar.state
         resp = minCar.update(simTime, logs['finishedTrips'], req=req)
         logging.info(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")
         heapq.heappush(cars['navCars'], minCar)  # move car to busy list
         return "Assigned request to car: {}".format(minCar.id)
 
-    else:  # If there are no available cars, push back their request time by a second/specified time step
-        req.assigntime += timeStep
-        req.time += timeStep
-        heapq.heappush(requests, req)
-        return "Pushed back request"
+    else:  # If there are no available cars
+        if req.assigntime >= 5*60:  # Drop request if older than 12 mins
+            logs['droppedRequests'].append(req)
+            return "Dropped request"
+        else:  # Push back their request time by a second/specified time step
+            req.assigntime += timeStep
+            req.time += timeStep
+            heapq.heappush(requests, req)
+            return "Pushed back request"
 
 def updateRequests(simTime, timeStep, cars, requests, logs):
     '''
