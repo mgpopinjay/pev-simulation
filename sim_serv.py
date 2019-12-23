@@ -27,7 +27,20 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         logging.debug("======= GET STARTED =======")
         logging.debug(self.headers)
-        http.server.SimpleHTTPRequestHandler.do_GET(self)
+        if self.path == "/loading":
+            self.send_response(200, "OK")
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header("Content-type", "text")
+            self.end_headers()
+            curpath = os.path.dirname(os.path.abspath(__file__))
+            new_path = curpath+"./loadprogress.txt"
+            with open(new_path, 'r') as file:
+                data = file.read()
+                self.wfile.write(data.encode("utf-8"))
+
+        else:
+            http.server.SimpleHTTPRequestHandler.do_GET(self)
 
     def do_OPTIONS(self):
         self.send_response(200, "ok")
@@ -105,6 +118,7 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "json")
             self.end_headers()
             self.wfile.write(json.dumps(resp).encode("utf-8"))
+
         else:
             testdata = json.load(open("test.JSON"))
             self.send_response(200, "OK")
@@ -153,5 +167,6 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
 # dynamic_trips.TripRandomizer().loadLocsFile(".loc_file")
 # dynamic_trips.TripRandomizer().loadRidesFile(".rides_def")
 Handler = ServerHandler
-httpd = socketserver.TCPServer(("", PORT), Handler)
+# httpd = socketserver.TCPServer(("", PORT), Handler)  # Single threaded
+httpd = http.server.ThreadingHTTPServer(("", PORT), Handler)  # Multi threaded
 httpd.serve_forever()
