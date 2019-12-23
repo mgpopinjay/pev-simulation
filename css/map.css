@@ -71,6 +71,7 @@ body {
 	  height: 30px;
     background-color: #ff66cc;
     border-radius: 30px;
+    transition: .5s;
 }
 
 /* CONTROL PANEL */

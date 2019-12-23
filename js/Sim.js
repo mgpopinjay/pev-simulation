@@ -377,7 +377,7 @@ function fleet_sim() {
     TIME = START; // not actual time, but loops through the visualizer
     Progress(START);
     $('#loadingProgress').removeClass('disabled');
-	  load();
+	  // load();
     $.post('/fleetsim', JSON.stringify(sim_params), function(data) {
         $('#loadingProgress').addClass('disabled');
         createStations(data);
@@ -406,6 +406,9 @@ function getLoadProgress() {
     $.get('/loading', function(data) {
         // Replace the line below with a line to update the Progress bar visual
         console.log(data);
+        var elem = document.getElementById("loadingBar");
+        var width = parseFloat(data) * 100;
+        elem.style.width = width + "%";
         if (data == '1.000') {
             clearInterval(LOADLOOP);
         }
