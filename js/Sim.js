@@ -1,4 +1,5 @@
 "use strict";
+// const fs = require('fs')
 var map;
 var stationGroup = L.layerGroup();
 var mapID = 0;
@@ -9,6 +10,7 @@ var mapSettings = {
 };
 var LOOPPERIOD = 10; // milliseconds
 var LOOPFREQ = 1000 / LOOPPERIOD;
+var LOADLOOPPERIOD = 500;
 var SPEED = 600;
 var SUBWAYSPEED = 1000 / 200;
 var pickUpTimes = [];
@@ -24,6 +26,7 @@ var PAUSED = false;
 var RUNNING = {};
 var PENDING_TRIPS = [];
 var LOOP;
+var LOADLOOP;
 var START = 0;
 var TIME = 0;
 // var t0 = 0;
@@ -228,7 +231,7 @@ $(function() {
 
 function fuzz() {
 	  var first = true;
-	  if(first) { 
+	  if(first) {
         rebalance();
 	      first = false;
     }
@@ -380,6 +383,8 @@ function fleet_sim() {
         createStations(data);
         createTrips(data);
     }, 'json');
+    console.log("Beginning sim");
+    updateLoadingProgress();
 }
 
 
@@ -389,6 +394,22 @@ function test_fleet_sim() {
     $.post('/', function(data) {
         createTrips(data);
     }, 'json');
+}
+
+function updateLoadingProgress() {
+    console.log("loading");
+    // Run getLoadProgress() every LOADLOOPPERIOD (default=500ms)
+    LOADLOOP = setInterval(() => getLoadProgress(), LOADLOOPPERIOD);
+}
+
+function getLoadProgress() {
+    $.get('/loading', function(data) {
+        // Replace the line below with a line to update the Progress bar visual
+        console.log(data);
+        if (data == '1.000') {
+            clearInterval(LOADLOOP);
+        }
+    }, 'text');
 }
 
 /**

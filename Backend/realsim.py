@@ -31,6 +31,25 @@ TODO LIST:
 - Speed up by preprocessing hubway data in exterior file
 """
 
+def clearLoadProgress():
+    '''
+    Reset progress bar
+    '''
+    with open("./loadprogress.txt", 'w') as outfile:
+        outfile.write('0.000')
+    return
+
+def updateLoadProgress(remainingRequests, totalRequests, lastUpdate):
+    '''
+    Update progress bar
+    '''
+    if time.time() - lastUpdate >= 0.500:
+        with open("./loadprogress.txt", 'w') as outfile:
+            ratioDone = (totalRequests - remainingRequests) / totalRequests
+            outfile.write('{:.3f}'.format(ratioDone))
+        return time.time()
+    return None
+
 def loadVariables():
     '''
     Load the simulation variables from file
@@ -113,6 +132,7 @@ def rebalancePEVs(simTime, cars, finishedTrips):
 def runSim():
     logging.warning("Running simulation...")
     variables = loadVariables()
+    clearLoadProgress()
 
     """
     TUNING VARIABLES
@@ -157,9 +177,9 @@ def runSim():
     FUZZ = "Off"
     REBALANCE = "Off"
     if FUZZ_ON:
-           FUZZ = "On"
+        FUZZ = "On"
     if REBALANCE_ON:
-           REBALANCE = "On"
+        REBALANCE = "On"
 
     """
     THE SIMULATOR
@@ -210,6 +230,8 @@ def runSim():
     print(w)
     populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], c, w)
     util.CHARGING_STATIONS = c
+    totalRequests = len(requests)
+    lastUpdate = time.time()
 
     while simRunning:
         # updateRebalancingCars()
@@ -218,9 +240,13 @@ def runSim():
         if len(requests) > 0 and REBALANCE_ON:
             rebalancePEVs(simTime, cars, finishedTrips)
         simTime += TIMESTEP
+        newUpdate = updateLoadProgress(len(requests), totalRequests, lastUpdate)
+        if newUpdate is not None:
+            lastUpdate = newUpdate
         if simTime > simEndTime and len(requests) == 0 and len(cars['busyCars']) == 0 and len(cars['waitCars']) == 0 and len(cars['navCars']) == 0:
             simRunning = False
 
+    updateLoadProgress(len(requests), totalRequests, 0)
     logging.warning("Sim Done")
     systemEndTime = time.time()
     systemDelta = systemEndTime - systemStartTime
