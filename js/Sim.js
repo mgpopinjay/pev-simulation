@@ -463,6 +463,7 @@ function createTrips(data) {
         <td>${data['outputs']['TRIPS'].taxi}  / ${data['outputs']['TRIPS'].bike}  /  ${data['outputs']['TRIPS'].train}  /  ${data['outputs']['TRIPS'].random}</td>
         <td>${data['outputs']['TRIPS_HR']}</td>
         <td>${data['inputs']['JOB_DROP']} min</td>
+        <td>${data['outputs']['SIM RUNTIME']/60} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME AVERAGE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 50th PERCENTILE']/60)*100)/100} min</td>
         <td>${Math.ceil((data['outputs']['WAITTIME 75th PERCENTILE']/60)*100)/100} min</td>
