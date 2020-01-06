@@ -407,8 +407,10 @@ function getLoadProgress() {
         // Replace the line below with a line to update the Progress bar visual
         console.log(data);
         var elem = document.getElementById("loadingBar");
+        var text = document.getElementById("loadingText");
         var width = parseFloat(data) * 100;
         elem.style.width = width + "%";
+        text.innerHTML = "[" + parseInt(width) + "%]";
         if (data == '1.000') {
             clearInterval(LOADLOOP);
         }
