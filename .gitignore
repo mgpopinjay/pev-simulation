@@ -95,3 +95,6 @@ Backend/Results/**
 Backend/Inputs/
 
 Backend/test\.py
+
+# npm
+deckgl/node_modules/

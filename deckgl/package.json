@@ -1,0 +1,16 @@
+{
+  "name": "pev-viz",
+  "version": "1.0.0",
+  "description": "Visualizing PEV trips using deck.gl",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@deck.gl/core": "^8.1.7",
+    "@deck.gl/geo-layers": "^8.1.7",
+    "@deck.gl/layers": "^8.1.7"
+  }
+}
