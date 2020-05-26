@@ -1,6 +1,7 @@
 import {Deck} from '@deck.gl/core';
 import {TripsLayer} from '@deck.gl/geo-layers';
 
+alert("Hello, World!");
 /*
 const DATA_URL = {
 	TRIPS: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
