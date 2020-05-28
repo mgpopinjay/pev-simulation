@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
 	mode: 'development',
@@ -15,5 +16,6 @@ module.exports = {
     alias: {
       'mapbox-gl$': path.resolve('./node_modules/mapbox-gl/dist/mapbox-gl.js')
     }
-	}
+	},
+  plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };

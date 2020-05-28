@@ -2,9 +2,7 @@ import {Deck} from '@deck.gl/core';
 import {TripsLayer} from '@deck.gl/geo-layers';
 import mapboxgl from 'mapbox-gl';
 
-const DATA_URL = {
-	TRIPS: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
-};
+const TRIPS = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
 
 const INITIAL_VIEW_STATE = {
 	longitude: -71.6,
@@ -14,7 +12,7 @@ const INITIAL_VIEW_STATE = {
   pitch: 30
 };
 
-mapboxgl.accessToken = "secret"
+mapboxgl.accessToken = process.env.MapboxAccessToken;
 
 const map = new mapboxgl.Map({
   container: 'map',
