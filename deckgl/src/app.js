@@ -1,26 +1,45 @@
 import {Deck} from '@deck.gl/core';
 import {TripsLayer} from '@deck.gl/geo-layers';
-
-alert("Hello, World!");
+import mapboxgl from 'mapbox-gl';
 
 const DATA_URL = {
 	TRIPS: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json'
 };
 
 const INITIAL_VIEW_STATE = {
-	longitude: -74,
-	latitute: 40.72,
+	longitude: -71.6,
+	latitude: 42.22,
 	zoom: 13,
-	pitch: 45,
-	bearing: 0
+  bearing: 0,
+  pitch: 30
 };
 
-const deckgl = new Deck({
-	initialViewState: INITIAL_VIEW_STATE,
-	layers: [
-		new TripsLayers({
-			data: DATA_URL,
-		})
-	]
+mapboxgl.accessToken = "secret"
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/light-v9',
+  // Note: deck.gl will be in charge of interaction and event handling
+  interactive: false,
+  center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
+  zoom: INITIAL_VIEW_STATE.zoom,
+  bearing: INITIAL_VIEW_STATE.bearing,
+  pitch: INITIAL_VIEW_STATE.pitch
 });
 
+export const deck = new Deck({
+	canvas: 'deck-canvas',
+  width: '100%',
+  height: '100%',
+	initialViewState: INITIAL_VIEW_STATE,
+	controller: true,
+  onViewStateChange: ({viewState}) => {
+    map.jumpTo({
+      center: [viewState.longitude, viewState.latitude],
+      zoom: viewState.zoom,
+      bearing: viewState.bearing,
+      pitch: viewState.pitch
+    });
+  }
+	//layers: [new TripsLayer({})]
+});
