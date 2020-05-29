@@ -16,7 +16,7 @@ mapboxgl.accessToken = process.env.MapboxAccessToken;
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/light-v9',
+  style: 'mapbox://styles/mapbox/dark-v9',
   // Note: deck.gl will be in charge of interaction and event handling
   interactive: false,
   center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
