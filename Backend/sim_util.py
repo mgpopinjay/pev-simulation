@@ -81,6 +81,30 @@ hubstations = {}
 CHARGING_STATIONS = []
 MILES_TO_METERS = 1609.334
 
+TRIPS_FILE = 'deck_trips.json'
+
+deck_json = []
+
+def haversine(point1, point2):
+    R = 6371000 # radius of earth in meters
+
+    dlat = math.radians(point2[1] - point1[1])
+    dlon = math.radians(point2[0] - point1[0])
+
+    lat1 = math.radians(point1[1])
+    lat2 = math.radians(point2[1])
+    lon1 = math.radians(point1[0])
+    lon2 = math.radians(point2[0])
+
+    a = (math.sin(dlat / 2.0) ** 2) + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon / 2.0) ** 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    dist = R * c
+
+    return dist
+
+def add_all():
+    with open(TRIPS_FILE, mode='w', encoding='utf-8') as tripsjson:
+        json.dump(deck_json[:10], tripsjson)
 
 def get_osrm_output(start, end):
     '''
@@ -185,6 +209,7 @@ class Request(object):
         self.traveltime = round(find_total_duration(self.osrm))
         self.traveldist = find_total_distance(self.osrm)
         self.kind = kind
+        self.add_trip()
 
     def __eq__(self, other):
         return self.original_time == other.original_time
@@ -209,6 +234,37 @@ class Request(object):
 
     def __str__(self):
         return f'Print Method: type: {type(self)}, time: {self.time}, pickup: {self.pickup}, dropoff: {self.dropoff}'
+
+    def add_trip(self):
+        trip = json.loads(self.osrm)
+        waypoints = trip["routes"][0]["legs"][0]["steps"]
+
+        d = {}
+
+        path = []
+        timestamps = []
+        for step in waypoints:
+            for loc in step["intersections"]:
+                path.append(loc["location"])
+            path.append(step["maneuver"]["location"])
+
+
+        accumulated_time = self.time
+        for i in range(len(path)):
+            if i is 0:
+                timestamps.append(accumulated_time)
+            else:
+                dist = haversine(path[i - 1], path[i]) # distance between points
+                if self.traveldist != 1:
+                    accumulated_time += (dist * self.traveltime) / self.traveldist
+                timestamps.append(accumulated_time)
+
+
+        d["path"] = path
+        d["timestamps"] = timestamps
+
+        deck_json.append(d)
+
 
 
 class Navigation(Request):
@@ -668,6 +724,7 @@ def send_to_visualizer(data, filename):
     new_path = curpath+"/Results/"+filename
     with open(new_path, 'w') as outfile:
         json.dump(data, outfile)
+    add_all()
 
 
 def gaussian_randomizer(location, distance, fuzzing_enabled):
