@@ -104,7 +104,7 @@ def haversine(point1, point2):
 
 def add_all():
     with open(TRIPS_FILE, mode='w', encoding='utf-8') as tripsjson:
-        json.dump(deck_json[:10], tripsjson)
+        json.dump(deck_json, tripsjson)
 
 def get_osrm_output(start, end):
     '''
@@ -255,7 +255,7 @@ class Request(object):
                 timestamps.append(accumulated_time)
             else:
                 dist = haversine(path[i - 1], path[i]) # distance between points
-                if self.traveldist != 1:
+                if self.traveldist != 0:
                     accumulated_time += (dist * self.traveltime) / self.traveldist
                 timestamps.append(accumulated_time)
 

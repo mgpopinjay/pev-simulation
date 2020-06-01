@@ -1,22 +1,37 @@
-const path = require('path');
-const webpack = require('webpack');
-require('dotenv').config();
+// NOTE: To use this example standalone (e.g. outside of deck.gl repo)
+// delete the local development overrides at the bottom of this file
 
-module.exports = {
-	mode: 'development',
-	entry: './src/app.js',
-	devtool: 'inliine-source-map',
-	devServer: {
-		contentBase: './dist',
-	},
-	output: {
-		filename: 'main.js',
-		path: path.resolve(__dirname, 'dist'),
-	},
-  resolve: {
-    alias: {
-      'mapbox-gl$': path.resolve('./node_modules/mapbox-gl/dist/mapbox-gl.js')
-    }
-	},
+const webpack = require('webpack');
+
+const CONFIG = {
+  mode: 'development',
+
+  entry: {
+    app: './app.js'
+  },
+
+  output: {
+    library: 'App'
+  },
+
+  module: {
+    rules: [
+      {
+        // Transpile ES6 to ES5 with babel
+        // Remove if your app does not use JSX or you don't need to support old browsers
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: [/node_modules/],
+        options: {
+          presets: ['@babel/preset-react']
+        }
+      }
+    ]
+  },
+
+  // Optional: Enables reading mapbox token from environment variable
   plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };
+
+// This line enables bundling against src in this repo rather than installed module
+module.exports = env => (env ? require('../../webpack.config.local')(CONFIG)(env) : CONFIG);

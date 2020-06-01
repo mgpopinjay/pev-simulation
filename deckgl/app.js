@@ -12,7 +12,8 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 // Source data CSV
 const DATA_URL = {
   TRIPS:
-    'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/trips/trips-v7.json' // eslint-disable-line
+    'deck_trips.json' // eslint-disable-line
+    //'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/trips/trips-v7.json' // eslint-disable-line
 };
 
 const ambientLight = new AmbientLight({
@@ -23,7 +24,7 @@ const ambientLight = new AmbientLight({
 const pointLight = new PointLight({
   color: [255, 255, 255],
   intensity: 2.0,
-  position: [-74.05, 40.7, 8000]
+  position: [-71.06, 42.35, 8000]
 });
 
 const lightingEffect = new LightingEffect({ambientLight, pointLight});
@@ -44,8 +45,8 @@ const DEFAULT_THEME = {
 };
 
 const INITIAL_VIEW_STATE = {
-  longitude: -74,
-  latitude: 40.72,
+  longitude: -71.06,
+  latitude: 42.35,
   zoom: 13,
   pitch: 45,
   bearing: 0

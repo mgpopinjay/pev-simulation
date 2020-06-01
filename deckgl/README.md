@@ -4,8 +4,8 @@
 
 $ yarn <br/>
 $ npm run build
+$ export MapboxAccessToken=<your mapbox key>
 
-Set your mapbox key inside of the ".env" file
 
 ## Run
 $ npm run start
