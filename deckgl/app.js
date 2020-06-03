@@ -74,8 +74,8 @@ export default class App extends Component {
 
   _animate() {
     const {
-      loopLength = 1800, // unit corresponds to the timestamp in source data
-      animationSpeed = 30 // unit time per second
+      loopLength = 86400, // unit corresponds to the timestamp in source data
+      animationSpeed = 100 // unit time per second
     } = this.props;
     const timestamp = Date.now() / 1000;
     const loopTime = loopLength / animationSpeed;
@@ -101,8 +101,8 @@ export default class App extends Component {
         getPath: d => d.path,
         getTimestamps: d => d.timestamps,
         getColor: d => (d.vendor === 0 ? theme.trailColor0 : theme.trailColor1),
-        opacity: 0.3,
-        widthMinPixels: 2,
+        opacity: 0.6,
+        widthMinPixels: 3,
         rounded: true,
         trailLength,
         currentTime: this.state.time,
