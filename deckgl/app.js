@@ -4,16 +4,15 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import {AmbientLight, PointLight, LightingEffect} from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
-import {TripsLayer} from '@deck.gl/geo-layers';
+import {TripsLayer, IconLayer} from '@deck.gl/geo-layers';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
 // Source data CSV
 const DATA_URL = {
-  TRIPS:
-    'deck_trips.json' // eslint-disable-line
-    //'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/trips/trips-v7.json' // eslint-disable-line
+  TRIPS: 'deck_trips.json', // eslint-disable-line
+  WAYPOINTS: 'waypoints.json' // eslint-disable-line
 };
 
 const ambientLight = new AmbientLight({
@@ -37,9 +36,9 @@ const material = {
 };
 
 const DEFAULT_THEME = {
-  buildingColor: [74, 80, 87],
   trailColor0: [253, 128, 93],
   trailColor1: [23, 184, 190],
+  iconColor: [255, 102, 204],
   material,
   effects: [lightingEffect]
 };
@@ -88,8 +87,8 @@ export default class App extends Component {
 
   _renderLayers() {
     const {
-      buildings = DATA_URL.BUILDINGS,
       trips = DATA_URL.TRIPS,
+      waypoints = DATA_URL.WAYPOINTS,
       trailLength = 180,
       theme = DEFAULT_THEME
     } = this.props;
@@ -108,6 +107,13 @@ export default class App extends Component {
         currentTime: this.state.time,
 
         shadowEnabled: false
+      }),
+      new IconLayer({
+        id: 'waypoints',
+        data: waypoints,
+        getPosition: d => d.coordinates,
+        getSize: d => 5,
+        getColor: d => theme.iconColor
       })
     ];
   }
