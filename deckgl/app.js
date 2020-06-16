@@ -13,7 +13,7 @@ const MAPBOX_TOKEN = "pk.eyJ1Ijoic2VhZmFuZyIsImEiOiJja2FyMmZtNWYwYnk4MnNudG9laTd
 // Source data CSV
 const DATA_URL = {
   TRIPS: 'deck_trips.json', // eslint-disable-line
-  WAYPOINTS: 'overview1.json' // eslint-disable-line
+  WAYPOINTS: 'overview.json' // eslint-disable-line
 };
 
 const ICON_MAPPING = {
