@@ -4,15 +4,20 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import {AmbientLight, PointLight, LightingEffect} from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
-import {TripsLayer, IconLayer} from '@deck.gl/geo-layers';
+import {TripsLayer} from '@deck.gl/geo-layers';
+import {IconLayer} from '@deck.gl/layers';
 
 // Set your mapbox token here
-const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
+const MAPBOX_TOKEN = "pk.eyJ1Ijoic2VhZmFuZyIsImEiOiJja2FyMmZtNWYwYnk4MnNudG9laTd3Mm15In0.PDAK7JcSq3qNtN7l5-U3nQ"
 
 // Source data CSV
 const DATA_URL = {
   TRIPS: 'deck_trips.json', // eslint-disable-line
-  WAYPOINTS: 'waypoints.json' // eslint-disable-line
+  WAYPOINTS: 'overview1.json' // eslint-disable-line
+};
+
+const ICON_MAPPING = {
+	marker: {x: 0, y: 0, width: 128, height: 128, mask: true}
 };
 
 const ambientLight = new AmbientLight({
@@ -36,9 +41,8 @@ const material = {
 };
 
 const DEFAULT_THEME = {
-  trailColor0: [253, 128, 93],
-  trailColor1: [23, 184, 190],
-  iconColor: [255, 102, 204],
+  trailColor: [255, 102, 204],
+  iconColor: [64, 255, 25],
   material,
   effects: [lightingEffect]
 };
@@ -99,7 +103,7 @@ export default class App extends Component {
         data: trips,
         getPath: d => d.path,
         getTimestamps: d => d.timestamps,
-        getColor: d => (d.vendor === 0 ? theme.trailColor0 : theme.trailColor1),
+        getColor: d => theme.trailColor,
         opacity: 0.6,
         widthMinPixels: 3,
         rounded: true,
@@ -111,8 +115,12 @@ export default class App extends Component {
       new IconLayer({
         id: 'waypoints',
         data: waypoints,
+				iconAtlas: 'images/icon-atlas.png',
+				iconMapping: ICON_MAPPING,
+				getIcon: d => 'marker',
+				sizeScale: 10,
         getPosition: d => d.coordinates,
-        getSize: d => 5,
+        getSize: 5,
         getColor: d => theme.iconColor
       })
     ];
