@@ -98,7 +98,7 @@ export default class App extends Component {
     } = this.props;
 
     return [
-      new TripsLayer({
+      /*new TripsLayer({
         id: 'trips',
         data: trips,
         getPath: d => d.path,
@@ -111,7 +111,7 @@ export default class App extends Component {
         currentTime: this.state.time,
 
         shadowEnabled: false
-      }),
+      }),*/
       new IconLayer({
         id: 'waypoints',
         data: waypoints,
@@ -121,6 +121,7 @@ export default class App extends Component {
 				sizeScale: 10,
         getPosition: d => d.coordinates,
         getSize: 5,
+				getAngle: 90,
         getColor: d => theme.iconColor
       })
     ];

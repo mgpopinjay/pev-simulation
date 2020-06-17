@@ -2,20 +2,28 @@
 const fs = require('fs');
 
 let polyline = require("./polyline.js");
-let json = require('./polyline.json');
+let sim_results = require('./sim_results_3546.json');
 
-console.log(polyline);
-let waypoints = polyline.decode(json["overview_polyline"]);
-console.log(waypoints);
+let trips = sim_results["fleet"]["0"]["history"];
 
-let overview = [];
-let point;
+console.log(trips);
+/*
+let routes = [];
+let route;
 
-for (point of waypoints) {
-	console.log(point);
-	overview.push({"coordinates":point.reverse()});
+for (route of ) {
+	let overview = [];
+	let point;
+
+	for (point of route) {
+		console.log(point);
+		overview.push({"coordinates":point.reverse()});
+	}
+	
 }
-console.log(overview);
+
+console.log(routes);
 let data = JSON.stringify(overview);
 console.log(data);
 fs.writeFileSync('overview.json', data);
+*/
