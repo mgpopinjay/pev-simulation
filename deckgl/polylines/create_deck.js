@@ -20,13 +20,19 @@ for (const [key, value] of Object.entries(trips)) {
 	for (route of pev) {
 		// console.log(route);
 		if ("overview_polyline" in route && "steps_polyline" in route) {
-			let trip = polyline.decode(route["overview_polyline"]);
+			//let trip = polyline.decode(route["overview_polyline"]);
+			trip = [];
+			for (const t of route["steps_polyline"]) {
+				trip.push(polyline.decode(t));
+				console.log(t);
+			}
 			
 			//let overview = [];
 			let point;
+			let color = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)];
 			for (point of trip) {
-				//console.log(point);
-				overview.push({"coordinates":point.reverse()});
+				console.log("Point:" + point);
+				overview.push({"coordinates":point.reverse(), "color":color});
 			}
 			
 			routes.push(overview);
@@ -34,8 +40,8 @@ for (const [key, value] of Object.entries(trips)) {
 	}
 }
 
-// console.log(routes);
-console.log(overview);
-let data = JSON.stringify(overview);
-console.log(data);
-fs.writeFileSync('overview.json', data);
+// // console.log(routes);
+// console.log(overview);
+// let data = JSON.stringify(overview);
+// console.log(data);
+// fs.writeFileSync('overview.json', data);

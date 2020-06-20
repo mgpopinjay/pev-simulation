@@ -122,7 +122,7 @@ export default class App extends Component {
         getPosition: d => d.coordinates,
         getSize: 5,
 				getAngle: 90,
-        getColor: d => theme.iconColor
+        getColor: d => d.color
       })
     ];
   }
