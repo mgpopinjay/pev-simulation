@@ -32,8 +32,6 @@ for (const [key, value] of Object.entries(trips)) {
 					trip.push(s);
 				}
 			}
-			let trip2 = polyline.decode(route["overview_polyline"])
-			
 			//let overview = [];
 			let point;
 			let color = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)];
@@ -41,12 +39,6 @@ for (const [key, value] of Object.entries(trips)) {
 				console.log("Point:" + point);
 				overview.push({"coordinates":point.reverse(), "color":color});
 			}
-			color = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)];
-			for (point of trip2) {
-				console.log("Point:" + point);
-				overview.push({"coordinates":point.reverse(), "color":color});
-			}
-			
 			routes.push(overview);
 		}
 	}

@@ -1374,6 +1374,7 @@ def getCarData(totalCars, finishedTrips):
                 tripJson["type"] = trip.kind
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             else:
+                tripJson["distance"] = trip.traveldist
                 tripJson["steps_polyline"] = parse_for_visualizer_steps(trip.osrm)
                 tripJson["overview_polyline"] = parse_for_visualizer_whole(trip.osrm)
                 tripJson["start_point"] = trip.pickup

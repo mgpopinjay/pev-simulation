@@ -12,7 +12,7 @@ const MAPBOX_TOKEN = "pk.eyJ1Ijoic2VhZmFuZyIsImEiOiJja2FyMmZtNWYwYnk4MnNudG9laTd
 
 // Source data CSV
 const DATA_URL = {
-  TRIPS: 'deck_trips.json', // eslint-disable-line
+  TRIPS: 'trips.json', // eslint-disable-line
   WAYPOINTS: 'overview.json' // eslint-disable-line
 };
 
@@ -98,7 +98,7 @@ export default class App extends Component {
     } = this.props;
 
     return [
-      /*new TripsLayer({
+      new TripsLayer({
         id: 'trips',
         data: trips,
         getPath: d => d.path,
@@ -111,8 +111,8 @@ export default class App extends Component {
         currentTime: this.state.time,
 
         shadowEnabled: false
-      }),*/
-      new IconLayer({
+      })
+      /*new IconLayer({
         id: 'waypoints',
         data: waypoints,
 				iconAtlas: 'images/icon-atlas.png',
@@ -123,7 +123,7 @@ export default class App extends Component {
         getSize: 5,
 				getAngle: 90,
         getColor: d => d.color
-      })
+      })*/
     ];
   }
 
