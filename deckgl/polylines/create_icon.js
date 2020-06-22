@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 let polyline = require("./polyline.js");
-let sim_results = require('./sim_results_3546.json');
+let sim_results = require('./sim_results_7484.json');
 
 let trips = sim_results["fleet"];
 
@@ -12,7 +12,7 @@ let trips = sim_results["fleet"];
 let routes = [];
 let overview = []; // holds all coordinates from every trip
 for(var i = 0; i < 207; i++) { // remove most trips
-	delete trips["" + i];
+	//delete trips["" + i];
 }
 
 for (const [key, value] of Object.entries(trips)) {
