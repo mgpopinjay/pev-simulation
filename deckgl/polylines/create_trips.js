@@ -17,7 +17,7 @@ function radians(degrees) {
 }
 
 function haversine(point1, point2) {
-	let R = 6371000; // radius of earth in meters
+		let R = 6371000; // radius of earth in meters
 
     let dlat = radians(point2[1] - point1[1]);
     let dlon = radians(point2[0] - point1[0]);
@@ -25,7 +25,7 @@ function haversine(point1, point2) {
     let lat1 = radians(point1[1]);
     let lat2 = radians(point2[1]);
     let lon1 = radians(point1[0]);
-	let lon2 = radians(point2[0]);
+		let lon2 = radians(point2[0]);
 	
     let a = (Math.sin(dlat / 2.0) ** 2) + Math.cos(lat1) * Math.cos(lat2) * (Math.sin(dlon / 2.0) ** 2);
     let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -59,9 +59,11 @@ for (const [key, value] of Object.entries(fleet)) {
 					timestamps.push(accumulated_time);
 				}
 				else {
-					let dist = haversine(path[i - 1], path[i])
-					accumulated_time += (dist * route["duration"]) / route["distance"]
-					timestamps.push(accumulated_time)
+					let dist = haversine(path[i - 1], path[i]);
+					if (route["distance"] != 0) {
+						accumulated_time += (dist * route["duration"]) / route["distance"];
+					}
+					timestamps.push(accumulated_time);
 				}
 			}
 			trips.push({"path":path, "timestamps":timestamps});
