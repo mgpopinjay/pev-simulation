@@ -7,7 +7,7 @@ let sim_results = require('./sim_results_7484.json');
 let fleet = sim_results["fleet"];
 
 for(var i = 0; i < 150; i++) { // remove most trips
-	delete fleet["" + i];
+	//delete fleet["" + i];
 }
 
 //console.log(trips);
@@ -53,6 +53,7 @@ for (const [key, value] of Object.entries(fleet)) {
 					path.push(s.reverse());
 				}
 			}
+			//path = polyline.decode(route["overview_polyline"]);
 			let accumulated_time = route["start_time"];
 			for (var i = 0; i < path.length; i++) {
 				if (i == 0) {
