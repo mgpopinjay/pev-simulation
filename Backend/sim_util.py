@@ -1119,16 +1119,16 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
-            heapq.heappush(cars['chargingCars'], car)
+            heapq.heappush(cars['maintenanceCars'], car)
             updatedCars.append(str(car.id))
 
             if len(cars['navToChargeCars']) == 0:
                 break
 
-    if len(cars['chargingCars']) > 0:
-        while simTime >= cars['chargingCars'][0].time:
+    if len(cars['maintenanceCars']) > 0:
+        while simTime >= cars['maintenanceCars'][0].time:
             # end charging
-            car = heapq.heappop(cars['chargingCars'])
+            car = heapq.heappop(cars['maintenanceCars'])
             car.power = 25 * 1609.34
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
@@ -1136,7 +1136,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
             cars['freeCars'].append(car)
             updatedCars.append(str(car.id))
 
-            if len(cars['chargingCars']) == 0:
+            if len(cars['maintenanceCars']) == 0:
                 break
 
     if len(cars['rebalancingCars']) > 0:

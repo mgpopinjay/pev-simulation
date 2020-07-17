@@ -173,9 +173,16 @@ def runSim():
         'navCars': [],
         'waitCars': [],
         'busyCars': [],
-        'rebalancingCars': [],
-        'navToChargeCars': [],
-        'chargingCars': []
+        'rebalancingCars': [], # not part of parallel state machine (psm)
+        'navToChargeCars': [], # not in psm, cars charge when maintenanced
+        'maintenanceCars': []
+    }
+    dispatchers = {
+        'freeDispatchers': [], # idle
+        'navDispatchers': [], # going to or from PEV
+        'waitDispatchers': [], # on standby for PEV
+        'busyDispatchers' : [], # driving PEV
+        'maintenanceDispatchers': [] # maintaining PEV
     }
     assignType = "closestCar"
 
