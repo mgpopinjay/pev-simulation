@@ -497,6 +497,20 @@ class PEV(object):
         self.pos = newPos
         return self.pos
 
+class Dispatcher(object):
+    def __init__(self, iden, pos, time=0):
+        self.spawn = pos
+        self.pos = pos
+        self.id = iden
+        self.state = "IDLE"
+        self.request = Idle(time, self.pos)
+        self.time = None
+        self.prevtime = None
+        self.movingtime = 0
+        self.movingspace = 0
+        self.utiltime = 0
+        self.idletime = 0
+        self.nav = None
 
 class RebalanceData():
     def __init__(self, centers, weights):
