@@ -169,13 +169,13 @@ def runSim():
     finishedTrips = {}
     totalCars = {}
     cars = {
-        'freeCars': [],
-        'navCars': [],
-        'waitCars': [],
-        'busyCars': [],
+        'freeCars': [], # idle
+        'navCars': [], # being driven by dispatcher
+        'waitCars': [], # on standby for dispatcher or customer
+        'busyCars': [], # being driven by customer
         'rebalancingCars': [], # not part of parallel state machine (psm)
         'navToChargeCars': [], # not in psm, cars charge when maintenanced
-        'maintenanceCars': []
+        'maintenanceCars': [] # being maintained by dispatcher
     }
     dispatchers = {
         'freeDispatchers': [], # idle

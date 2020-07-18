@@ -260,6 +260,11 @@ class Recharge(Idle):
     def __init__(self, start_time, loc):
         Idle.__init__(self, start_time, loc)
 
+class Maintenance(Idle):
+
+    def __init__(self, start_time, loc):
+        Idle.__init__(self, start_time, loc)
+
 
 class PEV(object):
 
@@ -269,6 +274,7 @@ class PEV(object):
         self.spawn = pos
         self.pos = pos
         self.id = iden
+        self.dispatcher = Dispatcher(self.id, self.pos)
         self.state = "IDLE"
         self.request = Idle(time, self.pos)
         self.time = None
@@ -305,7 +311,7 @@ class PEV(object):
 
     def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
         if self.state == "IDLE":
-            if navToCharge:
+            if navToCharge: # NOT USED
                 idle = self.request
                 idle.end_time = simTime
                 idle.get_duration()
@@ -334,7 +340,7 @@ class PEV(object):
                 self.time = req.time + self.nav.traveltime
                 self.state = "NAV"
                 return "NAV"
-            elif type(req) == Rebalance:
+            elif type(req) == Rebalance: # NOT USED
                 # end idle and add to history
                 idle = self.request
                 idle.end_time = req.time
@@ -422,7 +428,7 @@ class PEV(object):
             else:
                 return f"Waiting for dropoff at {self.pos}."
 
-        elif self.state == "NAVTOCHARGE":
+        elif self.state == "NAVTOCHARGE": # NOT USED
             if simTime >= self.time:
                 ''' end navigating to recharge and become recharging '''
                 self.movingtime += self.nav.traveltime
@@ -1119,6 +1125,8 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
             if resp == "TRANSPORT":
                 heapq.heappush(cars['busyCars'], car)
+            if resp == "NAV":
+                heapq.heappush(cars['navCars'], car)
             elif resp == "IDLE":
                 cars['freeCars'].append(car)
             updatedCars.append(str(car.id))
@@ -1141,9 +1149,9 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
 
     if len(cars['maintenanceCars']) > 0:
         while simTime >= cars['maintenanceCars'][0].time:
-            # end charging
+            # end maintenance
             car = heapq.heappop(cars['maintenanceCars'])
-            car.power = 25 * 1609.34
+            #car.power = 25 * 1609.34
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'])
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
