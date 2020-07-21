@@ -311,7 +311,7 @@ class PEV(object):
 
     def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
         if self.state == "IDLE":
-            if navToCharge: # NOT USED
+            if type(req) == navToCharge: # NOT USED
                 idle = self.request
                 idle.end_time = simTime
                 idle.get_duration()
@@ -326,12 +326,17 @@ class PEV(object):
                 self.state = "NAVTOCHARGE"  # now navigating to charging place
                 return "NAVTOCHARGE"
             elif type(req) == Request:
+                '''
+                TODO: Must make this state go to the waiting state for dispatcher to arrive before navigating to consumer
+                '''
+                if type(self.dispatcher.state) is "NAV":
                 # end idle and add to history
-                idle = self.request
-                idle.end_time = req.time
-                idle.get_duration()
-                self.idletime += idle.traveltime
-                assignFinishedTrip(finishedTrips, self.id, idle)
+                    idle = self.request
+                    idle.end_time = req.time
+                    idle.get_duration()
+                    self.idletime += idle.traveltime
+                    assignFinishedTrip(finishedTrips, self.id, idle)
+                '''
                 # create navigation and move to pickup
                 self.request = req
                 nav = Navigation(req.time, self.pos, self.request.pickup)
@@ -340,6 +345,7 @@ class PEV(object):
                 self.time = req.time + self.nav.traveltime
                 self.state = "NAV"
                 return "NAV"
+                '''
             elif type(req) == Rebalance: # NOT USED
                 # end idle and add to history
                 idle = self.request
@@ -517,6 +523,9 @@ class Dispatcher(object):
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
+    def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
+        if self.state is "IDLE":
+            print("idle")
 
 class RebalanceData():
     def __init__(self, centers, weights):
