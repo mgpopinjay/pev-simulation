@@ -274,7 +274,7 @@ class PEV(object):
         self.spawn = pos
         self.pos = pos
         self.id = iden
-        self.dispatcher = Dispatcher(self.id, self.pos)
+        self.dispatcher = Dispatcher(self.id, self.pos, self)
         self.state = "IDLE"
         self.request = Idle(time, self.pos)
         self.time = None
@@ -329,23 +329,22 @@ class PEV(object):
                 '''
                 TODO: Must make this state go to the waiting state for dispatcher to arrive before navigating to consumer
                 '''
-                if type(self.dispatcher.state) is "NAV":
-                # end idle and add to history
+                if self.dispatcher.state is "MOUNT":
+                    # end idle and add to history
                     idle = self.request
                     idle.end_time = req.time
                     idle.get_duration()
                     self.idletime += idle.traveltime
                     assignFinishedTrip(finishedTrips, self.id, idle)
-                '''
-                # create navigation and move to pickup
-                self.request = req
-                nav = Navigation(req.time, self.pos, self.request.pickup)
-                self.nav = nav
-                self.prevtime = req.time
-                self.time = req.time + self.nav.traveltime
-                self.state = "NAV"
-                return "NAV"
-                '''
+
+                    # triangular distribution for loading
+                    waitLoad = int(np.random.triangular(1,3,4))
+                    self.prevtime = self.time
+                    self.time += waitLoad
+                    self.pos = self.nav.dropoff
+                    self.state = "WAITLOAD"
+                    return "WAITLOAD"
+
             elif type(req) == Rebalance: # NOT USED
                 # end idle and add to history
                 idle = self.request
@@ -388,12 +387,22 @@ class PEV(object):
                 wait.get_duration()
                 # self.idletime += wait.traveltime
                 assignFinishedTrip(finishedTrips, self.id, wait)
-                # transport to destination
-                self.request.time = self.time  # update request start time to the current time
-                self.prevtime = self.time
-                self.time += self.request.traveltime
-                self.state = "TRANSPORT"
-                return "TRANSPORT"
+                if self.dispatcher.state == "MOUNT":
+                    # create navigation and move to pickup
+                    self.request = req
+                    nav = Navigation(req.time, self.pos, self.request.pickup)
+                    self.nav = nav
+                    self.prevtime = req.time
+                    self.time = req.time + self.nav.traveltime
+                    self.state = "NAV"
+                    return "NAV"
+                else:
+                    # transport to destination
+                    self.request.time = self.time  # update request start time to the current time
+                    self.prevtime = self.time
+                    self.time += self.request.traveltime
+                    self.state = "TRANSPORT"
+                    return "TRANSPORT"
             else:
                 return f"Waiting for pickup at {self.pos}."
 
@@ -453,7 +462,7 @@ class PEV(object):
             else:
                 return f"NavToCharge at {self.pos}."
 
-        elif self.state == "RECHARGE":
+        elif self.state == "RECHARGE": # Not Used
             if simTime >= self.time:
                 ''' end recharging(waiting) and become idle '''
                 recharge = Recharge(self.prevtime, self.pos)
@@ -470,7 +479,7 @@ class PEV(object):
             else:
                 return f"Recharge at {self.pos}."
 
-        elif self.state == "REBALANCE":
+        elif self.state == "REBALANCE": # Not Used
             if type(req) == Request:
                 self.updateLocation(req.time)
                 reb = self.nav
@@ -510,9 +519,10 @@ class PEV(object):
         return self.pos
 
 class Dispatcher(object):
-    def __init__(self, iden, pos, time=0):
+    def __init__(self, iden, pos, pev, time=0):
         self.spawn = pos
         self.pos = pos
+        self.pev = pev
         self.id = iden
         self.state = "IDLE"
         self.request = Idle(time, self.pos)
@@ -524,9 +534,19 @@ class Dispatcher(object):
         self.idletime = 0
         self.nav = None
     def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
-        if self.state is "IDLE":
-            print("idle")
+        if self.state == "IDLE":
+            if type(req) == Request:
+                self.state = "MOUNT"
+                return "MOUNT"
+        elif self.state == "MOUNT":
+            if self.pev.state == "NAV":
+                self.state = "TRANSPORT"
+                return "TRANSPORT"
+        elif self.state == "TRANSPORT":
+            # make sure pev is following dispatcher state and vice versa when appropriate
+            print("testing")
 
+                
 class RebalanceData():
     def __init__(self, centers, weights):
         self.centers = centers
