@@ -265,6 +265,11 @@ class Maintenance(Idle):
     def __init__(self, start_time, loc):
         Idle.__init__(self, start_time, loc)
 
+class Confirmation(Idle):
+
+    def __init__(self, start_time, loc):
+        Idle.__init__(self, start_time, loc)
+
 
 class PEV(object):
 
@@ -326,9 +331,6 @@ class PEV(object):
                 self.state = "NAVTOCHARGE"  # now navigating to charging place
                 return "NAVTOCHARGE"
             elif type(req) == Request:
-                '''
-                TODO: Must make this state go to the waiting state for dispatcher to arrive before navigating to consumer
-                '''
                 if self.dispatcher.state is "MOUNT":
                     # end idle and add to history
                     idle = self.request
@@ -368,13 +370,11 @@ class PEV(object):
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
                 self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
-                # triangular distribution for loading
-                waitLoad = int(np.random.triangular(1,3,4))
-                self.prevtime = self.time
-                self.time += waitLoad
-                self.pos = self.nav.dropoff
-                self.state = "WAITLOAD"
-                return "WAITLOAD"
+
+                # Create idle state for PEV confirming destination has been reached
+                # TODO Use confirmation request IDLE 
+                self.state = "ARRIVED"
+                return "ARRIVED"
             else:
                 return f"Navigating to {self.nav.dropoff}"
 
@@ -388,14 +388,12 @@ class PEV(object):
                 # self.idletime += wait.traveltime
                 assignFinishedTrip(finishedTrips, self.id, wait)
                 if self.dispatcher.state == "MOUNT":
-                    # create navigation and move to pickup
-                    self.request = req
-                    nav = Navigation(req.time, self.pos, self.request.pickup)
-                    self.nav = nav
-                    self.prevtime = req.time
-                    self.time = req.time + self.nav.traveltime
-                    self.state = "NAV"
-                    return "NAV"
+                    ''' become idle '''
+                    self.request = Confirmation(self.time, self.pos)
+                    self.prevtime = self.time
+                    self.time = None
+                    self.state = "LOADED"
+                    return "LOADED"
                 else:
                     # transport to destination
                     self.request.time = self.time  # update request start time to the current time
@@ -405,7 +403,31 @@ class PEV(object):
                     return "TRANSPORT"
             else:
                 return f"Waiting for pickup at {self.pos}."
-
+        elif self.state == "LOADED":
+            if self.dispatcher.state = "TRANSPORT":
+                # end load and move to destination
+                idle = self.request
+                idle.end_time = simTime
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                # create navigation and move to pickup
+                self.request = req
+                nav = Navigation(req.time, self.pos, self.request.pickup)
+                self.nav = nav
+                self.prevtime = req.time
+                self.time = req.time + self.nav.traveltime
+                self.state = "NAV"
+                return "NAV"
+        elif self.state == "ARRIVED":
+            if self.dispatcher.state = "UNMOUNT":
+                # triangular distribution for loading
+                waitLoad = int(np.random.triangular(1,3,4))
+                self.prevtime = self.time
+                self.time += waitLoad
+                self.pos = self.nav.dropoff
+                self.state = "WAITLOAD"
+                return "WAITLOAD"
         elif self.state == "TRANSPORT":
             if simTime >= self.time:
                 ''' end transport and wait for unloading '''
@@ -539,13 +561,14 @@ class Dispatcher(object):
                 self.state = "MOUNT"
                 return "MOUNT"
         elif self.state == "MOUNT":
-            if self.pev.state == "NAV":
+            if self.pev.state == "LOADED":
                 self.state = "TRANSPORT"
                 return "TRANSPORT"
         elif self.state == "TRANSPORT":
-            # make sure pev is following dispatcher state and vice versa when appropriate
-            print("testing")
-
+            # dispatcher should follow pev for pev reaching customer destination
+            if self.pev.state == "ARRIVED":
+                self.state = "UNMOUNT"
+                return "UNMOUNT"
                 
 class RebalanceData():
     def __init__(self, centers, weights):
