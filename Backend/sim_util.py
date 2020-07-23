@@ -372,7 +372,10 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
 
                 # Create idle state for PEV confirming destination has been reached
-                # TODO Use confirmation request IDLE 
+                ''' become idle '''
+                self.request = Confirmation(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
                 self.state = "ARRIVED"
                 return "ARRIVED"
             else:
@@ -421,6 +424,27 @@ class PEV(object):
                 return "NAV"
         elif self.state == "ARRIVED":
             if self.dispatcher.state = "UNMOUNT":
+                # end confirmation and begin pickup
+                idle = self.request
+                idle.end_time = simTime
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                # triangular distribution for loading
+                waitLoad = int(np.random.triangular(1,3,4))
+                self.prevtime = self.time
+                self.time += waitLoad
+                self.pos = self.nav.dropoff
+                self.state = "WAITLOAD"
+                return "WAITLOAD"
+        elif self.state == "DROPOFF":
+            if self.dispatcher.state = "MOUNT":
+                # end confirmation and begin heading back to station
+                idle = self.request
+                idle.end_time = simTime
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                assignFinishedTrip(finishedTrips, self.id, idle)
                 # triangular distribution for loading
                 waitLoad = int(np.random.triangular(1,3,4))
                 self.prevtime = self.time
@@ -456,12 +480,13 @@ class PEV(object):
                 wait.get_duration()
                 # self.idletime += wait.traveltime
                 assignFinishedTrip(finishedTrips, self.id, wait)
-                ''' become idle '''
-                self.request = Idle(self.time, self.pos)
-                self.prevtime = self.time
-                self.time = None
-                self.state = "IDLE"
-                return "IDLE"
+                if self.dispatcher.state == "WAITTRIP":
+                    ''' become idle '''
+                    self.request = Confirmation(self.time, self.pos)
+                    self.prevtime = self.time
+                    self.time = None
+                    self.state = "DROPOFF"
+                    return "DROPOFF"
             else:
                 return f"Waiting for dropoff at {self.pos}."
 
@@ -565,10 +590,18 @@ class Dispatcher(object):
                 self.state = "TRANSPORT"
                 return "TRANSPORT"
         elif self.state == "TRANSPORT":
-            # dispatcher should follow pev for pev reaching customer destination
             if self.pev.state == "ARRIVED":
                 self.state = "UNMOUNT"
                 return "UNMOUNT"
+        elif self.state == "UNMOUNT":
+            if self.pev.state == "TRANSPORT":
+                self.state = "WAITTRIP" # wait for trip to finish
+                return "WAITTRIP"
+            elif self.pev.state == ""
+        elif self.state == "UNMOUNT":
+            if self.pev.state == "DROPOFF":
+                self.state = "MOUNT"
+                return "MOUNT"
                 
 class RebalanceData():
     def __init__(self, centers, weights):
