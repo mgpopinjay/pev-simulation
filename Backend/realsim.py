@@ -1,13 +1,16 @@
 ''' Fernando Sanchez, August 2017 '''
-from . import sim_util as util
-from .sim_assign import assignMethods as updateRequests
 import heapq
-import time
+import json
+import logging
 # import datetime
 import os
-import json
+import time
+
 import numpy as np
-import logging
+
+from . import sim_util as util
+from .sim_assign import assignMethods as updateRequests
+
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 """

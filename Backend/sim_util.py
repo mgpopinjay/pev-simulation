@@ -407,7 +407,7 @@ class PEV(object):
             else:
                 return f"Waiting for pickup at {self.pos}."
         elif self.state == "LOADED":
-            if self.dispatcher.state = "TRANSPORT":
+            if self.dispatcher.state == "TRANSPORT":
                 # end load and move to destination
                 idle = self.request
                 idle.end_time = simTime
@@ -423,7 +423,7 @@ class PEV(object):
                 self.state = "NAV"
                 return "NAV"
         elif self.state == "ARRIVED":
-            if self.dispatcher.state = "UNMOUNT":
+            if self.dispatcher.state == "UNMOUNT":
                 # end confirmation and begin pickup
                 idle = self.request
                 idle.end_time = simTime
@@ -438,7 +438,7 @@ class PEV(object):
                 self.state = "WAITLOAD"
                 return "WAITLOAD"
         elif self.state == "DROPOFF":
-            if self.dispatcher.state = "MOUNT":
+            if self.dispatcher.state == "MOUNT":
                 # end confirmation and begin heading back to station
                 idle = self.request
                 idle.end_time = simTime
@@ -597,7 +597,7 @@ class Dispatcher(object):
             if self.pev.state == "TRANSPORT":
                 self.state = "WAITTRIP" # wait for trip to finish
                 return "WAITTRIP"
-            elif self.pev.state == ""
+            #elif self.pev.state == ""
         elif self.state == "UNMOUNT":
             if self.pev.state == "DROPOFF":
                 self.state = "MOUNT"
