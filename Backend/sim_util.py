@@ -346,6 +346,8 @@ class PEV(object):
                     self.pos = self.nav.dropoff
                     self.state = "WAITLOAD"
                     return "WAITLOAD"
+                else:
+                    return "IDLE"
 
             elif type(req) == Rebalance: # NOT USED
                 # end idle and add to history
