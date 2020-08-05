@@ -173,6 +173,7 @@ def runSim():
     totalCars = {}
     cars = {
         'freeCars': [], # idle
+        'confirmationCars': [], # standby for confirmation from dispatcher
         'navCars': [], # being driven by dispatcher
         'waitCars': [], # on standby for dispatcher or customer
         'busyCars': [], # being driven by customer

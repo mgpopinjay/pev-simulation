@@ -331,6 +331,7 @@ class PEV(object):
                 self.state = "NAVTOCHARGE"  # now navigating to charging place
                 return "NAVTOCHARGE"
             elif type(req) == Request:
+                # TODO: set self.time to value that is not "None"
                 if self.dispatcher.state is "MOUNT":
                     # end idle and add to history
                     idle = self.request
@@ -1176,6 +1177,11 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
                 deleteFromFree.append(i)
         for i in deleteFromFree[::-1]:
             del cars['freeCars'][i]
+    
+    if len(cars['confirmationCars']) > 0: # TODO: make it do stuff
+        for i in range(len(cars['confirmationCars'])):
+            car = cars['confirmationCars'][i]
+        
 
     if len(cars['busyCars']) > 0:
         while simTime >= cars['busyCars'][0].time:
