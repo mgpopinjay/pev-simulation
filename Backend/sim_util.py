@@ -314,7 +314,8 @@ class PEV(object):
     def __ge__(self, other):
         return self.time >= other.time
 
-    def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
+    def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None, dispatchers=None, cars=None):
+        self.dispatcher.update(simTime, finishedTrips, navToCharge, finishedRequests, req, dispatchers)
         if self.state == "IDLE":
             if type(req) == navToCharge: # NOT USED
                 idle = self.request
@@ -331,7 +332,6 @@ class PEV(object):
                 self.state = "NAVTOCHARGE"  # now navigating to charging place
                 return "NAVTOCHARGE"
             elif type(req) == Request:
-                # TODO: set self.time to value that is not "None"
                 if self.dispatcher.state is "MOUNT":
                     # end idle and add to history
                     idle = self.request
@@ -583,10 +583,12 @@ class Dispatcher(object):
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
-    def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None):
+    def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None, dispatchers=None):
         if self.state == "IDLE":
             if type(req) == Request:
                 self.state = "MOUNT"
+                del dispatchers['freeDispatchers'][dispatchers.index(self.id)] # TODO: fix this
+                heapq.heappush(dispatchers['waitConfirmDispatchers'], self)
                 return "MOUNT"
         elif self.state == "MOUNT":
             if self.pev.state == "LOADED":
@@ -601,7 +603,7 @@ class Dispatcher(object):
                 self.state = "WAITTRIP" # wait for trip to finish
                 return "WAITTRIP"
             #elif self.pev.state == ""
-        elif self.state == "UNMOUNT":
+        elif self.state == "WAITTRIP":
             if self.pev.state == "DROPOFF":
                 self.state = "MOUNT"
                 return "MOUNT"
@@ -1150,12 +1152,14 @@ def assignFinishedTrip(lst, iden, trip):
     return lst
 
 
-def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
+def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
     '''
     Check if
     '''
     updatedCars = []  # debug purposes
     REBALANCING = False
+    '''
+    # no charging or rebalancing in this model
     if len(cars['freeCars']) > 0:
         deleteFromFree = []
         for i in range(len(cars['freeCars'])):
@@ -1177,12 +1181,8 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
                 deleteFromFree.append(i)
         for i in deleteFromFree[::-1]:
             del cars['freeCars'][i]
+    '''
     
-    if len(cars['confirmationCars']) > 0: # TODO: make it do stuff
-        for i in range(len(cars['confirmationCars'])):
-            car = cars['confirmationCars'][i]
-        
-
     if len(cars['busyCars']) > 0:
         while simTime >= cars['busyCars'][0].time:
             # finish request
@@ -1226,7 +1226,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
 
             if len(cars['waitCars']) == 0:
                 break
-
+    '''
     if len(cars['navToChargeCars']) > 0:
         while simTime >= cars['navToChargeCars'][0].time:
             # end navigation to charging station
@@ -1239,7 +1239,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
 
             if len(cars['navToChargeCars']) == 0:
                 break
-
+    '''
     if len(cars['maintenanceCars']) > 0:
         while simTime >= cars['maintenanceCars'][0].time:
             # end maintenance
@@ -1254,6 +1254,8 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
             if len(cars['maintenanceCars']) == 0:
                 break
 
+    '''
+    # no rebalancing in this model
     if len(cars['rebalancingCars']) > 0:
         while simTime >= cars['rebalancingCars'][0].time:
             car = heapq.heappop(cars['rebalancingCars'])
@@ -1266,6 +1268,7 @@ def updateBusyCars(simTime, cars, logs, CHARGING_ON, CHARGE_LIMIT):
 
             if len(cars['rebalancingCars']) == 0:
                 break
+    '''
 
     if len(updatedCars) > 0:
         return f"Updated the following cars: {updatedCars}."
@@ -1386,7 +1389,7 @@ def analyzeResults(finishedRequests, freeCars, systemDelta, startHr, endHr):
         "TRIPS_HR": round(len(finishedRequests)/(endHr-startHr), 1),
         "TRIPS_DAY": len(finishedRequests)/(endHr-startHr)*24,
         "SIM RUNTIME": str(systemDelta),
-        "AVERAGE REQUEST PICKUPTIME": str(avgReqPickup),
+        "AVERAGE REQUEST PI/updateCKUPTIME": str(avgReqPickup),
         "AVERAGE REQUEST ASSIGNTIME": str(avgReqAssign),
         "AVERAGE REQUEST TRAVELTIME": str(avgReqTravel),
         "AVERAGE CAR UTILIZATION": str(avgCarTravel),

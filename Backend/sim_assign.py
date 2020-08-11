@@ -4,7 +4,7 @@ import logging
 import random
 logging.basicConfig(level=logging.INFO, format='%(%(levelname)s - %(message)s')
 
-def assignRequest(simTime, timeStep, cars, requests, logs):
+def assignRequest(simTime, timeStep, cars, dispatchers, requests, logs):
     '''
     Current implementation to assign requests
     Picks the nearest car for each request
@@ -47,7 +47,7 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
             logging.warning("minCar is None!")
         
         prevState = minCar.state
-        resp = minCar.update(simTime, logs['finishedTrips'], req=req)
+        resp = minCar.update(simTime, logs['finishedTrips'], req=req, dispatchers=dispatchers)
         logging.info(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")
         heapq.heappush(cars['confirmationCars'], minCar)  # move car to confirmation list
         return "Assigned request to car: {}".format(minCar.id)
@@ -58,7 +58,7 @@ def assignRequest(simTime, timeStep, cars, requests, logs):
         heapq.heappush(requests, req)
         return "Pushed back request"
 
-def updateRequests(simTime, timeStep, cars, requests, logs):
+def updateRequests(simTime, timeStep, cars, dispatchers, requests, logs):
     '''
     Wrapper function for assignRequest
     '''
@@ -66,7 +66,7 @@ def updateRequests(simTime, timeStep, cars, requests, logs):
     while len(requests) > 0:
         req = requests[0]
         if req.time <= simTime:
-            assignRequest(simTime, timeStep, cars, requests, logs)
+            assignRequest(simTime, timeStep, cars, dispatchers, requests, logs)
             count += 1
         else:
             break

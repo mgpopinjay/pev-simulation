@@ -74,7 +74,7 @@ def populateRequests(requests, mapName, randomRatio, taxiRatio, bikeRatio, train
     return requests
 
 
-def populatePEVs(simTime, numCars, totalCars, freeCars, coords, weights):
+def populatePEVs(simTime, numCars, totalCars, freeCars, freeDispatchers, coords, weights):
     '''
     Populate list of free cars with PEVs at each spawn point
     '''
@@ -86,6 +86,7 @@ def populatePEVs(simTime, numCars, totalCars, freeCars, coords, weights):
         p = np.random.choice(len(spawnPoints), p=weights)  # picks a random spawn point based on their weights
         car = util.PEV(i, spawnPoints[p], simTime)
         freeCars.append(car)
+        freeDispatchers.append(car.dispatcher)
         totalCars[i] = car
 
     return freeCars
@@ -177,16 +178,15 @@ def runSim():
         'navCars': [], # being driven by dispatcher
         'waitCars': [], # on standby for dispatcher or customer
         'busyCars': [], # being driven by customer
+        'maintenanceCars': [], # being maintained by dispatcher
         'rebalancingCars': [], # not part of parallel state machine (psm)
-        'navToChargeCars': [], # not in psm, cars charge when maintenanced
-        'maintenanceCars': [] # being maintained by dispatcher
+        #'navToChargeCars': [] # not in psm, cars charge when maintenanced
     }
     dispatchers = {
         'freeDispatchers': [], # idle
-        'navDispatchers': [], # going to or from PEV
-        'waitDispatchers': [], # on standby for PEV
-        'busyDispatchers' : [], # driving PEV
-        'maintenanceDispatchers': [] # maintaining PEV
+        'waitConfirmDispatchers': [], # on standby for PEV until PEV is in certain state
+        'busyDispatchers' : [], # driving PEV (goes by PEV timing)
+        'maintenanceDispatchers': [] # maintaining PEV (goes by PEV timing)
     }
     assignType = "closestCar"
 
@@ -218,13 +218,13 @@ def runSim():
     c, w = util.generate_PEV_spawns(MAPSELECT, STATIONS/271) # to add when front end slider is implemented
     print(c)
     print(w)
-    populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], c, w)
+    populatePEVs(simTime, NUMCARS, totalCars, cars['freeCars'], dispatchers['freeDispatchers'], c, w)
     util.CHARGING_STATIONS = c
 
     while simRunning:
         # updateRebalancingCars()
-        util.updateBusyCars(simTime, cars, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests}, CHARGING_ON, CHARGE_LIMIT)
-        updateRequests[assignType](simTime, TIMESTEP, cars, requests, {'finishedTrips': finishedTrips})
+        util.updateBusyCars(simTime, cars, dispatchers, {'finishedTrips': finishedTrips, 'finishedRequests': finishedRequests}, CHARGING_ON, CHARGE_LIMIT)
+        updateRequests[assignType](simTime, TIMESTEP, cars, dispatchers, requests, {'finishedTrips': finishedTrips})
         if len(requests) > 0 and REBALANCE_ON:
             rebalancePEVs(simTime, cars, finishedTrips)
         simTime += TIMESTEP
