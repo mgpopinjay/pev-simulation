@@ -342,9 +342,9 @@ class PEV(object):
 
                     # triangular distribution for loading
                     waitLoad = int(np.random.triangular(1,3,4))
-                    self.prevtime = self.time
-                    self.time += waitLoad
-                    self.pos = self.nav.dropoff
+                    self.prevtime = simTime
+                    self.time = simTime + waitLoad
+                    #self.pos = self.nav.dropoff
                     self.state = "WAITLOAD"
                     return "WAITLOAD"
                 else:
