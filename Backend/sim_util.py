@@ -587,7 +587,11 @@ class Dispatcher(object):
         if self.state == "IDLE":
             if type(req) == Request:
                 self.state = "MOUNT"
-                del dispatchers['freeDispatchers'][dispatchers.index(self.id)] # TODO: fix this
+                for i in range(len(dispatchers['freeDispatchers'])):
+                    if dispatchers['freeDispatchers'][i].id is self.id:
+                        del dispatchers['freeDispatchers'][i]
+                        break
+                #dispatcher = filter(lambda x: x["id"] is self.id, dispatchers['freeDispatchers']) # TODO make it work
                 heapq.heappush(dispatchers['waitConfirmDispatchers'], self)
                 return "MOUNT"
         elif self.state == "MOUNT":
