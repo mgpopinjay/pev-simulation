@@ -315,7 +315,9 @@ class PEV(object):
         return self.time >= other.time
 
     def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None, dispatchers=None, cars=None):
-        self.dispatcher.update(simTime, finishedTrips, navToCharge, finishedRequests, req, dispatchers)
+        prevState = self.dispatcher.state
+        resp  = self.dispatcher.update(simTime, finishedTrips, navToCharge, finishedRequests, req, dispatchers)
+        logging.info(f"Dispatcher {str(self.dispatcher.id).zfill(4)}: {prevState} -> {resp}")
         if self.state == "IDLE":
             if type(req) == navToCharge: # NOT USED
                 idle = self.request
@@ -583,7 +585,32 @@ class Dispatcher(object):
         self.utiltime = 0
         self.idletime = 0
         self.nav = None
+
+    def __eq__(self, other):
+        return self.time == other.time
+
+    def __ne__(self, other):
+        return self.time != other.time
+
+    def __lt__(self, other):
+        try:  # For debug purposes when idle cars end up in the wrong lists
+            return self.time < other.time
+        except TypeError:
+            logging.critical("DISPATCHER time comparison error")
+            logging.critical(f"{self.state}, {self.id}, {self.time}, {self.request}, {self.nav}, {other.state}, {other.id}, {other.time}, {other.request}, {other.nav}")
+
+    def __le__(self, other):
+        return self.time <= other.time
+
+    def __gt__(self, other):
+        return self.time > other.time
+
+    def __ge__(self, other):
+        return self.time >= other.time
+
     def update(self, simTime, finishedTrips, navToCharge=False, finishedRequests=None, req=None, dispatchers=None):
+        self.prevtime = self.time
+        self.time = simTime
         if self.state == "IDLE":
             if type(req) == Request:
                 self.state = "MOUNT"
@@ -591,7 +618,6 @@ class Dispatcher(object):
                     if dispatchers['freeDispatchers'][i].id is self.id:
                         del dispatchers['freeDispatchers'][i]
                         break
-                #dispatcher = filter(lambda x: x["id"] is self.id, dispatchers['freeDispatchers']) # TODO make it work
                 heapq.heappush(dispatchers['waitConfirmDispatchers'], self)
                 return "MOUNT"
         elif self.state == "MOUNT":
@@ -1187,6 +1213,12 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             del cars['freeCars'][i]
     '''
     
+    ''' TODO finish this
+    if len(cars['confirmationCars']) > 0: # TODO write this to take care of confirmation cars
+        while simTime >= cars['confirmationCars'][0].time:
+            car = heapq.heappop(cars['confirmationCars'])
+    '''
+
     if len(cars['busyCars']) > 0:
         while simTime >= cars['busyCars'][0].time:
             # finish request
