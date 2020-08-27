@@ -623,6 +623,11 @@ class Dispatcher(object):
         elif self.state == "MOUNT":
             if self.pev.state == "LOADED":
                 self.state = "TRANSPORT"
+                for i in range(len(dispatchers['waitConfirmDispatchers'])):
+                    if dispatchers['waitConfirmDispatchers'][i].id is self.id:
+                        del dispatchers['waitConfirmDispatchers'][i]
+                        break
+                heapq.heappush(dispatchers['busyDispatchers'], self)
                 return "TRANSPORT"
         elif self.state == "TRANSPORT":
             if self.pev.state == "ARRIVED":
@@ -1213,12 +1218,6 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             del cars['freeCars'][i]
     '''
     
-    ''' TODO finish this
-    if len(cars['confirmationCars']) > 0: # TODO write this to take care of confirmation cars
-        while simTime >= cars['confirmationCars'][0].time:
-            car = heapq.heappop(cars['confirmationCars'])
-    '''
-
     if len(cars['busyCars']) > 0:
         while simTime >= cars['busyCars'][0].time:
             # finish request
@@ -1237,7 +1236,7 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             # end navigation
             car = heapq.heappop(cars['navCars'])
             prevState = car.state
-            resp = car.update(simTime, logs['finishedTrips'])
+            resp = car.update(simTime, logs['finishedTrips'], dispatchers=dispatchers)
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
             heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))
@@ -1245,13 +1244,25 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             if len(cars['navCars']) == 0:
                 break
 
+    while len(cars['confirmationCars']) > 0:
+        # waiting on dispatch confirmattion not time
+        car = heapq.heappop(cars['confirmationCars'])
+        prevState = car.state
+        resp = car.update(simTime, logs['finishedTrips'], dispatchers=dispatchers)
+        logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+        if resp == "NAV":
+            heapq.heappush(cars['navCars'], car)
+        updatedCars.append(str(car.id))
+
     if len(cars['waitCars']) > 0:
         while simTime >= cars['waitCars'][0].time:
             # end waiting
             car = heapq.heappop(cars['waitCars'])
             prevState = car.state
-            resp = car.update(simTime, logs['finishedTrips'])
+            resp = car.update(simTime, logs['finishedTrips'], dispatchers=dispatchers)
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
+            if resp == "LOADED":
+                heapq.heappush(cars['confirmationCars'], car)
             if resp == "TRANSPORT":
                 heapq.heappush(cars['busyCars'], car)
             if resp == "NAV":

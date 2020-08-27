@@ -49,7 +49,7 @@ def assignRequest(simTime, timeStep, cars, dispatchers, requests, logs):
         prevState = minCar.state
         resp = minCar.update(simTime, logs['finishedTrips'], req=req, dispatchers=dispatchers)
         logging.info(f"Car {str(minCar.id).zfill(4)}: {prevState} -> {resp}")
-        heapq.heappush(cars['confirmationCars'], minCar)  # move car to confirmation list
+        heapq.heappush(cars['waitCars'], minCar)  # move car to wait list
         return "Assigned request to car: {}".format(minCar.id)
 
     else:  # If there are no available cars, push back their request time by a second/specified time step
