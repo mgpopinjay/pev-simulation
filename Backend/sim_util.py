@@ -343,6 +343,7 @@ class PEV(object):
                     assignFinishedTrip(finishedTrips, self.id, idle)
 
                     # triangular distribution for loading
+                    self.request = req 
                     waitLoad = int(np.random.triangular(1,3,4))
                     self.prevtime = simTime
                     self.time = simTime + waitLoad
@@ -373,7 +374,7 @@ class PEV(object):
                 self.movingtime += self.nav.traveltime
                 self.movingspace += self.nav.traveldist
                 self.request.pickuptime = self.nav.traveltime  # record how long pickup took
-                self.power -= self.request.traveldist
+                #self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.nav)
 
                 # Create idle state for PEV confirming destination has been reached
@@ -420,11 +421,10 @@ class PEV(object):
                 self.idletime += idle.traveltime
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 # create navigation and move to pickup
-                self.request = req
-                nav = Navigation(req.time, self.pos, self.request.pickup)
+                nav = Navigation(self.request.time, self.pos, self.request.pickup)
                 self.nav = nav
-                self.prevtime = req.time
-                self.time = req.time + self.nav.traveltime
+                self.prevtime = self.request.time
+                self.time = self.request.time + self.nav.traveltime
                 self.state = "NAV"
                 return "NAV"
         elif self.state == "ARRIVED":
@@ -437,8 +437,8 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 # triangular distribution for loading
                 waitLoad = int(np.random.triangular(1,3,4))
-                self.prevtime = self.time
-                self.time += waitLoad
+                self.prevtime = simTime
+                self.time = simTime + waitLoad
                 self.pos = self.nav.dropoff
                 self.state = "WAITLOAD"
                 return "WAITLOAD"
@@ -629,14 +629,19 @@ class Dispatcher(object):
                         break
                 heapq.heappush(dispatchers['busyDispatchers'], self)
                 return "TRANSPORT"
+            return self.state
         elif self.state == "TRANSPORT":
             if self.pev.state == "ARRIVED":
                 self.state = "UNMOUNT"
                 return "UNMOUNT"
+            elif self.pev.state == "NAV":
+                return self.state
         elif self.state == "UNMOUNT":
             if self.pev.state == "TRANSPORT":
                 self.state = "WAITTRIP" # wait for trip to finish
                 return "WAITTRIP"
+            elif self.pev.state == "WAITLOAD"
+                return self.state
             #elif self.pev.state == ""
         elif self.state == "WAITTRIP":
             if self.pev.state == "DROPOFF":
@@ -1238,7 +1243,10 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'], dispatchers=dispatchers)
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
-            heapq.heappush(cars['waitCars'], car)
+            if resp == "ARRIVED":
+                heapq.heappush(cars['confirmationCars'], car)
+            else:
+                heapq.heappush(cars['waitCars'], car)
             updatedCars.append(str(car.id))
 
             if len(cars['navCars']) == 0:
@@ -1252,6 +1260,8 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
         logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
         if resp == "NAV":
             heapq.heappush(cars['navCars'], car)
+        if resp == "WAITLOAD":
+            heapq.heappush(cars['waitCars'], car)
         updatedCars.append(str(car.id))
 
     if len(cars['waitCars']) > 0:
