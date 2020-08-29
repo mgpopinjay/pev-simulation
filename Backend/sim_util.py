@@ -452,8 +452,8 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 # triangular distribution for loading
                 waitLoad = int(np.random.triangular(1,3,4))
-                self.prevtime = self.time
-                self.time += waitLoad
+                self.prevtime = simTime
+                self.time = simTime + waitLoad
                 self.pos = self.nav.dropoff
                 self.state = "WAITLOAD"
                 return "WAITLOAD"
@@ -463,7 +463,7 @@ class PEV(object):
                 self.movingtime += self.request.traveltime
                 self.movingspace += self.nav.traveldist
                 self.utiltime += self.request.traveltime
-                self.power -= self.request.traveldist
+                #self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
                 # triangular distribution for unload time
@@ -640,13 +640,15 @@ class Dispatcher(object):
             if self.pev.state == "TRANSPORT":
                 self.state = "WAITTRIP" # wait for trip to finish
                 return "WAITTRIP"
-            elif self.pev.state == "WAITLOAD"
+            elif self.pev.state == "WAITLOAD":
                 return self.state
             #elif self.pev.state == ""
         elif self.state == "WAITTRIP":
             if self.pev.state == "DROPOFF":
                 self.state = "MOUNT"
                 return "MOUNT"
+            elif self.pev.state == "WAITUNLOAD":
+                return self.state
                 
 class RebalanceData():
     def __init__(self, centers, weights):
@@ -1271,7 +1273,7 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             prevState = car.state
             resp = car.update(simTime, logs['finishedTrips'], dispatchers=dispatchers)
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
-            if resp == "LOADED":
+            if resp == "LOADED" or resp == "DROPOFF":
                 heapq.heappush(cars['confirmationCars'], car)
             if resp == "TRANSPORT":
                 heapq.heappush(cars['busyCars'], car)
