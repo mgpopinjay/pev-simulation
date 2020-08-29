@@ -291,6 +291,7 @@ class PEV(object):
         self.nav = None
         PEV_RANGE_MILES = 25
         self.power = PEV_RANGE_MILES * MILES_TO_METERS
+        self.flag = False # true if pev has already completed customer trip
 
     def __eq__(self, other):
         return self.time == other.time
@@ -421,12 +422,20 @@ class PEV(object):
                 self.idletime += idle.traveltime
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 # create navigation and move to pickup
-                nav = Navigation(self.request.time, self.pos, self.request.pickup)
-                self.nav = nav
-                self.prevtime = self.request.time
-                self.time = self.request.time + self.nav.traveltime
-                self.state = "NAV"
-                return "NAV"
+                if self.flag: # should go back to station if it has already served the customer
+                    nav = Navigation(simTime, self.pos, self.spawn)
+                    self.nav = nav
+                    self.prevtime = simTime
+                    self.time = simTime + self.nav.traveltime
+                    self.state = "NAV"
+                    return "NAV"
+                else:
+                    nav = Navigation(self.request.time, self.pos, self.request.pickup)
+                    self.nav = nav
+                    self.prevtime = self.request.time
+                    self.time = self.request.time + self.nav.traveltime
+                    self.state = "NAV"
+                    return "NAV"
         elif self.state == "ARRIVED":
             if self.dispatcher.state == "UNMOUNT":
                 # end confirmation and begin pickup
@@ -633,6 +642,11 @@ class Dispatcher(object):
         elif self.state == "TRANSPORT":
             if self.pev.state == "ARRIVED":
                 self.state = "UNMOUNT"
+                for i in range(len(dispatchers['busyDispatchers'])):
+                    if dispatchers['busyDispatchers'][i].id is self.id:
+                        del dispatchers['busyDispatchers'][i]
+                        break
+                heapq.heappush(dispatchers['waitConfirmDispatchers'], self)
                 return "UNMOUNT"
             elif self.pev.state == "NAV":
                 return self.state
@@ -642,7 +656,8 @@ class Dispatcher(object):
                 return "WAITTRIP"
             elif self.pev.state == "WAITLOAD":
                 return self.state
-            #elif self.pev.state == ""
+             elif self.pev.state == "STANDBYMAINTENANCE":
+                 self.state = "READYMAINTENANCE"
         elif self.state == "WAITTRIP":
             if self.pev.state == "DROPOFF":
                 self.state = "MOUNT"
