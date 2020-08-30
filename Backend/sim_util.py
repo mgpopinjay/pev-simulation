@@ -444,13 +444,20 @@ class PEV(object):
                 idle.get_duration()
                 self.idletime += idle.traveltime
                 assignFinishedTrip(finishedTrips, self.id, idle)
-                # triangular distribution for loading
-                waitLoad = int(np.random.triangular(1,3,4))
-                self.prevtime = simTime
-                self.time = simTime + waitLoad
-                self.pos = self.nav.dropoff
-                self.state = "WAITLOAD"
-                return "WAITLOAD"
+                if self.flag: # arrived at station afte dropoff
+                    self.request = Confirmation(self.time, self.pos)
+                    self.prevtime = self.time
+                    self.time = None
+                    self.state = "STANDBYMAINTENANCE"
+                    return "STANDBYMAINTENANCE"
+                else:
+                    # triangular distribution for loading
+                    waitLoad = int(np.random.triangular(1,3,4))
+                    self.prevtime = simTime
+                    self.time = simTime + waitLoad
+                    self.pos = self.nav.dropoff
+                    self.state = "WAITLOAD"
+                    return "WAITLOAD"
         elif self.state == "DROPOFF":
             if self.dispatcher.state == "MOUNT":
                 # end confirmation and begin heading back to station
@@ -484,7 +491,37 @@ class PEV(object):
                 return "WAITUNLOAD"
             else:
                 return f"Transporting to {self.request.dropoff}."
-
+        elif self.state == "STANDBYMAINTENANCE":
+            if self.dispatcher.state == "MAINTENANCE":
+                # end confirmation and begin heading back to station
+                idle = self.request
+                idle.end_time = simTime
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                # triangular distribution for maintenance
+                maintenance = int(np.random.triangular(1,6,9))
+                self.prevtime = simTime
+                self.time = simTime + waitLoad
+                self.pos = self.nav.dropoff
+                self.state = "MAINTENANCE"
+                return "MAINTENANCE"
+        elif self.state == "MAINTENANCE":
+            if simTime >= self.time:
+                ''' end wait and become idle '''
+                maintenance = Maintenance(self.prevtime, self.pos)
+                maintenance.kind = "MAINTENANCE"
+                maintenance.end_time = self.time
+                maintenance.get_duration()
+                assignFinishedTrip(finishedTrips, self.id, maintenance)
+                if self.dispatcher.state == "MAINTENANCE":
+                    ''' become idle '''
+                    self.request = Confirmation(self.time, self.pos)
+                    self.prevtime = self.time
+                    self.time = None
+                    self.state = "MAINTAINED"
+                    return "MAINTAINTED"
+        # TODO: write elif MAINTAINED block
         elif self.state == "WAITUNLOAD":
             if simTime >= self.time:
                 ''' end wait and become idle '''
@@ -656,14 +693,29 @@ class Dispatcher(object):
                 return "WAITTRIP"
             elif self.pev.state == "WAITLOAD":
                 return self.state
-             elif self.pev.state == "STANDBYMAINTENANCE":
-                 self.state = "READYMAINTENANCE"
+            elif self.pev.state == "STANDBYMAINTENANCE":
+                 self.state = "MAINTENANCE"
+                 for i in range(len(dispatchers['waitConfirmDispatchers'])):
+                    if dispatchers['waitConfirmDispatchers'][i].id is self.id:
+                        del dispatchers['waitConfirmDispatchers'][i]
+                        break
+                 heapq.heappush(dispatchers['maintenanceDispatchers'], self)
+                 return "MAINTENANCE"
         elif self.state == "WAITTRIP":
             if self.pev.state == "DROPOFF":
                 self.state = "MOUNT"
                 return "MOUNT"
             elif self.pev.state == "WAITUNLOAD":
                 return self.state
+        elif self.state == "MAINTENANCE":
+            if self.pev.state == "MAINTAINED":
+                self.state = "IDLE"
+                for i in range(len(dispatchers['maintenanceDispatchers'])):
+                    if dispatchers['maintenanceDispatchers'][i].id is self.id:
+                        del dispatchers['maintenanceDispatchers'][i]
+                        break
+                heapq.heappush(dispatchers['freeDispatchers'], self)
+                return "IDLE"
                 
 class RebalanceData():
     def __init__(self, centers, weights):
@@ -1280,6 +1332,8 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
         if resp == "WAITLOAD":
             heapq.heappush(cars['waitCars'], car)
         updatedCars.append(str(car.id))
+    
+    # TODO: write block for maintenanceCars
 
     if len(cars['waitCars']) > 0:
         while simTime >= cars['waitCars'][0].time:
