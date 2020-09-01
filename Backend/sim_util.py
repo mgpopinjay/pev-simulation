@@ -502,7 +502,7 @@ class PEV(object):
                 # triangular distribution for maintenance
                 maintenance = int(np.random.triangular(1,6,9))
                 self.prevtime = simTime
-                self.time = simTime + waitLoad
+                self.time = simTime + maintenance
                 self.pos = self.nav.dropoff
                 self.state = "MAINTENANCE"
                 return "MAINTENANCE"
@@ -520,8 +520,20 @@ class PEV(object):
                     self.prevtime = self.time
                     self.time = None
                     self.state = "MAINTAINED"
-                    return "MAINTAINTED"
-        # TODO: write elif MAINTAINED block
+                    return "MAINTAINED"
+        elif self.state == "MAINTAINED":
+            if self.dispatcher.state == "IDLE":
+                # end confirmation and go idle
+                idle = self.request
+                idle.end_time = simTime
+                idle.get_duration()
+                self.idletime += idle.traveltime
+                assignFinishedTrip(finishedTrips, self.id, idle)
+                self.request = Idle(self.time, self.pos)
+                self.prevtime = self.time
+                self.time = None
+                self.state = "IDLE"
+                return "IDLE"
         elif self.state == "WAITUNLOAD":
             if simTime >= self.time:
                 ''' end wait and become idle '''
@@ -1331,10 +1343,12 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             heapq.heappush(cars['navCars'], car)
         if resp == "WAITLOAD":
             heapq.heappush(cars['waitCars'], car)
+        if resp == "STANDBYMAINTENANCE":
+            heapq.heappush(cars['confirmationCars'], car) # another confirmation phase
+        if resp == "MAINTENANCE":
+            heapq.heappush(cars['maintenanceCars'], car) # another confirmation phase
         updatedCars.append(str(car.id))
     
-    # TODO: write block for maintenanceCars
-
     if len(cars['waitCars']) > 0:
         while simTime >= cars['waitCars'][0].time:
             # end waiting
@@ -1374,9 +1388,12 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
             car = heapq.heappop(cars['maintenanceCars'])
             #car.power = 25 * 1609.34
             prevState = car.state
-            resp = car.update(simTime, logs['finishedTrips'])
+            resp = car.update(simTime, logs['finishedTrips'], dispatchers=dispatchers)
             logging.info(f"Car {str(car.id).zfill(4)}: {prevState} -> {resp}")
-            cars['freeCars'].append(car)
+            if resp == "MAINTAINED":
+                heapq.heappush(cars['confirmationCars'], car)
+            else:
+                heapq.heappush(cars['maintenanceCars'], car)
             updatedCars.append(str(car.id))
 
             if len(cars['maintenanceCars']) == 0:
