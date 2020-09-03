@@ -336,6 +336,7 @@ class PEV(object):
                 return "NAVTOCHARGE"
             elif type(req) == Request:
                 if self.dispatcher.state is "MOUNT":
+                    self.flag = False # reset flag upon new trip
                     # end idle and add to history
                     idle = self.request
                     idle.end_time = req.time
@@ -445,7 +446,7 @@ class PEV(object):
                 self.idletime += idle.traveltime
                 assignFinishedTrip(finishedTrips, self.id, idle)
                 if self.flag: # arrived at station afte dropoff
-                    self.request = Confirmation(self.time, self.pos)
+                    self.request = Confirmation(simTime, self.pos)
                     self.prevtime = self.time
                     self.time = None
                     self.state = "STANDBYMAINTENANCE"
@@ -482,6 +483,7 @@ class PEV(object):
                 #self.power -= self.request.traveldist
                 assignFinishedTrip(finishedTrips, self.id, self.request)
                 finishedRequests.append(self.request)
+                self.flag = True # confirm trip has been completed
                 # triangular distribution for unload time
                 waitLoad = int(np.random.triangular(1,3,6))
                 self.prevtime = self.time
@@ -529,7 +531,7 @@ class PEV(object):
                 idle.get_duration()
                 self.idletime += idle.traveltime
                 assignFinishedTrip(finishedTrips, self.id, idle)
-                self.request = Idle(self.time, self.pos)
+                self.request = Idle(simTime, self.pos)
                 self.prevtime = self.time
                 self.time = None
                 self.state = "IDLE"
@@ -728,6 +730,8 @@ class Dispatcher(object):
                         break
                 heapq.heappush(dispatchers['freeDispatchers'], self)
                 return "IDLE"
+            else:
+                return self.state
                 
 class RebalanceData():
     def __init__(self, centers, weights):
@@ -1346,7 +1350,10 @@ def updateBusyCars(simTime, cars, dispatchers, logs, CHARGING_ON, CHARGE_LIMIT):
         if resp == "STANDBYMAINTENANCE":
             heapq.heappush(cars['confirmationCars'], car) # another confirmation phase
         if resp == "MAINTENANCE":
-            heapq.heappush(cars['maintenanceCars'], car) # another confirmation phase
+            heapq.heappush(cars['maintenanceCars'], car)
+        if resp == "IDLE": # cycle is complete
+            cars['freeCars'].append(car)
+
         updatedCars.append(str(car.id))
     
     if len(cars['waitCars']) > 0:
