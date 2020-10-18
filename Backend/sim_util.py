@@ -1593,10 +1593,10 @@ def getCarData(totalCars, finishedTrips):
                 tripJson["type"] = trip.kind
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             elif type(trip) == Maintenance:
-                tripJson["type"] = trip.kind
+                tripJson["type"] = "Maintenance"
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             elif type(trip) == Confirmation:
-                tripJson["type"] = trip.kind
+                tripJson["type"] = "Confirmation"
                 tripJson["start_point"] = trip.osrm  # location listed under this name for visualizer
             else:
                 tripJson["steps_polyline"] = parse_for_visualizer_steps(trip.osrm)
