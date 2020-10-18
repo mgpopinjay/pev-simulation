@@ -17,7 +17,7 @@ from Backend.realsim import runSim
 import os
 # import subprocess
 
-PORT = 9000
+PORT = 8000
 
 
 class ServerHandler(http.server.SimpleHTTPRequestHandler):
