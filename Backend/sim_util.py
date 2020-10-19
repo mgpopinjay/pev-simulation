@@ -282,6 +282,7 @@ class PEV(object):
         self.dispatcher = Dispatcher(self.id, self.pos, self)
         self.state = "IDLE"
         self.request = Idle(time, self.pos)
+        self.confirmation = None # for secondary confirmation requests
         self.time = None
         self.prevtime = None
         self.movingtime = 0
@@ -381,7 +382,7 @@ class PEV(object):
 
                 # Create idle state for PEV confirming destination has been reached
                 ''' become idle '''
-                self.request = Confirmation(self.time, self.pos)
+                self.confirmation = Confirmation(self.time, self.pos)
                 self.prevtime = self.time
                 self.time = None
                 self.state = "ARRIVED"
@@ -400,7 +401,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, wait)
                 if self.dispatcher.state == "MOUNT":
                     ''' become idle '''
-                    self.request = Confirmation(self.time, self.pos)
+                    self.confirmation = Confirmation(self.time, self.pos)
                     self.prevtime = self.time
                     self.time = None
                     self.state = "LOADED"
@@ -417,7 +418,7 @@ class PEV(object):
         elif self.state == "LOADED":
             if self.dispatcher.state == "TRANSPORT":
                 # end load and move to destination
-                idle = self.request
+                idle = self.confirmation
                 idle.end_time = simTime
                 idle.get_duration()
                 self.idletime += idle.traveltime
@@ -440,13 +441,13 @@ class PEV(object):
         elif self.state == "ARRIVED":
             if self.dispatcher.state == "UNMOUNT":
                 # end confirmation and begin pickup
-                idle = self.request
+                idle = self.confirmation
                 idle.end_time = simTime
                 idle.get_duration()
                 self.idletime += idle.traveltime
                 assignFinishedTrip(finishedTrips, self.id, idle)
-                if self.flag: # arrived at station afte dropoff
-                    self.request = Confirmation(simTime, self.pos)
+                if self.flag: # arrived at station after dropoff
+                    self.confirmation = Confirmation(simTime, self.pos)
                     self.prevtime = self.time
                     self.time = None
                     self.state = "STANDBYMAINTENANCE"
@@ -462,7 +463,7 @@ class PEV(object):
         elif self.state == "DROPOFF":
             if self.dispatcher.state == "MOUNT":
                 # end confirmation and begin heading back to station
-                idle = self.request
+                idle = self.confirmation
                 idle.end_time = simTime
                 idle.get_duration()
                 self.idletime += idle.traveltime
@@ -496,7 +497,7 @@ class PEV(object):
         elif self.state == "STANDBYMAINTENANCE":
             if self.dispatcher.state == "MAINTENANCE":
                 # end confirmation and begin heading back to station
-                idle = self.request
+                idle = self.confirmation
                 idle.end_time = simTime
                 idle.get_duration()
                 self.idletime += idle.traveltime
@@ -518,7 +519,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, maintenance)
                 if self.dispatcher.state == "MAINTENANCE":
                     ''' become idle '''
-                    self.request = Confirmation(self.time, self.pos)
+                    self.confirmation = Confirmation(self.time, self.pos)
                     self.prevtime = self.time
                     self.time = None
                     self.state = "MAINTAINED"
@@ -526,7 +527,7 @@ class PEV(object):
         elif self.state == "MAINTAINED":
             if self.dispatcher.state == "IDLE":
                 # end confirmation and go idle
-                idle = self.request
+                idle = self.confirmation
                 idle.end_time = simTime
                 idle.get_duration()
                 self.idletime += idle.traveltime
@@ -547,7 +548,7 @@ class PEV(object):
                 assignFinishedTrip(finishedTrips, self.id, wait)
                 if self.dispatcher.state == "WAITTRIP":
                     ''' become idle '''
-                    self.request = Confirmation(self.time, self.pos)
+                    self.confirmation = Confirmation(self.time, self.pos)
                     self.prevtime = self.time
                     self.time = None
                     self.state = "DROPOFF"
